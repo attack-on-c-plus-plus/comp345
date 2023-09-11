@@ -2,11 +2,21 @@
 
 ## Git basics
 
-Please always do your work on a branch
+Please always do your work on a branch (you can also create branch via your IDE if you prefer)
 ```
 git checkout -b <issue-name>
 ```
 
+Edit your code, then once done commit your work (you can also create branch via your IDE if you prefer)
+```
+git commit -m "<message>"
+```
+
+Create a pull request (on GitHub.com) linked to the issue (for which the branch was created) and request a code review. Usually best 2 people review and approve.
+
+Once reviews are done it can be merged.
+
+Thank you.
 
 # Assignment 1
 
