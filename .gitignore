@@ -556,3 +556,10 @@ FodyWeavers.xsd
 
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
+
+# Google test
+Google_tests/lib/
+Google_tests/cmake-build-*/
+
+# MacOS
+.DS_Store
