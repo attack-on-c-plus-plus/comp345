@@ -1,0 +1,12 @@
+[Map]
+image=DuplicateContinent.bmp
+wrap=no
+scroll=none
+author=Ashley
+warn=yes
+
+[Continents]
+Cube=3
+Triangle=2
+Cube=3
+

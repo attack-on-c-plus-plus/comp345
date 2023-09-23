@@ -1,0 +1,9 @@
+[Map]
+image=NoContinents.bmp
+wrap=no
+scroll=none
+author=Ashley
+warn=yes
+
+[Continents]
+
