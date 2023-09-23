@@ -2,7 +2,12 @@
 
 #include <iostream>
 
+#include "drivers/Drivers.h"
+
 int main() {
     std::cout << "COMP 345" << std::endl;
+
+    testLoadMaps();
+
     return 0;
 }
