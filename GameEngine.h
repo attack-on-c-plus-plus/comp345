@@ -16,15 +16,11 @@ GameEngine is implemented as a container for two strings, one representing the s
 class GameEngine
 {
 public:
-    explicit GameEngine(std::string initState);
+    explicit GameEngine(const std::string &initState);
     // Copy constructor
     GameEngine(const GameEngine &rhs);
-    // Copying over state
-    GameEngine operator=(const GameEngine &rhs)
-    {
-        *state = *rhs.state;
-        return *this;
-    }
+
+    GameEngine &operator=(const GameEngine &rhs);
     // Destructor
     ~GameEngine();
     void transaction();
