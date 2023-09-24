@@ -6,4 +6,9 @@
  */
 void testLoadMaps();
 
+/*
+    Demonstrates the game state can properly change on command and follows the flow of the game state.
+*/
+void testGameStates();
+
 #endif //COMP345_DRIVERS_H

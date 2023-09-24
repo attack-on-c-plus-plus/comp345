@@ -9,5 +9,7 @@ int main() {
 
     testLoadMaps();
 
+    testGameStates();
+
     return 0;
 }
