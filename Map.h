@@ -46,7 +46,7 @@ private:
  */
 class Territory {
 public:
-    explicit Territory(const std::string &name);
+    explicit Territory(const std::string &name, Continent& continent);
     // Copy constructor
     Territory(const Territory&);
     // Destructor
@@ -59,12 +59,12 @@ public:
     Territory &addAdjacent(Territory &territory);
     [[nodiscard]] const std::vector<Territory*>& getAdjacencies() const;
     Territory &operator=(const Territory &rhs) = delete;
-    bool operator<(const Territory &rhs);
 private:
     std::string *name;
     const Player *owner;
     unsigned *armyCount;
     std::vector<Territory*> *adjacencies;
+    const Continent *continent;
 };
 
 /*
@@ -79,10 +79,13 @@ public:
     ~Continent();
     [[nodiscard]] std::string getName() const;
     [[nodiscard]] unsigned getBonusArmies() const;
+    Continent &addTerritory(Territory &territory);
+    [[nodiscard]] const std::vector<Territory*>& getTerritories() const;
+    Continent &operator=(const Continent &rhs) = delete;
 private:
     std::string *name;
     unsigned *bonusArmies;
-    std::vector<Territory> *territories;
+    std::vector<Territory*> *territories;
 };
 
 /*

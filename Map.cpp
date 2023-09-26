@@ -30,12 +30,14 @@ std::string Map::getName() const {
     return *name;
 }
 
-Territory::Territory(const std::string &name) {
+Territory::Territory(const std::string &name, Continent& continent) {
     this->name = new std::string(name);
     this->armyCount = new unsigned(0);
     owner = nullptr;
     // TODO: add continent
     adjacencies = new std::vector<Territory*>();
+    this->continent = &continent;
+    continent.addTerritory(*this);
 }
 
 Territory::Territory(const Territory &territory) {
@@ -73,10 +75,6 @@ unsigned Territory::getArmyCount() const {
     return *armyCount;
 }
 
-bool Territory::operator<(const Territory &rhs) {
-    return name < rhs.name;
-}
-
 Territory &Territory::addAdjacent(Territory &territory) {
     adjacencies->push_back(&territory);
     return *this;
@@ -87,7 +85,9 @@ const std::vector<Territory *>& Territory::getAdjacencies() const {
 }
 
 Continent::Continent(const std::string &name, unsigned bonusArmies) {
-
+    this->name = new std::string(name);
+    this->bonusArmies = new unsigned(bonusArmies);
+    territories = new std::vector<Territory*>();
 }
 
 Continent::Continent(const Continent &) {
@@ -95,7 +95,10 @@ Continent::Continent(const Continent &) {
 }
 
 Continent::~Continent() {
-
+    delete name;
+    delete bonusArmies;
+    // only need to delete adjacencies;
+    delete territories;
 }
 
 std::string Continent::getName() const {
@@ -104,6 +107,15 @@ std::string Continent::getName() const {
 
 unsigned Continent::getBonusArmies() const {
     return *bonusArmies;
+}
+
+Continent &Continent::addTerritory(Territory &territory) {
+    territories->push_back(&territory);
+    return *this;
+}
+
+const std::vector<Territory *> &Continent::getTerritories() const {
+    return *territories;
 }
 
 Map *MapLoader::load(const std::string &filepath) {
