@@ -5,7 +5,7 @@ Map::Map(const std::string &name) {
     continents = new std::map<std::string, Continent>();
 }
 
-Map::Map(const Map &) {
+Map::Map(const Map &map) {
 
 }
 
@@ -18,12 +18,12 @@ bool Map::validate() {
     return true;
 }
 
-Territory Map::getTerritory(const std::string &name) const {
-    return territories->at(name);
+Territory Map::getTerritory(const std::string &territoryName) const {
+    return territories->at(territoryName);
 }
 
-Continent Map::getContinent(const std::string &name) const {
-    return continents->at(name);
+Continent Map::getContinent(const std::string &continentName) const {
+    return continents->at(continentName);
 }
 
 std::string Map::getName() const {
@@ -31,15 +31,25 @@ std::string Map::getName() const {
 }
 
 Territory::Territory(const std::string &name) {
-
+    this->name = new std::string(name);
+    this->armyCount = new unsigned(0);
+    owner = nullptr;
+    // TODO: add continent
+    adjacencies = new std::vector<Territory*>();
 }
 
-Territory::Territory(const Territory &) {
+Territory::Territory(const Territory &territory) {
 
 }
 
 Territory::~Territory() {
+    delete name;
+    delete armyCount;
+    // only need to delete adjacencies;
+    delete adjacencies;
 
+    // release links to other instances
+    owner = nullptr;
 }
 
 std::string Territory::getName() const {
@@ -47,11 +57,33 @@ std::string Territory::getName() const {
 }
 
 Territory &Territory::setOwner(const Player &player) {
+    owner = &player;
     return *this;
 }
 
-Player Territory::getOwner() const {
+const Player& Territory::getOwner() const {
     return *owner;
+}
+
+bool Territory::hasOwner() const {
+    return owner;
+}
+
+unsigned Territory::getArmyCount() const {
+    return *armyCount;
+}
+
+bool Territory::operator<(const Territory &rhs) {
+    return name < rhs.name;
+}
+
+Territory &Territory::addAdjacent(Territory &territory) {
+    adjacencies->push_back(&territory);
+    return *this;
+}
+
+const std::vector<Territory *>& Territory::getAdjacencies() const {
+    return *adjacencies;
 }
 
 Continent::Continent(const std::string &name, unsigned bonusArmies) {

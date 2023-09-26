@@ -31,12 +31,14 @@ public:
     ~Map();
     bool validate();
     [[nodiscard]] std::string getName() const;
-    [[nodiscard]]Territory getTerritory(const std::string &name) const;
-    [[nodiscard]]Continent getContinent(const std::string &name) const;
+    [[nodiscard]]Territory getTerritory(const std::string &territoryName) const;
+    [[nodiscard]]Continent getContinent(const std::string &continentName) const;
 private:
     std::string *name;
     std::map<std::string, Territory> *territories;
     std::map<std::string, Continent> *continents;
+    std::map<std::string, unsigned> *territoryNameToIndex;
+    std::map<std::string, unsigned> *continentNameToIndex;
 };
 
 /*
@@ -51,12 +53,18 @@ public:
     ~Territory();
     [[nodiscard]] std::string getName() const;
     Territory &setOwner(const Player &player);
-    [[nodiscard]] Player getOwner() const;
+    [[nodiscard]] const Player &getOwner() const;
+    [[nodiscard]] bool hasOwner() const;
+    [[nodiscard]] unsigned getArmyCount() const;
+    Territory &addAdjacent(Territory &territory);
+    [[nodiscard]] const std::vector<Territory*>& getAdjacencies() const;
+    Territory &operator=(const Territory &rhs) = delete;
+    bool operator<(const Territory &rhs);
 private:
     std::string *name;
-    Player* owner;
-    std::vector<Territory> *adjacencies;
-    Continent *continent;
+    const Player *owner;
+    unsigned *armyCount;
+    std::vector<Territory*> *adjacencies;
 };
 
 /*
