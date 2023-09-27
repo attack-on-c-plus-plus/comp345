@@ -10,4 +10,5 @@ add_executable(comp345 main.cpp
         GameEngine.h
         drivers/MapDriver.cpp
         drivers/Drivers.h
-        drivers/GameEngineDriver.cpp)
+        drivers/GameEngineDriver.cpp
+        Cards.cpp)
