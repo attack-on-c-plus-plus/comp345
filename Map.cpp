@@ -18,11 +18,11 @@ bool Map::validate() {
     return true;
 }
 
-Territory Map::getTerritory(const std::string &territoryName) const {
+Territory &Map::getTerritory(const std::string &territoryName) const {
     return territories->at(territoryName);
 }
 
-Continent Map::getContinent(const std::string &continentName) const {
+Continent &Map::getContinent(const std::string &continentName) const {
     return continents->at(continentName);
 }
 
@@ -30,11 +30,18 @@ std::string Map::getName() const {
     return *name;
 }
 
+size_t Map::getTerritoryCount() const {
+    return territories->size();
+}
+
+size_t Map::getContinentCount() const {
+    return continents->size();
+}
+
 Territory::Territory(const std::string &name, Continent& continent) {
     this->name = new std::string(name);
     this->armyCount = new unsigned(0);
     owner = nullptr;
-    // TODO: add continent
     adjacencies = new std::vector<Territory*>();
     this->continent = &continent;
     continent.addTerritory(*this);

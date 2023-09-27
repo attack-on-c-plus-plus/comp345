@@ -31,8 +31,10 @@ public:
     ~Map();
     bool validate();
     [[nodiscard]] std::string getName() const;
-    [[nodiscard]]Territory getTerritory(const std::string &territoryName) const;
-    [[nodiscard]]Continent getContinent(const std::string &continentName) const;
+    [[nodiscard]]Territory &getTerritory(const std::string &territoryName) const;
+    [[nodiscard]]Continent &getContinent(const std::string &continentName) const;
+    [[nodiscard]]size_t getTerritoryCount() const;
+    [[nodiscard]]size_t getContinentCount() const;
 private:
     std::string *name;
     std::map<std::string, Territory> *territories;
