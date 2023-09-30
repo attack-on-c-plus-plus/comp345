@@ -9,26 +9,41 @@ GameEngine.cpp/GameEngine.h implement the system that tracks the current state o
 
 // Basic definition to avoid definition order within file.
 class GameEngine;
-
+// This is the enum used to define all possible states the engine can be in.
+enum possibleStates
+{
+    start,
+    mapLoaded,
+    mapValidated,
+    playersAdded,
+    assignReiforcment,
+    issueOrders,
+    executeOrders,
+    win
+};
 /*
-GameEngine is implemented as a container for two strings, one representing the state and the other a command given by the user to be used as an argument for a method that is also stored in the class.
+GameEngine is implemented as a container for a string and a boolean, the string representing the state and the boolean being used as a check as to whether the game has ended.
 */
 class GameEngine
 {
 public:
-    explicit GameEngine(const std::string &initState);
+    explicit GameEngine(const possibleStates &initState);
     // Copy constructor
     GameEngine(const GameEngine &rhs);
 
     GameEngine &operator=(const GameEngine &rhs);
     // Destructor
     ~GameEngine();
-    void transaction();
-    [[nodiscard]] std::string getState();
-    [[nodiscard]] std::string getCommand() const;
+
+    void transaction(std::string command);
+    void setState(possibleStates input);
+    void setGameOver(bool input);
+    [[nodiscard]] possibleStates getState();
+    [[nodiscard]] bool getGameOver();
 
 private:
-    std::string *state;
+    possibleStates *state;
+    bool *gameOver;
 };
 
 #endif // COMP345_GAMEENGINE_H
