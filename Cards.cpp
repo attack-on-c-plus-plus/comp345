@@ -5,7 +5,7 @@ Card::Card(const std::string& cardType) {
 }
 
 Card::Card(const Card& cardToCopy) {
-    this->cardType = cardToCopy.cardType;
+    this->cardType = new std::string(*cardToCopy.cardType);
 }
 
 Card::~Card() {
@@ -25,7 +25,7 @@ Hand::Hand(const std::vector<Card>& cardCollection) {
 }
 
 Hand::Hand(const Hand& handToCopy) {
-    this->cardCollection = handToCopy.cardCollection
+    this->cardCollection = new std::vector<Card>(*handToCopy.cardCollection);
 }
 
 Hand::~Hand() {
@@ -42,7 +42,7 @@ Deck::Deck(const std::vector<Card> &cardDeck) {
 
 
 Deck::Deck(const Deck& deckToCopy) {
-    this->cardDeck = deckToCopy.cardDeck;
+    this->cardDeck = new std::vector<Card>(*deckToCopy.cardDeck);
 }
 
 Deck::~Deck() {
