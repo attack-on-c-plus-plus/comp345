@@ -1,4 +1,5 @@
 #include "Cards.h"
+#include <iostream>
 
 Card::Card(const std::string& cardType) {
     this->cardType = new std::string(cardType);
@@ -32,6 +33,10 @@ Hand::~Hand() {
     delete cardCollection;
 }
 
+std::vector<Card> * Hand::getCardCollection() const {
+    return cardCollection;
+}
+
 Deck::Deck() {
     this->cardDeck = new std::vector<Card>();
 }
@@ -50,7 +55,24 @@ Deck::~Deck() {
 }
 
 // TO DO
-void Deck::draw() {}
+void Deck::draw(const Hand& hand) {
+    if (this->cardDeck->empty()) {
+        std::cout<<"No more cards in the deck"<<std::endl;
+        return;
+    }
+
+    long *random = reinterpret_cast<long *>(rand() % cardDeck->size());
+    Card* chosenCard = new Card((*cardDeck)[reinterpret_cast<unsigned long long int>(random)]);
+
+    hand.getCardCollection()->push_back(*chosenCard);
+
+    cardDeck->erase(cardDeck->begin() + *random);
+
+    delete random;
+    delete chosenCard;
+}
 
 // TO DO
-void Card::play() {}
+void Card::play() {
+    
+}
