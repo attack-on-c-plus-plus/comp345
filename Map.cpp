@@ -79,25 +79,25 @@ Map &Map::operator=(const Map &map) {
 }
 
 Continent &Map::getContinent(unsigned id) const {
-    return (*continents)[id - 1];
+    return continents->at(id - 1);
 }
 
 Territory &Map::getTerritory(unsigned id) const {
-    return (*territories)[id - 1];
+    return territories->at(id - 1);
 }
 
 std::vector<Territory> Map::getAdjacencies(const Continent &continent) const {
     std::vector<Territory> adj{};
-    for (auto i: (*continentTerritories)[continent.getId()-1]) {
-        adj.push_back((*territories)[i]);
+    for (auto i: continentTerritories->at(continent.getId()-1)) {
+        adj.push_back(territories->at(i));
     }
     return adj;
 }
 
 std::vector<Territory> Map::getAdjacencies(const Territory &territory) const {
     std::vector<Territory> adj{};
-    for (auto i: (*adjacencies)[territory.getId()-1]) {
-        adj.push_back((*territories)[i]);
+    for (auto i: adjacencies->at(territory.getId()-1)) {
+        adj.push_back(territories->at(i));
     }
     return adj;
 }
@@ -105,14 +105,14 @@ std::vector<Territory> Map::getAdjacencies(const Territory &territory) const {
 Map &Map::addTerritory(const Territory &t) {
     territories->push_back(t);
     adjacencies->emplace_back();
-    (*continentTerritories)[t.getContinent().getId()-1].push_back(t.getId()-1);
+    continentTerritories->at(t.getContinent().getId()-1).push_back(t.getId()-1);
     return *this;
 }
 
 Map &Map::addAdjacencies(const Territory& territory, const Territory& adjacent) {
-    Territory &t = (*territories)[territory.getId() - 1];
-    Territory &a = (*territories)[adjacent.getId() - 1];
-    (*adjacencies)[t.getId() - 1].push_back(a.getId() - 1);
+    Territory &t = territories->at(territory.getId() - 1);
+    Territory &a = territories->at(adjacent.getId() - 1);
+    adjacencies->at(t.getId() - 1).push_back(a.getId() - 1);
     return *this;
 }
 
