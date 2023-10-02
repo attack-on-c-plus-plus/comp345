@@ -3,45 +3,42 @@
 #include <vector>
 #include "Player.h"
 
-int Player::playerCount = 1;
 
     //Default Constructor
     Player::Player()
-        :name{new std::string("Player " + std::to_string(playerCount))}
+    :name{new std::string("Player Default")}
         {
-            playerCount++;
             std::cout << "* In the default constructor of player class * \n";
         }
 
     //Parameterized Constructor
-    Player::Player(std::string n)
-        :name{n}
+    Player::Player(const std::string &name)
+        :name{new std::string(name)}
         {
             std::cout << "* In the Parameterized constructor of player class *\n";
-            playerCount++;
         }
 
+    //Copy Constructor
     Player::Player(const Player& other)
-        : name(other.name)
+            :name{new std::string(*(other.name))}
         {
             std::cout << "* In the copy constructor of player class *\n";
-            playerCount++;
         }
 
     Player::~Player()
     {
+        delete name;
         std::cout << "Default Destructor is called\n";
-        playerCount--;
     }
 
-    std::string Player:: getName()
+    std::string Player:: getName() const
     {
-        return name;
+        return *name;
     }
 
-    void Player::changeName(std::string newName)
+    void Player::changeName(const std::string &newName)
     {
-        name=newName;
+        name = new std::string(newName);
     }
 
 
@@ -55,9 +52,12 @@ int Player::playerCount = 1;
 
     }
 
-    void Player:: issueOrder(std::string order)
+    void Player:: issueOrder(const std::string &order)
     {
 
     }
+
+
+
 
 
