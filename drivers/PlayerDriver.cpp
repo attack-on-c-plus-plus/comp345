@@ -2,11 +2,11 @@
 // Created by Haris Mahmood on 2023-09-27.
 //
 #include <iostream>
-#include "Player.h"
+#include "../Player.h"
 
 using namespace std;
 
-int main () {
+void testplayer () {
 
     //Object with pointer created on the heap (Manually have to delete)
     Player *player1 = new Player("Bob");
@@ -32,5 +32,4 @@ int main () {
 //    Player player4;
 //    cout << "Player 4 name is: "<<player4.getName()<<"\n";
 
-    return 0;
 };
