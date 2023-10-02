@@ -34,6 +34,7 @@ class Hand {
     public:
         explicit Hand();
         explicit Hand(const std::vector<Card>& cardCollection);
+        Hand &addCard(const Card &card);
         // Copy Constructor
         Hand(const Hand&);
         // Destructor
@@ -49,7 +50,7 @@ class Deck {
         Deck(const Deck&);
         ~Deck();
         // To implement when Player is completed
-        void draw();
+        void draw(Hand&);
 
 };
 
