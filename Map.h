@@ -117,7 +117,7 @@ std::ostream &operator<<(std::istream &is, const Continent &continent);
  */
 class MapLoader {
 public:
-    static Map *load(const std::string &filepath);
+    static bool load(const std::string &, Map &);
 private:
 };
 

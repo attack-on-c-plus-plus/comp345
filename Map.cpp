@@ -1,4 +1,28 @@
+#include <iostream>
+#include <fstream>
 #include "Map.h"
+
+enum mapReadState {
+    MapHeader,
+    MapSection,
+    ContinentsHeader,
+    ContinentsSection,
+    TerritoriesHeader,
+    TerritoriesSection,
+    Completed,
+    Error
+};
+
+void removeCarriageReturn(std::string &);
+static void readFile(const std::string &);
+mapReadState readMapHeader(std::ifstream &in, std::string &msg);
+mapReadState readMapSection(std::ifstream &, std::string &, Map &);
+mapReadState readContinentsHeader(std::ifstream &, std::string &);
+mapReadState readContinentsSection(std::ifstream &, std::string &, Map &);
+mapReadState readTerritoriesHeader(std::ifstream &, std::string &);
+mapReadState readTerritoriesSection(std::ifstream &, std::string &, Map &);
+mapReadState readHeader(std::ifstream &in, std::string &msg, const mapReadState &success,
+                const std::string &header);
 
 Map::Map() : Map("") {
 }
@@ -248,6 +272,132 @@ Continent &Continent::operator=(const Continent &continent) {
     return *this;
 }
 
-Map *MapLoader::load(const std::string &filepath) {
-    return nullptr;
+bool MapLoader::load(const std::string &filepath, Map &map) {
+    readFile(filepath);
+    return true;
+}
+
+void removeCarriageReturn(std::string &s) {
+    s.erase(std::remove(s.begin(), s.end(), '\r' ), s.end());
+}
+
+bool readSection(std::ifstream &i, bool (*fp)(std::ifstream &i, std::string &s)) {
+    std::string s;
+    fp(i, s);
+    return true;
+}
+
+bool parseMapSection(std::ifstream &i, std::string &s) {
+    std::cout << "Parsing Map Section" << std::endl;
+
+    while (i.good()) {
+        getline(i, s);
+        removeCarriageReturn(s);
+        if (s.empty()) {
+            break;
+        }
+    }
+    return true;
+}
+
+bool parseContinentsSection(std::ifstream &i, std::string &s) {
+    std::cout << "Parsing Continents Section" << std::endl;
+
+    while (i.good()) {
+        getline(i, s);
+        removeCarriageReturn(s);
+        if (s.empty()) {
+            break;
+        }
+    }
+    return true;
+}
+
+bool parseTerritoriesSection(std::ifstream &i, std::string &s) {
+    std::cout << "Parsing Territories Section" << std::endl;
+
+    while (i.good()) {
+        getline(i, s);
+        removeCarriageReturn(s);
+        if (s.empty()) {
+            continue;
+        }
+    }
+    return true;
+}
+
+static void readFile(const std::string &filename) {
+    mapReadState state = MapHeader;
+    std::ifstream in(filename);
+    std::cout << filename << std::endl;
+    if (!in.is_open())
+        std::cout << "failed to open " << filename << '\n';
+    else
+    {
+        Map map;
+        std::string msg, s;
+        while (!in.eof()) {
+            std::getline(in, s);
+            removeCarriageReturn(s);
+            switch (state) {
+                case MapHeader:
+                    state = readMapHeader(in, msg);
+                    break;
+                case MapSection:
+                    state = readMapSection(in, msg, map);
+                    break;
+                case ContinentsHeader:
+                    state = readContinentsHeader(in, msg);
+                    break;
+                case ContinentsSection:
+                    state = readContinentsSection(in, msg, map);
+                    break;
+                case TerritoriesHeader:
+                    state = readTerritoriesHeader(in, msg);
+                    break;
+                case TerritoriesSection:
+                    state = readTerritoriesSection(in, msg, map);
+                    break;
+                case Completed:
+                case Error:
+                    break;
+            }
+        }
+        if (state != Completed) {
+            std::cout << "Invalid map file." << std::endl;
+        }
+    }
+    in.close();
+}
+
+mapReadState readMapHeader(std::ifstream &in, std::string &msg) {
+    return readHeader(in, msg, MapSection, "[Map]");
+}
+mapReadState readMapSection(std::ifstream &in, std::string &msg, Map &m) {
+    return Completed;
+}
+mapReadState readContinentsHeader(std::ifstream &in, std::string &msg) {
+    return readHeader(in, msg, ContinentsSection, "[Continents]");
+}
+mapReadState readContinentsSection(std::ifstream &in, std::string &msg, Map &m) {
+    return Completed;
+}
+mapReadState readTerritoriesHeader(std::ifstream &in, std::string &msg) {
+    return readHeader(in, msg, TerritoriesSection, "[Territories]");
+}
+
+mapReadState readTerritoriesSection(std::ifstream &in, std::string &msg, Map &m) {
+    return Completed;
+}
+
+mapReadState readHeader(std::ifstream &in, std::string &msg, const mapReadState &success,
+                        const std::string &header) {
+    std::string line;
+    std::getline(in, line);
+    removeCarriageReturn(line);
+    if (line != header) {
+        msg = "Invalid Map file format - " + header + " section not found.";
+        return Error;
+    }
+    return success;
 }
