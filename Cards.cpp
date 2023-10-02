@@ -33,8 +33,9 @@ Hand::~Hand() {
     delete cardCollection;
 }
 
-std::vector<Card> * Hand::getCardCollection() const {
-    return cardCollection;
+Hand &Hand::addCard(const Card &card) {
+    cardCollection->emplace_back(card);
+    return *this;
 }
 
 Deck::Deck() {
@@ -54,22 +55,21 @@ Deck::~Deck() {
     delete cardDeck;
 }
 
-// TO DO
-void Deck::draw(const Hand& hand) {
+void Deck::draw(Hand& hand) {
     if (this->cardDeck->empty()) {
         std::cout<<"No more cards in the deck"<<std::endl;
         return;
     }
 
-    long *random = reinterpret_cast<long *>(rand() % cardDeck->size());
-    Card* chosenCard = new Card((*cardDeck)[reinterpret_cast<unsigned long long int>(random)]);
+    /*
+    auto: C++ feature that automatically detects and assigns
+    a data type to the variable according to the initialization
+    expression.
+    */
+    auto random = rand() % cardDeck->size();
+    hand.addCard(cardDeck->at(random));
+    cardDeck->erase(cardDeck->begin() + random);
 
-    hand.getCardCollection()->push_back(*chosenCard);
-
-    cardDeck->erase(cardDeck->begin() + *random);
-
-    delete random;
-    delete chosenCard;
 }
 
 // TO DO
