@@ -7,7 +7,7 @@ int Player::playerCount = 1;
 
     //Default Constructor
     Player::Player()
-        :name{"Player " + std::to_string(playerCount)}
+        :name{new std::string("Player " + std::to_string(playerCount))}
         {
             playerCount++;
             std::cout << "* In the default constructor of player class * \n";
