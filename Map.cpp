@@ -331,6 +331,10 @@ static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::i
                 return;
         }
     }
+    if (state != Completed && state != Error) {
+        state = Error;
+        msg = "Invalid Map file format - Unexpected end of file";
+    }
 }
 
 mapReadState readMapHeader(std::ifstream &in, std::string &msg) {
