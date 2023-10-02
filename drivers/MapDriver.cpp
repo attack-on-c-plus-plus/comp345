@@ -1,6 +1,5 @@
 #include <iostream>
 #include <filesystem>
-#include <fstream>
 #include "../Map.h"
 
 void printContinent(const Map &, const Continent &);
@@ -17,6 +16,9 @@ void testLoadMaps() {
         Map map;
         MapLoader::load(dirEntry.path().string(), map);
     }
+
+//    Map map;
+//    MapLoader::load("maps/valid/3D.map", map);
 
 //    Continent c(1, "Canada", 7);
 //    Continent e(2, "Europe", 5);
