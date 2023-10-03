@@ -1,5 +1,6 @@
 #include "Cards.h"
 #include <iostream>
+#include <algorithm>
 
 Card::Card(const std::string& cardType) {
     this->cardType = new std::string(cardType);
@@ -38,11 +39,11 @@ Hand &Hand::addCard(const Card &card) {
     return *this;
 }
 
-Hand &Hand::removeCard(const Card& card){
-    // Find the index of the referred card object 
+Hand &Hand::removeCard(const Card &card){
+    // Find the index of the referred card object
     auto it = std::find(cardCollection->begin(), cardCollection->end(), card);
-    if (it != cardCollection->end()) {
-        std::cout<<"Card not found from hand"<<std::endl;
+    if (it == cardCollection->end()) {
+        std::cout<<"Card not found from hand."<<std::endl;
         return *this;
     }
     cardCollection->erase(it);
@@ -65,8 +66,8 @@ Deck &Deck::addCard(const Card &card){
 Deck &Deck::removeCard(const Card &card){
     auto it = std::find(cardDeck->begin(), cardDeck->end(), card);
     // Check if card exists
-    if (it != cardDeck->end()) {
-        std::cout<<"Card not found."<<std::endl;
+    if (it == cardDeck->end()) {
+        std::cout<<"Card not found from deck."<<std::endl;
         return *this;
     }
     cardDeck->erase(it);
@@ -108,4 +109,8 @@ void Card::play(Hand& hand, Deck& deck) {
     // And put it back in the deck
     deck.addCard(*this);
 
+}
+
+bool Card::operator==(const Card &card) {
+    return (this->cardType == card.cardType);
 }

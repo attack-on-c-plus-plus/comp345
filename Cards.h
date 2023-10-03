@@ -26,6 +26,7 @@ class Card {
 
         // play() method
         void play(Hand& hand, Deck& deck);
+        bool operator==(const Card& card);
 };
 
 class Hand {
