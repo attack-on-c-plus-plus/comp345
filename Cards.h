@@ -25,7 +25,7 @@ class Card {
         [[nodiscard]] std::string getCardType() const;
 
         // play() method
-        void play();
+        void play(Hand& hand, Deck& deck);
 };
 
 class Hand {
@@ -35,6 +35,7 @@ class Hand {
         explicit Hand();
         explicit Hand(const std::vector<Card>& cardCollection);
         Hand &addCard(const Card &card);
+        Hand &removeCard(const Card &card);
         // Copy Constructor
         Hand(const Hand&);
         // Destructor
@@ -47,6 +48,8 @@ class Deck {
     public:
         explicit Deck();
         explicit Deck(const std::vector<Card> &cardDeck);
+        Deck &addCard(const Card &card);
+        Deck &removeCard(const Card &card);
         Deck(const Deck&);
         ~Deck();
         // To implement when Player is completed
