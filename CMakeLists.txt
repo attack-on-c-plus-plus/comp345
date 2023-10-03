@@ -13,3 +13,5 @@ add_executable(comp345 main.cpp
         drivers/GameEngineDriver.cpp
         Cards.cpp
         drivers/CardsDriver.cpp)
+file(COPY maps/invalid DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/maps")
+file(COPY maps/valid DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/maps")

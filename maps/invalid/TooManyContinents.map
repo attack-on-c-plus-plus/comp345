@@ -58,3 +58,6 @@ BW=3
 BX=3
 BY=3
 BZ=3
+
+[Territories]
+AA, 32, 32, AA, AB, AC, AD
