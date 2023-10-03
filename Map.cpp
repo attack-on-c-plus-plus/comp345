@@ -280,12 +280,15 @@ bool MapLoader::load(const std::string &filepath, Map &map) {
     return true;
 }
 
+// Helper method that removes carriage returns from text (needed for linux and macOS)
 void removeCarriageReturn(std::string &s) {
     s.erase(std::remove(s.begin(), s.end(), '\r' ), s.end());
 }
 
+// Helper reads the file
 static void readFile(const std::string &filename) {
     mapReadState state = MapHeader;
+    // Opens the file
     std::ifstream in(filename);
     std::cout << filename << std::flush;
     if (!in.is_open())
@@ -294,20 +297,22 @@ static void readFile(const std::string &filename) {
     {
         Map map;
         std::string msg;
+        // Try to parse the map file
         parseMapFile(map, msg, state, in);
-        if (state == Error) {
+        if (state == Error) { // Map parsing failed does not meet the requirements to be a Conquest Map file
             std::cout << " - " << msg << std::endl;
         }
-        else {
+        else { // Map format is correct but will still need to validate.
             std::cout << " loaded" << std::endl;
         }
     }
     in.close();
 }
 
+// Helper parses the map file, eventually will return a complete Map with Continents and Territories loaded.
 static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::ifstream &in) {
     while (!in.eof()) {
-        switch (state) {
+        switch (state) { // Finite State Machine to go through the Map parsing
             case MapHeader:
                 state = readMapHeader(in, msg);
                 break;
@@ -331,7 +336,7 @@ static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::i
                 return;
         }
     }
-    if (state != Completed && state != Error) {
+    if (state != Completed && state != Error) { // Hit eof but not Completed or Error, so also an Error
         state = Error;
         msg = "Invalid Map file format - Unexpected end of file";
     }
@@ -340,22 +345,23 @@ static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::i
 mapReadState readMapHeader(std::ifstream &in, std::string &msg) {
     return readHeader(in, msg, MapSection, "[Map]");
 }
+
 mapReadState readMapSection(std::ifstream &in, std::string &msg, Map &m) {
     bool isNameFound = false;
-    while(!in.eof() && in.peek() != '[') {
+    while(!in.eof() && in.peek() != '[') { // Peek to see if a header is coming.
         std::string token, value, line, name;
         std::getline(in, line);
         removeCarriageReturn(line);
 
         if (!line.empty()) {
             std::istringstream s(line);
-
+            // Essentially splitting the line on the equals delimiter.
             std::getline(s, token, '=');
             std::getline(s, value);
-            if (token == "image") {
+            if (token == "image") { // image value contains part of the name, so use that.
                 std::istringstream n(value);
                 std::getline(n, name, '.');
-                m = Map(name);
+                m = Map(name); // Have a name create a Map instance.
                 isNameFound = true;
             }
         }
@@ -366,9 +372,11 @@ mapReadState readMapSection(std::ifstream &in, std::string &msg, Map &m) {
     }
     return ContinentsHeader;
 }
+
 mapReadState readContinentsHeader(std::ifstream &in, std::string &msg) {
     return readHeader(in, msg, ContinentsSection, "[Continents]");
 }
+
 mapReadState readContinentsSection(std::ifstream &in, std::string &msg, Map &m) {
     while(!in.eof() && in.peek() != '[') {
         std::string name, bonusArmies, line;
@@ -377,7 +385,7 @@ mapReadState readContinentsSection(std::ifstream &in, std::string &msg, Map &m) 
 
         if (!line.empty()) {
             std::istringstream s(line);
-
+            // Essentially splitting the line on the equals delimiter.
             std::getline(s, name, '=');
             std::getline(s, bonusArmies);
 
@@ -394,6 +402,7 @@ mapReadState readTerritoriesHeader(std::ifstream &in, std::string &msg) {
 }
 
 mapReadState readTerritoriesSection(std::ifstream &in, std::string &msg, Map &m) {
+    unsigned territoryCount = 0;
     while(!in.eof()) {
         if (in.peek() == '[') {
             msg = "Invalid Map file format - Invalid [Territories] section content.";
@@ -405,7 +414,7 @@ mapReadState readTerritoriesSection(std::ifstream &in, std::string &msg, Map &m)
 
         if (!line.empty()) {
             std::istringstream s(line);
-
+            // Essentially splitting the line on the comma delimiter.
             std::getline(s, name, ',');
             std::getline(s, x, ',');
             std::getline(s, y, ',');
@@ -416,7 +425,12 @@ mapReadState readTerritoriesSection(std::ifstream &in, std::string &msg, Map &m)
                 msg = "Invalid Map file format - Invalid [Territories] section content.";
                 return Error;
             }
+            territoryCount++;
         }
+    }
+    if (territoryCount == 0) {
+        msg = "Invalid Map file format - No Territories found";
+        return Error;
     }
     return Completed;
 }

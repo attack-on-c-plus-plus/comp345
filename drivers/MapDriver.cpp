@@ -20,6 +20,7 @@ void testLoadMaps() {
 //    Map map;
 //    MapLoader::load("maps/valid/3D.map", map);
 
+// Example create a map fromm scratch without a file.
 //    Continent c(1, "Canada", 7);
 //    Continent e(2, "Europe", 5);
 //
