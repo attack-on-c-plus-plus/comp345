@@ -34,7 +34,7 @@ public:
     GameEngine &operator=(const GameEngine &rhs);
     // Destructor
     ~GameEngine();
-
+    // transaction going to be the object's main method that handles state transitions based on a command given to it.
     void transaction(std::string command);
     void setState(possibleStates input);
     void setGameOver(bool input);
