@@ -1,79 +1,76 @@
 #include <iostream>
+#include <filesystem>
 #include "../Map.h"
+
+void printContinent(const Map &, const Continent &);
 
 void testLoadMaps() {
     std::cout << "Testing map loading..." << std::endl;
 
-    auto *c = new Continent("Canada", 7);
-    auto *e = new Continent("Europe", 5);
-
-    auto *o = new Territory("Ontario", *c);
-    auto *q = new Territory("Quebec", *c);
-    auto *n = new Territory("New Brunswick", *c);
-
-    auto *ne = new Territory("Northern Europe", *e);
-    auto *se = new Territory("Southern Europe", *e);
-    auto *we = new Territory("Western Europe", *e);
-
-    auto *p1 = new Player();
-    auto *p2 = new Player();
-
-    std::cout << q->getName() << std::endl;
-    std::cout << o->getName() << std::endl;
-    std::cout << n->getName() << std::endl;
-
-    std::cout << ne->getName() << std::endl;
-    std::cout << se->getName() << std::endl;
-    std::cout << we->getName() << std::endl;
-
-    ne->setOwner(*p2);
-    se->setOwner(*p2);
-    we->setOwner(*p2);
-
-    o->setOwner(*p1);
-    q->setOwner(*p1);
-    n->setOwner(*p1);
-
-    q->addAdjacent(*o);
-    q->addAdjacent(*n);
-
-    for (Territory *f: q->getAdjacencies()) {
-        f->setOwner(*p2);
-        std::cout << f->getName() << std::endl;
+    for (const auto& dirEntry : std::filesystem::recursive_directory_iterator("maps/valid")) {
+        Map map;
+        MapLoader::load(dirEntry.path().string(), map);
     }
 
-    std::cout << "Continent " << c->getName() << " has bonus armies: " << c->getBonusArmies() << std::endl;
-    for (Territory *t: c->getTerritories()) {
-        std::cout << "\t" << t->getName() << std::endl;
-        for (Territory *a: t->getAdjacencies()) {
-            std::cout << "\t\t" << a->getName() << std::endl;
-        }
-    }
-    std::cout << "Continent " << e->getName() << " has bonus armies: " << e->getBonusArmies() << std::endl;
-    for (Territory *t: e->getTerritories()) {
-        std::cout << "\t" << t->getName() << std::endl;
-        for (Territory *a: t->getAdjacencies()) {
-            std::cout << "\t\t" << a->getName() << std::endl;
-        }
+    for (const auto& dirEntry : std::filesystem::recursive_directory_iterator("maps/invalid")) {
+        Map map;
+        MapLoader::load(dirEntry.path().string(), map);
     }
 
-    // Delete territories
-    delete q;
-    delete o;
-    delete n;
-    delete ne;
-    delete se;
-    delete we;
+//    Map map;
+//    MapLoader::load("maps/valid/3D.map", map);
 
-    // Delete Continents
-    delete c;
-    delete e;
+// Example create a map fromm scratch without a file.
+//    Continent c(1, "Canada", 7);
+//    Continent e(2, "Europe", 5);
+//
+//    Map map1("name");
+//    map1.addContinent(c);
+//    map1.addContinent(e);
+//
+//    Territory o(1, "Ontario", map1.getContinent(1));
+//    Territory q(2, "Quebec", map1.getContinent(1));
+//    Territory n(3, "New Brunswick", map1.getContinent(1));
+//
+//    Territory ne(4, "Northern Europe", map1.getContinent(2));
+//    Territory se(5, "Southern Europe", map1.getContinent(2));
+//    Territory we(6, "Western Europe", map1.getContinent(2));
+//
+//    map1.addTerritory(o);
+//    map1.addTerritory(q);
+//    map1.addTerritory(n);
+//    map1.addTerritory(ne);
+//    map1.addTerritory(se);
+//    map1.addTerritory(we);
+//
+//    map1.addAdjacencies(q, o);
+//    map1.addAdjacencies(q, n);
+//    map1.addAdjacencies(n, q);
+//    map1.addAdjacencies(o, q);
+//
+//    map1.addAdjacencies(ne, se);
+//    map1.addAdjacencies(ne, we);
+//    map1.addAdjacencies(se, ne);
+//    map1.addAdjacencies(se, we);
+//    map1.addAdjacencies(we, ne);
+//    map1.addAdjacencies(we, se);
+//
+//    printContinent(map1, map1.getContinent(1));
+//    printContinent(map1, map1.getContinent(2));
+//
+//    Map map2{map1};
+//
+//    printContinent(map2, map2.getContinent(1));
+//    printContinent(map2, map2.getContinent(2));
 
-    // Delete Players
-    delete p1;
-    delete p2;
+}
 
-
-
-
+void printContinent(const Map &m, const Continent &c) {
+    std::cout << "Continent " << c.getName() << " has bonus armies: " << c.getBonusArmies() << std::endl;
+    for (auto item: m.getAdjacencies(c)) {
+        std::cout << "\t" << item.getName() << "\tAdjacencies: " << std::flush;
+        for (auto a: m.getAdjacencies(item))
+            std::cout << a.getName() << " " << std::flush;
+        std::cout << std::endl;
+    }
 }

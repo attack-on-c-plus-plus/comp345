@@ -11,4 +11,9 @@ void testLoadMaps();
 */
 void testGameStates();
 
+/*
+ * Demonstrates that Decks, Hand, and Card work as expected
+ */
+void testCards();
+
 #endif //COMP345_DRIVERS_H
