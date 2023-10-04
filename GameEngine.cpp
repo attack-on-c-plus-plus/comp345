@@ -1,5 +1,8 @@
 #include "GameEngine.h"
 #include <iostream>
+#include <cctype>
+#include <algorithm>
+
 using namespace std;
 
 // Main constructor for the GameEngine object
@@ -50,6 +53,8 @@ void GameEngine::setGameOver(bool input)
 // This method checks the current state using a switch then uses the command given to change the game's state, display a set message if the state is supposed to remain the same or an error if the command is invalid.
 void GameEngine::transaction(string command)
 {
+    // This first line ensures that the command can be in uppercase or lower case.
+    transform(command.begin(), command.end(), command.begin(), ::tolower);
     switch (*state)
     {
     case start:
