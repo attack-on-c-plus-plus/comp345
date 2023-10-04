@@ -25,7 +25,7 @@ class Card {
         [[nodiscard]] std::string getCardType() const;
 
         // play() method
-        void play(Hand& hand, Deck& deck);
+        void play(Hand& hand, Deck& deck) const;
         bool operator==(const Card& card);
 };
 
@@ -33,7 +33,7 @@ class Hand {
     private:
         std::vector<Card> *cardCollection;
     public:
-        explicit Hand();
+        explicit Hand(const int &collectionSize = 5);
         explicit Hand(const std::vector<Card>& cardCollection);
         Hand &addCard(const Card &card);
         Hand &removeCard(const Card &card);
@@ -41,21 +41,24 @@ class Hand {
         Hand(const Hand&);
         // Destructor
         ~Hand();
+        Card& getCard(unsigned index);
+        unsigned int getCardCount();
 };
 
 class Deck {
     private:
         std::vector<Card> *cardDeck;
     public:
-        explicit Deck();
+        explicit Deck(const int &deckSize = 5);
         explicit Deck(const std::vector<Card> &cardDeck);
-        Deck &addCard(const Card &card);
+        Deck &addCard(const Card& card);
         Deck &removeCard(const Card &card);
         Deck(const Deck&);
         ~Deck();
         // To implement when Player is completed
         void draw(Hand&);
-
+        unsigned int getCardCount();
+        Card& getCard(unsigned index);
 };
 
 #endif
