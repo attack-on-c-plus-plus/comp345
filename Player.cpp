@@ -175,10 +175,6 @@
         return hand;
     }
 
-    bool operator==(const Player& lhs, const Player& rhs)
-    {
-        return *lhs.name == *rhs.name;
-    }
 
 
 
