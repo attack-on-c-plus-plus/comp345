@@ -1,8 +1,10 @@
 // Orders.h
-#pragma once
+#ifndef COMP345_ORDERS_H
+#define COMP345_ORDERS_H
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 class Order {
 public:
@@ -10,11 +12,30 @@ public:
     virtual bool validate() const = 0;
     virtual void execute() = 0;
     friend std::ostream& operator<<(std::ostream& os, const Order& order);
+    void swap(Order& other) {
+        std::swap(*description, *(other.description));
+        std::swap(*effect, *(other.effect));
+    }
+// Public member functions to access and modify description and effect
+    const std::string& getDescription() const {
+        return *description;
+    }
 
+    const std::string& getEffect() const {
+        return *effect;
+    }
+
+    void setDescription(const std::string& newDescription) {
+        *description = newDescription;
+    }
+
+    void setEffect(const std::string& newEffect) {
+        *effect = newEffect;
+    }
 
 protected:
-    std::string description;
-    std::string effect;
+    std::string *description;
+    std::string *effect;
 };
 
 
@@ -31,7 +52,7 @@ public:
     void execute() override;
 
 private:
-    int armies_to_deploy;
+    int *armies_to_deploy;
 
 };
 
@@ -46,9 +67,9 @@ public:
     void execute() override;
 
 private:
-    int source_territory;
-    int target_territory;
-    int armies_to_advance;
+    int *source_territory;
+    int *target_territory;
+    int *armies_to_advance;
 
 };
 
@@ -63,7 +84,7 @@ public:
     void execute() override;
 
 private:
-    int target_territory;
+    int *target_territory;
 
 };
 
@@ -78,7 +99,7 @@ public:
     void execute() override;
 
 private:
-    int target_territory;
+    int *target_territory;
 
 };
 
@@ -93,9 +114,9 @@ public:
     void execute() override;
 
 private:
-    int source_territory;
-    int target_territory;
-    int armies_to_advance;
+    int *source_territory;
+    int *target_territory;
+    int *armies_to_advance;
 };
 
 
@@ -109,18 +130,18 @@ public:
     void execute() override;
 
 private:
-    int target_player;   
+    int *target_player;   
 };
 
 //OrdersList class contains a list of Order objects 
 
 class OrdersList {
-public:
-    void addOrder(Order* order);
-    void remove(int index);
-    void move(int from, int to);
-    void executeOrders();
+    OrdersList &addOrder(const Order &order);
+    OrdersList &removeOrder(int index);
+    OrdersList &moveOrder(int from, int to);
+    OrdersList &executeOrders();
 
 private:
-    std::vector<Order*> orders;
+    std::vector<Order> *orders;
 };
+#endif
