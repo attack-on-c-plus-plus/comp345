@@ -10,7 +10,7 @@ class Player {
     private:
         //Attributes
         std::string *name;
-
+        friend bool operator==(const Player& lhs, const Player& rhs);
 
     public:
         //Constructor
@@ -29,5 +29,7 @@ class Player {
         void issueOrder(const std::string &order);
 
 };
+
+bool operator==(const Player& lhs, const Player& rhs);
 #endif //COMP345_PLAYER_H
 
