@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <ranges>
 #include "Map.h"
 
 enum mapReadState {
@@ -148,6 +149,15 @@ Map &Map::addContinent(const Continent& c) {
     continents->push_back(c);
     continentTerritories->emplace_back();
     return *this;
+}
+
+std::vector<Territory> Map::getTerritories(const Player &p) const {
+    auto byPlayer = [p](const Territory& territory) { return territory.getOwner() == p; };
+    std::vector<Territory> t{};
+    for (const auto& item: ((*territories) | std::views::filter(byPlayer))) {
+        t.push_back(item);
+    }
+    return t;
 }
 
 Territory::Territory() : id{new unsigned(0)}, name{new std::string("")}, armyCount{new unsigned(0)} {
