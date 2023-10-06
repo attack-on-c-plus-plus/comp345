@@ -2,13 +2,11 @@
 #include <iostream>
 #include <algorithm>
 
-Card::Card(const std::string& cardType) {
-    this->cardType = new std::string(cardType);
+Card::Card(const std::string& cardType) : cardType(new std::string(cardType)) {
     std::cout << "Creating a new card " << this << " of type: " + cardType << std::endl;
 }
 
-Card::Card(const Card& cardToCopy) {
-    this->cardType = new std::string(*cardToCopy.cardType);
+Card::Card(const Card& cardToCopy) : cardType(new std::string(*cardToCopy.cardType)) {
     std::cout << "Creating a copy of the card " << &cardToCopy
     << " that has the type: " + cardToCopy.getCardType() <<std::endl;
 }
@@ -22,7 +20,7 @@ Card &Hand::getCard(unsigned int index) {
     return cardCollection->at(index);
 }
 
-unsigned int Hand::getCardCount() {
+unsigned int Hand::getCardCount() const {
     return cardCollection->size();
 }
 
@@ -30,8 +28,7 @@ std::string Card::getCardType() const {
     return *cardType;
 }
 
-Hand::Hand(const int &collectionSize) {
-    cardCollection = new std::vector<Card>();
+Hand::Hand(const int &collectionSize) : cardCollection(new std::vector<Card>()) {
     cardCollection->reserve(collectionSize);
 }
 
@@ -49,7 +46,6 @@ Hand::~Hand() {
 
 Hand &Hand::addCard(const Card &card) {
     std::cout << "Pushing back" << std::endl;
-    // PROGRAM CRASHES HERE.
     try {
         cardCollection->push_back(card);
     } catch (std::exception& e) {
@@ -66,6 +62,7 @@ Hand &Hand::removeCard(const Card &card) {
         std::cout << "Card not found from hand." << std::endl;
         return *this;
     }
+    // Also causes issues here.
     cardCollection->erase(it);
     return *this;
 }
@@ -87,7 +84,9 @@ Deck &Deck::removeCard(const Card &card){
         std:: cout <<"Card not found from deck." << std::endl;
         return *this;
     }
-    cardDeck->erase(it);
+    cardDeck->erase(std::remove(cardDeck->begin(), cardDeck->end(), card), cardDeck->end());
+    // Issue persists here.
+//    cardDeck->erase(it);
     return *this;
 }
 
@@ -127,7 +126,7 @@ Deck::Deck(const int &deckSize) {
     cardDeck->reserve(deckSize);
 }
 
-unsigned int Deck::getCardCount() {
+unsigned int Deck::getCardCount() const {
     return cardDeck->size();
 }
 
@@ -141,19 +140,11 @@ Card &Deck::getCard(unsigned int index) {
  * @param hand: the player's hand where the card is.
  * @param deck: the deck where the card will be returned to
  */
-void Card::play(Hand& hand, Deck& deck) const {
+void Card::play() {
     // Special orders logic
-    
-    // Then, remove card from hand
-    std::cout << "Removing Card " << this << " from Hand " << &hand << std::endl;
-    hand.removeCard(*this);
-
-    // And put it back in the deck
-    std::cout << "Putting Card " << this << " into Deck " << &deck << std::endl;
-    deck.addCard(*this);
-
+    std::cout << "Played card " << *this->cardType;
 }
 
-bool Card::operator==(const Card &card) {
-    return (this->cardType == card.cardType);
+bool Card::operator==(const Card &card) const {
+    return (*this->cardType == *card.cardType);
 }

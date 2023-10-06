@@ -50,18 +50,21 @@ void testCards() {
     std::cout << "Finished drawing from deck" << std::endl;
 
     // Gets the number of cards from the hand
-    auto cardAmountInHand{playerHand.getCardCount()};
-    std::cout << "Player has " << cardAmountInHand << " cards." << std::endl;
+    std::cout << "Player has " << playerHand.getCardCount() << " cards." << std::endl;
 
     std::cout << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << "Playing the Cards from the hand" << std::endl;
     std::cout << "===================================" << std::endl;
 
-    // Plays until the number of cards is exhausted
-    for (int i = 0; i < cardAmountInHand; i++) {
-        Card c = playerHand.getCard(i);
-        c.play(playerHand, gameDeck);
+    // Revised solution
+    while (playerHand.getCardCount() > 0) {
+        auto random {rand() % playerHand.getCardCount()};
+        std::cout << "Index " << random << " is selected for playing card." << std::endl;
+        Card cardSelected = playerHand.getCard(random);
+        playerHand.removeCard(cardSelected);
+        cardSelected.play();
+        gameDeck.addCard(cardSelected);
     }
 
     std::cout << std::endl;

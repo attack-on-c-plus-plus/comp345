@@ -25,8 +25,8 @@ class Card {
         [[nodiscard]] std::string getCardType() const;
 
         // play() method
-        void play(Hand& hand, Deck& deck) const;
-        bool operator==(const Card& card);
+        void play();
+        bool operator==(const Card& card) const;
 };
 
 class Hand {
@@ -42,7 +42,7 @@ class Hand {
         // Destructor
         ~Hand();
         Card& getCard(unsigned index);
-        unsigned int getCardCount();
+        [[nodiscard]] unsigned int getCardCount() const;
 };
 
 class Deck {
@@ -57,7 +57,7 @@ class Deck {
         ~Deck();
         // To implement when Player is completed
         void draw(Hand&);
-        unsigned int getCardCount();
+        [[nodiscard]] unsigned int getCardCount() const;
         Card& getCard(unsigned index);
 };
 
