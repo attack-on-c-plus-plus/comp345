@@ -31,10 +31,10 @@ public:
     ~Map();
     bool validate();
     [[nodiscard]] std::string getName() const;
-    [[nodiscard]] bool getTerritory(const std::string &, Territory &) const;
-    Map &addTerritory(const Territory&);
+    [[nodiscard]] Territory &getTerritory(const std::string &) const;
+    Map &addTerritory(Territory &t, const std::string &continentName);
     Map &addAdjacencies(const Territory&, const Territory &);
-    [[nodiscard]] bool getContinent(const std::string &, Continent &) const;
+    [[nodiscard]] Continent &getContinent(const std::string &) const;
     Map &addContinent(const Continent&);
     [[nodiscard]] size_t getTerritoryCount() const;
     [[nodiscard]] size_t getContinentCount() const;
@@ -50,10 +50,11 @@ private:
     std::vector<std::vector<unsigned>> *continentTerritories{};
     std::vector<Territory> *territories;
     std::vector<Continent> *continents;
+    friend std::istream &operator>>(std::istream &is, Map &map);
+    friend std::ostream &operator<<(std::ostream &os, const Map &map);
 };
 
-std::istream &operator>>(std::istream &is, Map &map);
-std::ostream &operator<<(std::istream &is, const Map &map);
+
 
 /*
  * Territory can have any number of adjacent territories.
@@ -81,10 +82,10 @@ private:
     const Player *owner;
     unsigned *armyCount;
     const Continent *continent;
+    friend std::istream &operator>>(std::istream &is, Territory &territory);
+    friend std::ostream &operator<<(std::ostream &os, const Territory &territory);
+    friend Map &Map::addTerritory(Territory &t, const std::string &continentName);
 };
-
-std::istream &operator>>(std::istream &is, Territory &territory);
-std::ostream &operator<<(std::istream &is, const Territory &territory);
 
 /*
  * Continents are connected subgraphs, where each territory belongs to one and only one continent. Each territory is owned by a player and contain a number of armies. The Map class can be used to represent any map configuration.
@@ -105,10 +106,11 @@ private:
     unsigned *id;
     std::string *name;
     unsigned *bonusArmies;
+    friend std::istream &operator>>(std::istream &is, Continent &continent);
+    friend std::ostream &operator<<(std::ostream &os, const Continent &continent);
+    friend Map &Map::addContinent(const Continent& c);
 };
 
-std::istream &operator>>(std::istream &is, Continent &continent);
-std::ostream &operator<<(std::istream &is, const Continent &continent);
 
 /*
  * MapLoader creates a map from a “Conquest” game map source files. It can read any map from
