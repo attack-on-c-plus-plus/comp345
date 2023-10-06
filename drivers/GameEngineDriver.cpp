@@ -1,6 +1,8 @@
 #include <iostream>
 #include "../GameEngine.h"
 
+// Daniel Soldera (40168674)
+
 // This is the method used to test the game engine state transitions, it takes a string input from the user and passes it to the transition method which changes the state if a valid command is given.
 void testGameStates()
 {

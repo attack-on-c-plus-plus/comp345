@@ -3,6 +3,7 @@
 #include <cctype>
 #include <algorithm>
 
+// Daniel Soldera (40168674)
 using namespace std;
 
 // Main constructor for the GameEngine object
