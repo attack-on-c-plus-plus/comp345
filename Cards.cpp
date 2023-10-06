@@ -2,6 +2,12 @@
 #include <iostream>
 #include <algorithm>
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 /**
  * Creates a new card
  * @param cardType The card type

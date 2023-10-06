@@ -6,6 +6,12 @@
 #include <ranges>
 #include "Map.h"
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 enum mapReadState {
     MapHeader,
     MapSection,

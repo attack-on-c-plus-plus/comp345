@@ -11,6 +11,12 @@
 #include "Map.h"
 #include "Orders.h"
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 // forward declaration
 class Map;
 

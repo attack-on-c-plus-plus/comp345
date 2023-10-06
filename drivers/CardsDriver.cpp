@@ -1,6 +1,12 @@
 #include <iostream>
 #include "../Cards.h"
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 void testCards() {
     std::cout << "Testing the implementation of Cards" << std::endl;
     std::cout << "===================================" << std::endl;

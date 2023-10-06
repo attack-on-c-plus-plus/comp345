@@ -4,6 +4,12 @@
 #include <string>
 #include <vector>
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 /**
  * Cards.h includes groups of classes that implements a deck and a hand of Warzone cards.
  */

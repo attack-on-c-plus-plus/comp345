@@ -3,8 +3,11 @@
 
 #include <string>
 
-// Daniel Soldera (40168674)
-
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
 /*
 GameEngine.cpp/GameEngine.h implement the system that tracks the current state of the game and which methods are supposed to be run in each state. The states form the structure of the setup and the game itself.
 */
