@@ -67,6 +67,14 @@ Hand &Hand::removeCard(const Card &card) {
     return *this;
 }
 
+Hand &Hand::operator=(const Hand &hand) {
+    if (this != &hand) {
+        delete cardCollection;
+        cardCollection = new std::vector<Card>(*hand.cardCollection);
+    }
+    return *this;
+}
+
 Deck::Deck(const std::vector<Card> &cardDeck) {
     this->cardDeck = new std::vector<Card>(cardDeck);
 }
@@ -77,16 +85,8 @@ Deck &Deck::addCard(const Card &card){
     return *this;
 }
 
-Deck &Deck::removeCard(const Card &card){
-    auto it = std::find(cardDeck->begin(), cardDeck->end(), card);
-    // Check if card exists
-    if (it == cardDeck->end()) {
-        std:: cout <<"Card not found from deck." << std::endl;
-        return *this;
-    }
-    cardDeck->erase(std::remove(cardDeck->begin(), cardDeck->end(), card), cardDeck->end());
-    // Issue persists here.
-//    cardDeck->erase(it);
+Deck &Deck::removeCard(const unsigned &index){
+    cardDeck->erase(cardDeck->begin() + index);
     return *this;
 }
 
@@ -118,7 +118,7 @@ void Deck::draw(Hand& hand) {
     // to be erased from deck and placed to player hand.
     std::cout << "Card from deck is " << &(cardDeck->at(random)) << std::endl;
     hand.addCard(cardDeck->at(random));
-    this->removeCard(cardDeck->at(random));
+    this->removeCard(random);
 }
 
 Deck::Deck(const int &deckSize) {
@@ -134,6 +134,14 @@ Card &Deck::getCard(unsigned int index) {
     return cardDeck->at(index);
 }
 
+Deck &Deck::operator=(const Deck &deck) {
+    if (this != &deck) {
+        delete cardDeck;
+        cardDeck = new std::vector<Card>(*deck.cardDeck);
+    }
+    return *this;
+}
+
 /**
  * Plays the card from the player's hand and returns it
  * to the deck.
@@ -147,4 +155,12 @@ void Card::play() {
 
 bool Card::operator==(const Card &card) const {
     return (*this->cardType == *card.cardType);
+}
+
+Card &Card::operator=(const Card &card) {
+    if (this != &card) {
+        delete cardType;
+        cardType = new std::string(*card.cardType);
+    }
+    return *this;
 }

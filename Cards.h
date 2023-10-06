@@ -27,6 +27,7 @@ class Card {
         // play() method
         void play();
         bool operator==(const Card& card) const;
+        Card &operator=(const Card&);
 };
 
 class Hand {
@@ -43,6 +44,7 @@ class Hand {
         ~Hand();
         Card& getCard(unsigned index);
         [[nodiscard]] unsigned int getCardCount() const;
+        Hand &operator=(const Hand&);
 };
 
 class Deck {
@@ -52,13 +54,14 @@ class Deck {
         explicit Deck(const int &deckSize = 5);
         explicit Deck(const std::vector<Card> &cardDeck);
         Deck &addCard(const Card& card);
-        Deck &removeCard(const Card &card);
+        Deck &removeCard(const unsigned &index);
         Deck(const Deck&);
         ~Deck();
         // To implement when Player is completed
         void draw(Hand&);
         [[nodiscard]] unsigned int getCardCount() const;
         Card& getCard(unsigned index);
+        Deck &operator=(const Deck&);
 };
 
 #endif
