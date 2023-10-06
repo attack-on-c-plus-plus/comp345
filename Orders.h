@@ -1,6 +1,7 @@
 // Orders.h
 #ifndef COMP345_ORDERS_H
 #define COMP345_ORDERS_H
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -8,7 +9,17 @@
 
 class Order {
 public:
-    virtual ~Order() {}
+
+    Order() : description(new std::string), effect(new std::string) {}
+
+    // Copy constructor
+    Order(const Order& other) : description(new std::string(*(other.description))), effect(new std::string(*(other.effect))) {}
+
+    ~Order() {
+        delete description;
+        delete effect;
+    }
+
     virtual bool validate() const = 0;
     virtual void execute() = 0;
     friend std::ostream& operator<<(std::ostream& os, const Order& order);
@@ -57,7 +68,7 @@ private:
 };
 
 
-//Advance: move a certain number of army units from one territory (source territory) to another territory (target 
+//Advance: move a certain number of army units from one territory (source territory) to another territory (target
 //territory)
 
 class AdvanceOrder : public Order {
@@ -74,8 +85,8 @@ private:
 };
 
 
-//Bomb: destroy half of the army units located on a target territory. This order can only be issued if a player 
-//has the bomb card in their hand. 
+//Bomb: destroy half of the army units located on a target territory. This order can only be issued if a player
+//has the bomb card in their hand.
 
 class BombOrder : public Order {
 public:
@@ -89,7 +100,7 @@ private:
 };
 
 
-//Blockade: Triple the number of army units on a target territory and make it a neutral territory. This order can 
+//Blockade: Triple the number of army units on a target territory and make it a neutral territory. This order can
 //only be issued if a player has the blockade card in their hand.
 
 class BlockadeOrder : public Order {
@@ -104,7 +115,7 @@ private:
 };
 
 
-//Airlift: advance a certain number of army units from one from one territory (source territory) to another 
+//Airlift: advance a certain number of army units from one from one territory (source territory) to another
 //territory (target territory). This order can only be issued if a player has the airlift card in their hand
 
 class AirliftOrder : public Order {
@@ -120,7 +131,7 @@ private:
 };
 
 
-//Negotiate: prevent attacks between the current player and another target player until the end of the turn. This 
+//Negotiate: prevent attacks between the current player and another target player until the end of the turn. This
 //order can only be issued if a player has the diplomacy card in their hand.
 
 class NegotiateOrder : public Order {
@@ -130,18 +141,25 @@ public:
     void execute() override;
 
 private:
-    int *target_player;   
+    int *target_player;
 };
 
-//OrdersList class contains a list of Order objects 
+//OrdersList class contains a list of Order objects
 
 class OrdersList {
-    OrdersList &addOrder(const Order &order);
-    OrdersList &removeOrder(int index);
-    OrdersList &moveOrder(int from, int to);
-    OrdersList &executeOrders();
+public:
+    OrdersList();
+    ~OrdersList();
+
+    OrdersList& addOrder(Order* order);
+    OrdersList& remove(int index);
+    OrdersList& move(int from, int to);
+    OrdersList& executeOrders();
+    std::vector<Order*> getOrder();
 
 private:
-    std::vector<Order> *orders;
+    std::vector<Order*> orders; // Store pointers to Order objects
 };
+
+
 #endif
