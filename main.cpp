@@ -9,9 +9,11 @@ int main() {
 
     testLoadMaps();
 
-    testGameStates();
+    testOrderList();
 
     testCards();
+
+    testGameStates();
 
     return 0;
 }

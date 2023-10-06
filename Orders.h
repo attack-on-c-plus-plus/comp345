@@ -9,40 +9,24 @@
 
 class Order {
 public:
-
-    Order() : description(new std::string), effect(new std::string) {}
-
+    Order();
     // Copy constructor
-    Order(const Order& other) : description(new std::string(*(other.description))), effect(new std::string(*(other.effect))) {}
-
-    ~Order() {
-        delete description;
-        delete effect;
-    }
-
-    virtual bool validate() const = 0;
+    Order(const Order&);
+    virtual ~Order();
+    [[nodiscard]] virtual Order* clone() const = 0;
+    [[nodiscard]] virtual bool validate() const = 0;
     virtual void execute() = 0;
     friend std::ostream& operator<<(std::ostream& os, const Order& order);
     void swap(Order& other) {
         std::swap(*description, *(other.description));
         std::swap(*effect, *(other.effect));
     }
-// Public member functions to access and modify description and effect
-    const std::string& getDescription() const {
-        return *description;
-    }
-
-    const std::string& getEffect() const {
-        return *effect;
-    }
-
-    void setDescription(const std::string& newDescription) {
-        *description = newDescription;
-    }
-
-    void setEffect(const std::string& newEffect) {
-        *effect = newEffect;
-    }
+    // Public member functions to access and modify description and effect
+    [[nodiscard]] const std::string &getDescription() const;
+    [[nodiscard]] const std::string& getEffect() const;
+    void setDescription(const std::string& newDescription);
+    void setEffect(const std::string& newEffect);
+    Order &operator=(const Order&);
 
 protected:
     std::string *description;
@@ -58,13 +42,15 @@ protected:
 
 class DeployOrder : public Order {
 public:
-    DeployOrder(int armies);
-    bool validate() const override;
+    explicit DeployOrder(int armies);
+    DeployOrder(const DeployOrder&);
+    ~DeployOrder() override;
+    [[nodiscard]] DeployOrder* clone() const override;
+    [[nodiscard]] bool validate() const override;
     void execute() override;
-
+    DeployOrder &operator=(const DeployOrder&);
 private:
     int *armies_to_deploy;
-
 };
 
 
@@ -74,14 +60,16 @@ private:
 class AdvanceOrder : public Order {
 public:
     AdvanceOrder(int source, int target, int armies);
-    bool validate() const override;
+    AdvanceOrder(const AdvanceOrder&);
+    ~AdvanceOrder() override;
+    [[nodiscard]] AdvanceOrder* clone() const override;
+    [[nodiscard]] bool validate() const override;
     void execute() override;
-
+    AdvanceOrder &operator=(const AdvanceOrder&);
 private:
     int *source_territory;
     int *target_territory;
     int *armies_to_advance;
-
 };
 
 
@@ -90,13 +78,15 @@ private:
 
 class BombOrder : public Order {
 public:
-    BombOrder(int target);
-    bool validate() const override;
+    explicit BombOrder(int target);
+    BombOrder(const BombOrder&);
+    ~BombOrder() override;
+    [[nodiscard]] BombOrder* clone() const override;
+    [[nodiscard]] bool validate() const override;
     void execute() override;
-
+    BombOrder &operator=(const BombOrder&);
 private:
     int *target_territory;
-
 };
 
 
@@ -105,13 +95,15 @@ private:
 
 class BlockadeOrder : public Order {
 public:
-    BlockadeOrder(int target);
-    bool validate() const override;
+    explicit BlockadeOrder(int target);
+    BlockadeOrder(const BlockadeOrder&);
+    ~BlockadeOrder() override;
+    [[nodiscard]] BlockadeOrder* clone() const override;
+    [[nodiscard]] bool validate() const override;
     void execute() override;
-
+    BlockadeOrder &operator=(const BlockadeOrder&);
 private:
     int *target_territory;
-
 };
 
 
@@ -121,9 +113,12 @@ private:
 class AirliftOrder : public Order {
 public:
     AirliftOrder(int armies, int source, int target);
-    bool validate() const override;
+    AirliftOrder(const AirliftOrder&);
+    ~AirliftOrder() override;
+    [[nodiscard]] AirliftOrder* clone() const override;
+    [[nodiscard]] bool validate() const override;
     void execute() override;
-
+    AirliftOrder &operator=(const AirliftOrder&);
 private:
     int *source_territory;
     int *target_territory;
@@ -136,10 +131,13 @@ private:
 
 class NegotiateOrder : public Order {
 public:
-    NegotiateOrder(int targetPlayer);
-    bool validate() const override;
+    explicit NegotiateOrder(int targetPlayer);
+    NegotiateOrder(const NegotiateOrder&);
+    ~NegotiateOrder() override;
+    [[nodiscard]] NegotiateOrder* clone() const override;
+    [[nodiscard]] bool validate() const override;
     void execute() override;
-
+    NegotiateOrder &operator=(const NegotiateOrder&);
 private:
     int *target_player;
 };
@@ -149,16 +147,17 @@ private:
 class OrdersList {
 public:
     OrdersList();
+    OrdersList(const OrdersList&);
     ~OrdersList();
 
     OrdersList& addOrder(Order* order);
     OrdersList& remove(int index);
     OrdersList& move(int from, int to);
     OrdersList& executeOrders();
-    std::vector<Order*> getOrder();
-
+    [[nodiscard]] std::vector<Order*> &getOrder() const;
+    OrdersList &operator=(const OrdersList&);
 private:
-    std::vector<Order*> orders; // Store pointers to Order objects
+    std::vector<Order*> *orders; // Store pointers to Order objects
 };
 
 
