@@ -37,7 +37,7 @@ void testCards() {
         << (gameDeck.getCard(i)).getCardType() << std::endl;
     }
 
-    std::cout<<std::endl;
+    std::cout << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << "Creating a Hand and drawing from the deck" << std::endl;
     std::cout << "===================================" << std::endl;
@@ -47,7 +47,6 @@ void testCards() {
     for (int i = 0; i < nbCards; i++) {
         gameDeck.draw(playerHand);
     }
-    std::cout << "Finished drawing from deck" << std::endl;
 
     // Gets the number of cards from the hand
     std::cout << "Player has " << playerHand.getCardCount() << " cards." << std::endl;
@@ -62,7 +61,7 @@ void testCards() {
         auto random {rand() % playerHand.getCardCount()};
         std::cout << "Index " << random << " is selected for playing card." << std::endl;
         Card cardSelected = playerHand.getCard(random);
-        playerHand.removeCard(cardSelected);
+        playerHand.removeCard(random);
         cardSelected.play();
         gameDeck.addCard(cardSelected);
     }
