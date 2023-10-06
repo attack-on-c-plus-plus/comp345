@@ -13,6 +13,7 @@
  */
 
 // Basic definition to avoid definition order within file.
+class Player;
 class Map;
 class MapLoader;
 class Territory;
@@ -69,7 +70,7 @@ public:
     [[nodiscard]] unsigned getId() const;
     [[nodiscard]] std::string getName() const;
     Territory &setOwner(const Player &player);
-    [[nodiscard]] const Player &getOwner() const;
+    [[nodiscard]] Player &getOwner() const;
     [[nodiscard]] bool hasOwner() const;
     [[nodiscard]] unsigned getArmyCount() const;
     [[nodiscard]] const Continent &getContinent() const;

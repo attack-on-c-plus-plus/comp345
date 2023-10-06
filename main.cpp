@@ -7,11 +7,13 @@
 int main() {
     std::cout << "COMP 345" << std::endl;
 
-   testLoadMaps();
+    testLoadMaps();
 
-   testGameStates();
+    testOrderList();
 
     testCards();
+
+    testGameStates();
 
     return 0;
 }

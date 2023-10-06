@@ -1,7 +1,8 @@
 #include <iostream>
-#include "Orders.h"
+#include "Drivers.h"
+#include "../Orders.h"
 
-int testOrderList() {
+void testOrderList() {
     // Create some sample orders
     DeployOrder deployOrder(10);
     AdvanceOrder advanceOrder(1, 2, 5);
@@ -22,34 +23,24 @@ int testOrderList() {
     // Execute the orders
     ordersList.executeOrders();
 
-
-
     // Display the results
 
     std::cout << "Orders executed:\n";
-    for (const Order* order : ordersList.getOrder()) {
+    for (auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
 
-    ordersList.remove(2);
+    // TODO: Memory leak here
+    //ordersList.remove(2);
 
     std::cout << "\n 2.Orders executed:\n";
-    for (const Order* order : ordersList.getOrder()) {
+    for (auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
 
     ordersList.move(3,6);
-
     std::cout << "\n 3.Orders executed:\n";
-    for (const Order* order : ordersList.getOrder()) {
+    for (auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
-
-
-    return 0;
-}//
-// Created by Carson on 2023-10-05.
-//
-int main(){
-    testOrderList();
 }

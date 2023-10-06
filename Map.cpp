@@ -152,7 +152,7 @@ Map &Map::addContinent(const Continent& c) {
 }
 
 std::vector<Territory> Map::getTerritories(const Player &p) const {
-    auto byPlayer = [p](const Territory& territory) { return territory.getOwner() == p; };
+    auto byPlayer = [p](const Territory& territory) { return territory.getOwner().getName() == p.getName(); };
     std::vector<Territory> t{};
     for (const auto& item: ((*territories) | std::views::filter(byPlayer))) {
         t.push_back(item);
@@ -200,8 +200,8 @@ Territory &Territory::setOwner(const Player &player) {
     return *this;
 }
 
-const Player& Territory::getOwner() const {
-    return *owner;
+Player &Territory::getOwner() const {
+    return const_cast<Player &>(*owner);
 }
 
 bool Territory::hasOwner() const {
