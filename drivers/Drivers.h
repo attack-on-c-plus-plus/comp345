@@ -25,4 +25,6 @@ void testGameStates();
  */
 void testCards();
 
+void testOrderList();
+
 #endif //COMP345_DRIVERS_H

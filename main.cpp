@@ -9,6 +9,10 @@ int main() {
 
     testLoadMaps();
 
+    testOrderList();
+
+    testCards();
+
     testGameStates();
 
     //testplayer();

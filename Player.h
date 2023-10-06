@@ -1,3 +1,6 @@
+//
+// Created by Haris Mahmood on 2023-09-27.
+//
 
 #ifndef COMP345_PLAYER_H
 #define COMP345_PLAYER_H
@@ -67,5 +70,3 @@ private:
 
 
 #endif //COMP345_PLAYER_H
-
-

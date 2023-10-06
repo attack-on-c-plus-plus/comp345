@@ -155,4 +155,3 @@ const std::vector<Territory>* Player::getTerritories() const {
 
 
 
-
