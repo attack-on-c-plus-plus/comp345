@@ -11,5 +11,7 @@ int main() {
 
     testGameStates();
 
+    //testplayer();
+
     return 0;
 }
