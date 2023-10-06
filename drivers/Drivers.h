@@ -11,6 +11,11 @@ static const char *const mapsPathInvalid = "maps/invalid";
 void testLoadMaps();
 
 /*
+    Demonstrates the player capabilities, collection of hand, territories and retireving information.
+*/
+void testplayer();
+
+/*
     Demonstrates the game state can properly change on command and follows the flow of the game state.
 */
 void testGameStates();
