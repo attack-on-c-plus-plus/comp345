@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "Player.h"
 
 /*
  * Map.h / Map.cpp incorporates a group of classes that implement the structure and operation of a map for the game
@@ -16,8 +17,6 @@ class Map;
 class MapLoader;
 class Territory;
 class Continent;
-// temp: need to remove later
-class Player{};
 
 /*
  * Map is implemented as a connected graph, where each node represents a territory. Edges between nodes represent adjacency between territories.
@@ -41,6 +40,7 @@ public:
     [[nodiscard]] size_t getContinentCount() const;
     [[nodiscard]] Continent &getContinent(unsigned) const;
     [[nodiscard]] Territory &getTerritory(unsigned) const;
+    [[nodiscard]] std::vector<Territory> getTerritories(const Player&) const;
     [[nodiscard]] std::vector<Territory> getAdjacencies(const Continent&) const;
     [[nodiscard]] std::vector<Territory> getAdjacencies(const Territory&) const;
     Map &operator=(const Map&);
