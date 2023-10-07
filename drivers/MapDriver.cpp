@@ -3,8 +3,6 @@
 #include "Drivers.h"
 #include "../Map.h"
 
-void printContinent(const Map &, const Continent &);
-
 void testLoadMaps() {
     std::cout << "Testing map loading..." << std::endl;
 
@@ -23,14 +21,10 @@ void testLoadMaps() {
         Map map;
         MapLoader::load(dirEntry.path().string(), map);
 
-        auto t = map.getTerritory(1);
-        auto a = map.getAdjacencies(t);
-
-        std::cout << t.getName() << " adjacencies:" << std::endl;
-        for (const auto& i: a) {
-            std::cout << "\t" << i.getName() << std::endl;
-        }
-
+        if (map.validate())
+            std::cout << "Map is valid!" << std::endl;
+        else
+            std::cout << "Map is invalid!" << std::endl;
     }
 
     for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(mapsPathInvalid)) {

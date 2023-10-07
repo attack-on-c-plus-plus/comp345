@@ -6,33 +6,6 @@
 #include <ranges>
 #include "Map.h"
 
-enum mapReadState {
-    MapHeader,
-    MapSection,
-    ContinentsHeader,
-    ContinentsSection,
-    TerritoriesHeader,
-    TerritoriesSection,
-    Completed,
-    Error
-};
-
-void removeCarriageReturn(std::string &);
-static void readFile(const std::string &, Map &);
-mapReadState readMapHeader(std::ifstream &in, std::string &msg);
-mapReadState readMapSection(std::ifstream &, std::string &, Map &);
-mapReadState readContinentsHeader(std::ifstream &, std::string &);
-mapReadState readContinentsSection(std::ifstream &, std::string &, Map &);
-mapReadState readTerritoriesHeader(std::ifstream &, std::string &);
-mapReadState readTerritoriesSection(std::ifstream &, std::string &, Map &);
-mapReadState readHeader(std::ifstream &in, std::string &msg, const mapReadState &success,
-                const std::string &header);
-static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::ifstream &in);
-
-void parseTokenValuePair(const std::string &line, std::string &token, std::string &value);
-
-void readLine(std::istream &in, std::string &line);
-
 Map::Map() : Map("") {
 }
 
@@ -58,6 +31,36 @@ Map::~Map() {
 }
 
 bool Map::validate() {
+    bool *visited = new bool[territories->size()];
+    unsigned count = 0;
+
+    // territory graph check
+    depthFirstSearchTerritory(visited, count, 0);
+
+    if (count != territories->size())
+        return false;
+
+    std::cout << "Map is a connected graph!" << std::endl;
+
+    // Continent graph check
+    count = 0;
+    for (const auto& ct: *continentTerritories) {
+        count += ct.size();
+    }
+
+    if (count != territories->size())
+        return false;
+
+    std::cout << "Continent are a connected subgraph!" << std::endl;
+
+    // Check each territory has one continent
+    for (const auto& t : *territories) {
+        if (!t.hasContinent())
+            return false;
+    }
+
+    std::cout << "Each Territory has a continent!" << std::endl;
+
     return true;
 }
 
@@ -154,15 +157,23 @@ Map &Map::addContinent(const Continent& c) {
     return *this;
 }
 
+void Map::depthFirstSearchTerritory(bool visited[], unsigned &count, unsigned vertex) {
+    visited[vertex] = true;
+    count++;
+    for (auto nextVertex : (*adjacencies)[vertex]) {
+        if (!visited[nextVertex]) depthFirstSearchTerritory(visited, count, nextVertex);
+    }
+}
+
 std::istream &operator>>(std::istream &is, Map &map) {
     std::string token, value, line;
     while(!is.eof() && is.peek() != '[') { // Peek to see if a header is coming.
-        readLine(is, line);
+        MapLoader::readLine(is, line);
 
         if (line.empty())
             continue;
 
-        parseTokenValuePair(line, token, value);
+        MapLoader::parseTokenValuePair(line, token, value);
 
         if (token != "image")
             continue;
@@ -346,18 +357,18 @@ bool MapLoader::load(const std::string &filepath, Map &map) {
 }
 
 // Helper method that removes carriage returns from text (needed for linux and macOS)
-void removeCarriageReturn(std::string &s) {
+void MapLoader::removeCarriageReturn(std::string &s) {
     s.erase(std::remove(s.begin(), s.end(), '\r' ), s.end());
 }
 
 // Helper reads the file
-static void readFile(const std::string &filename, Map &map) {
+void MapLoader::readFile(const std::string &filename, Map &map) {
     mapReadState state = MapHeader;
     // Opens the file
     std::ifstream in(filename);
     std::cout << filename << std::flush;
     if (!in.is_open())
-        std::cout << "failed to open " << filename << '\n';
+        std::cout << " failed to open " << filename << '\n';
     else
     {
         std::string msg;
@@ -367,14 +378,14 @@ static void readFile(const std::string &filename, Map &map) {
             std::cout << " - " << msg << std::endl;
         }
         else { // Map format is correct but will still need to validate.
-            std::cout << map << std::endl;
+            std::cout << " " << map << std::endl;
         }
     }
     in.close();
 }
 
 // Helper parses the map file, eventually will return a complete Map with Continents and Territories loaded.
-static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::ifstream &in) {
+void MapLoader::parseMapFile(Map &map, std::string &msg, mapReadState &state, std::ifstream &in) {
     while (!in.eof()) {
         switch (state) { // Finite State Machine to go through the Map parsing
             case MapHeader:
@@ -406,11 +417,11 @@ static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::i
     }
 }
 
-mapReadState readMapHeader(std::ifstream &in, std::string &msg) {
+mapReadState MapLoader::readMapHeader(std::ifstream &in, std::string &msg) {
     return readHeader(in, msg, MapSection, "[Map]");
 }
 
-mapReadState readMapSection(std::ifstream &in, std::string &msg, Map &m) {
+mapReadState MapLoader::readMapSection(std::ifstream &in, std::string &msg, Map &m) {
     in >> m;
     if (!m.getName().empty())
         return ContinentsHeader;
@@ -419,18 +430,18 @@ mapReadState readMapSection(std::ifstream &in, std::string &msg, Map &m) {
     return Error;
 }
 
-void parseTokenValuePair(const std::string &line, std::string &token, std::string &value) {
+void MapLoader::parseTokenValuePair(const std::string &line, std::string &token, std::string &value) {
     std::istringstream s(line);
     // Essentially splitting the line on the equals delimiter.
     std::getline(s, token, '=');
     std::getline(s, value);
 }
 
-mapReadState readContinentsHeader(std::ifstream &in, std::string &msg) {
+mapReadState MapLoader::readContinentsHeader(std::ifstream &in, std::string &msg) {
     return readHeader(in, msg, ContinentsSection, "[Continents]");
 }
 
-mapReadState readContinentsSection(std::ifstream &in, std::string &msg, Map &m) {
+mapReadState MapLoader::readContinentsSection(std::ifstream &in, std::string &msg, Map &m) {
     while(!in.eof() && in.peek() != '[') {
         std::string name, bonusArmies, line;
         readLine(in, line);
@@ -451,16 +462,16 @@ mapReadState readContinentsSection(std::ifstream &in, std::string &msg, Map &m) 
     return TerritoriesHeader;
 }
 
-void readLine(std::istream &in, std::string &line) {
+void MapLoader::readLine(std::istream &in, std::string &line) {
     std::getline(in, line);
     removeCarriageReturn(line);
 }
 
-mapReadState readTerritoriesHeader(std::ifstream &in, std::string &msg) {
+mapReadState MapLoader::readTerritoriesHeader(std::ifstream &in, std::string &msg) {
     return readHeader(in, msg, TerritoriesSection, "[Territories]");
 }
 
-mapReadState readTerritoriesSection(std::ifstream &in, std::string &msg, Map &m) {
+mapReadState MapLoader::readTerritoriesSection(std::ifstream &in, std::string &msg, Map &m) {
     std::vector<std::string> adjacencies;
 
     while(!in.eof()) {
@@ -513,7 +524,7 @@ mapReadState readTerritoriesSection(std::ifstream &in, std::string &msg, Map &m)
     return Completed;
 }
 
-mapReadState readHeader(std::ifstream &in, std::string &msg, const mapReadState &success,
+mapReadState MapLoader::readHeader(std::ifstream &in, std::string &msg, const mapReadState &success,
                         const std::string &header) {
     std::string line;
     readLine(in, line);
