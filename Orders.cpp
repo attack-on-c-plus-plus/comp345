@@ -10,9 +10,7 @@
 // Henri Stephane Carbon
 // Haris Mahmood
 
-//To do:
-// Properly get the # of armies on source and target territories******
-// Implement the subclasses of Order (NegotiateOrder logic)
+
 const int MAX_TERRITORIES = 255; /*get the number for max territories in the given map*/
 // Implement the Order class
 
@@ -66,10 +64,12 @@ DeployOrder::DeployOrder(int armies) : Order(), armies_to_deploy{new int(armies)
     description = new std::string("Deploy");
 }
 
+// Validate method for DeployOrder
 bool DeployOrder::validate() const {
     return *armies_to_deploy > 0;
 }
 
+// Execute order for DeployOrder
 void DeployOrder::execute() {
     if (validate()) {
         *effect = "Deployed " + std::to_string(*armies_to_deploy) + " armies.";
@@ -103,6 +103,7 @@ AdvanceOrder::AdvanceOrder(int source, int target, int armies) : Order(), armies
     description = new std::string("Advance");
 }
 
+// Validate method for AdvanceOrder
 bool AdvanceOrder::validate() const {
     // Check if source and target territories are valid
     if (*source_territory < 0 || *target_territory < 0) {
@@ -117,10 +118,10 @@ bool AdvanceOrder::validate() const {
     return true;
 }
 
-
+// Execute method for AdvanceOrder
 void AdvanceOrder::execute() {
     if (validate()) {
-        // Check if the source and target territories exist (replace with your logic)
+        // Check if the source and target territories exist 
         if (*source_territory < 0 || *target_territory < 0) {
             *effect = "Failed to execute AdvanceOrder: Invalid territories.";
             return;
@@ -232,14 +233,13 @@ BlockadeOrder::BlockadeOrder(int target) : Order(), target_territory{new int(tar
     description = new std::string("Block");
 }
 
+// Validate method for BlockadeOrder
 bool BlockadeOrder::validate() const {
-
 
     // check if the targetTerritory is within a valid range:
     if (*target_territory < 0 || *target_territory >= MAX_TERRITORIES) {
         return false;
     }
-
 
     return true; //
 }
@@ -285,6 +285,7 @@ AirliftOrder::AirliftOrder(int armies, int source, int target) : Order(), target
     description = new std::string("Airlift");
 }
 
+// Validate method for AirliftOrder
 bool AirliftOrder::validate() const {
     // Check if the sourceTerritory and targetTerritory are within a valid range:
     if (*source_territory < 0 || *source_territory >= MAX_TERRITORIES ||
@@ -374,10 +375,7 @@ bool NegotiateOrder::validate() const {
 // Execute method for NegotiateOrder
 void NegotiateOrder::execute() {
     if (validate()) {
-
-        // the two players are now in a state of negotiation.
-        // game_state.setNegotiation(target_player);
-
+        
         // Update the effect string to describe the action
         *effect = "Initiated negotiation with player " + std::to_string(*target_player) + ".";
     }
@@ -427,8 +425,7 @@ OrdersList& OrdersList::move(int from, int to) {
     if (from >= 0 && from < orders->size() && to >= 0 && to < orders->size()) {
         std::swap(orders[from], orders[to]); // Swap the Order pointers
     }
-//    else
-//        std::cout<<"One or more indexes are out of range!";
+
     return *this;
 }
 
