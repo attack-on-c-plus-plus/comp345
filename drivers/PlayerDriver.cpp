@@ -30,22 +30,10 @@ void testplayer() {
 
     //---------------------------------
 
-    // Get some territories from the loaded map
-    Territory *territory1 = new Territory();
-    Territory *territory2 = new Territory();
-    Territory *territory3 = new Territory();
+     Player player1 ("Sally");
+    Map map;
+    MapLoader::load("maps/valid/3D.map", map);
 
-    // Associate territories with the player
-    player->addTerritory(*territory1);
-    player->addTerritory(*territory2);
-    player->addTerritory(*territory3);
-
-    // Print the player's territories
-    cout << "Player " << player->getName() << " owns the following territories:\n";
-
-    const std::vector<Territory>* playerTerritories = player->getTerritories();
-    for (const Territory& territory : *playerTerritories) {
-        std::cout << "Territory Name: " << territory.getName() << std::endl;
-    }
-
+    map.getTerritory(1).setOwner(player1);
+   auto ts= map.getTerritories(player1);
 };
