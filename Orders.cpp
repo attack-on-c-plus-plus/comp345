@@ -410,7 +410,8 @@ OrdersList& OrdersList::addOrder(Order* order) {
 
 OrdersList& OrdersList::remove(int index) {
     if (index >= 0 && index < orders->size()) {
-        orders->erase(orders->begin() + index);
+        delete (*orders)[index]; // Delete the Order object
+        orders->erase(orders->begin() + index); // Remove it from the vector
     }
     return *this;
 }
