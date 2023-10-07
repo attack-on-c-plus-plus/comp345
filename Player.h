@@ -45,8 +45,10 @@ public:
 
     [[nodiscard]] std::vector<Territory> toDefend(const Map &) const;
 
-    void
-    issueOrder(const std::string &orderType, int sourceTerritory, int targetTerritory, int armies, int targetPlayerID);
+    void issueOrder(const std::string &orderType, int sourceTerritory, int targetTerritory, int armies, int targetPlayerID);
+
+    //method that views the order list of the player
+    std::vector<Order*> getOrderList();
 
     // Add methods to manage the player's territory
     void addTerritory(const Territory &territory);
@@ -60,6 +62,8 @@ public:
 
     [[nodiscard]] const Hand &getHand() const;
 
+    const std::vector<Territory>* getTerritories() const;
+
 private:
     //Attributes
     std::string *name;
@@ -72,5 +76,3 @@ private:
 
 
 #endif //COMP345_PLAYER_H
-
-
