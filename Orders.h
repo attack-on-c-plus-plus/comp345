@@ -41,8 +41,6 @@ protected:
 
 
 // List of all order types, each one implemented as a subclass of Order.
-// To do: add the necessary parameters for each order type
-
 
 //Deploy: put a certain number of army units on a target territory
 
