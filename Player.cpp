@@ -32,9 +32,9 @@ Player::Player(const Player &other)
 
 Player::~Player() {
     delete name;
-//        delete ordersList;
-//        delete hand;
-//        delete territories;
+    delete ordersList;
+    delete hand;
+    delete territories;
     std::cout << "Default Destructor is called\n";
 }
 

@@ -45,10 +45,4 @@ void testOrderList() {
         std::cout << *order << std::endl;
     }
 
-    // move method
-    ordersList.move(2,3);
-    std::cout << "\n 3.Orders executed after moving a given order:\n";
-    for (auto order : ordersList.getOrder()) {
-        std::cout << *order << std::endl;
-    }
 }

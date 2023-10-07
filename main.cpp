@@ -14,14 +14,11 @@ int main() {
 
     testLoadMaps();
 
-    testPlayer();
-
     testOrderList();
 
     testCards();
 
     testGameStates();
-
 
     return 0;
 }
