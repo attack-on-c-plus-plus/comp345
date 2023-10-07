@@ -7,6 +7,12 @@
 #include <string>
 #include <algorithm>
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 class Order {
 public:
     Order();
