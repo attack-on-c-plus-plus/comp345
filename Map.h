@@ -57,7 +57,7 @@ private:
     std::vector<std::vector<unsigned>> *continentTerritories{};
     std::vector<Territory> *territories;
     std::vector<Continent> *continents;
-    void depthFirstSearchTerritory(bool visited[], unsigned &count, unsigned vertex);
+    void depthFirstSearchTerritory(std::vector<bool> &visited, unsigned &count, unsigned vertex);
     friend std::istream &operator>>(std::istream &is, Map &map);
     friend std::ostream &operator<<(std::ostream &os, const Map &map);
 };

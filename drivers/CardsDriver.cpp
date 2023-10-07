@@ -67,7 +67,7 @@ void testCards() {
         auto random {rand() % playerHand.getCardCount()};
         std::cout << "Index " << random << " is selected for playing card." << std::endl;
         Card cardSelected = playerHand.getCard(random);
-        playerHand.removeCard(random);
+        playerHand.removeCard(cardSelected);
         cardSelected.play();
         gameDeck.addCard(cardSelected);
     }

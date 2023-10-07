@@ -18,7 +18,8 @@ add_executable(comp345 main.cpp
         drivers/Drivers.h
         drivers/GameEngineDriver.cpp
         drivers/CardsDriver.cpp
-        drivers/OrdersDriver.cpp)
+        drivers/OrdersDriver.cpp
+        drivers/PlayerDriver.cpp)
 file(REMOVE_RECURSE "${CMAKE_CURRENT_BINARY_DIR}/maps")
 file(COPY maps/invalid DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/maps")
 file(COPY maps/valid DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/maps")

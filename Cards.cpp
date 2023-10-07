@@ -105,8 +105,15 @@ Hand &Hand::addCard(const Card &card) {
  * @param card
  * @return The hand with the removed card.
  */
-Hand &Hand::removeCard(const unsigned &index) {
-    cardCollection->erase(cardCollection->begin() + index);
+Hand &Hand::removeCard(const Card &card) {
+    for (auto it = cardCollection->begin(); it != cardCollection->end();) {
+        if (*it == card) {
+            it = cardCollection->erase(it);
+            return *this;
+        }
+        else
+            ++it;
+    }
     return *this;
 }
 
