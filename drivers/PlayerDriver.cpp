@@ -13,7 +13,7 @@ using namespace std;
 
 void testplayer () {
 
-
+    // Testing OrderList Functionalities
     //Object with pointer created on the heap (Manually have to delete)
     Player *player = new Player("Bob");
 
@@ -35,9 +35,32 @@ void testplayer () {
         std::cout << *order << std::endl;
     }
 
+    // Testing Card Functionalities
+    Player player1("Alice");
+
+     // Create a deck and add some cards
+    Deck deck;
+    deck.addCard(Card("Power"));
+    deck.addCard(Card("Reduction"));
+    deck.addCard(Card("Card 3"));
+
+    // Draw cards from the deck and add them to the player's hand
+      player.drawCardFromDeck(deck);
+      player.drawCardFromDeck(deck);
+
+    // Get the player's hand
+    Hand hand = player.getHand();
+
+    // Verify the contents of the player's hand
+    std::cout << "Player's hand contains the following cards:" << std::endl;
+    for (unsigned int i = 0; i < hand.getCardCount(); i++)
+    {
+        std::cout << "Card: " << hand.getCard(i).getCardType() << std::endl;
+    }
+    
     //---------------------------------
 
-     Player player1 ("Sally");
+     Player player2 ("Sally");
     Map map;
     MapLoader::load("maps/valid/3D.map", map);
 
