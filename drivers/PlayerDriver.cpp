@@ -45,11 +45,11 @@ void testplayer () {
     deck.addCard(Card("Card 3"));
 
     // Draw cards from the deck and add them to the player's hand
-      player.drawCardFromDeck(deck);
-      player.drawCardFromDeck(deck);
+      player1.drawCardFromDeck(deck);
+      player1.drawCardFromDeck(deck);
 
     // Get the player's hand
-    Hand hand = player.getHand();
+    Hand hand = player1.getHand();
 
     // Verify the contents of the player's hand
     std::cout << "Player's hand contains the following cards:" << std::endl;
