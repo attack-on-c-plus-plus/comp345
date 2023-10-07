@@ -48,7 +48,7 @@ class Hand {
         explicit Hand(const int &collectionSize = 5);
         explicit Hand(const std::vector<Card>& cardCollection);
         Hand &addCard(const Card &card);
-        Hand &removeCard(const Card &index);
+        Hand &removeCard(const Card &card);
         Hand(const Hand&);
         ~Hand();
         Card& getCard(unsigned index);
@@ -69,7 +69,7 @@ class Deck {
         explicit Deck(const int &deckSize = 5);
         explicit Deck(const std::vector<Card> &cardDeck);
         Deck &addCard(const Card& card);
-        Deck &removeCard(const unsigned &index);
+        Deck &removeCard(const Card &card);
         Deck(const Deck&);
         ~Deck();
         void draw(Hand&);

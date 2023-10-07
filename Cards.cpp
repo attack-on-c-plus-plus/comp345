@@ -170,11 +170,18 @@ Deck &Deck::addCard(const Card &card){
 
 /**
  * Removes a card from the Deck
- * @param index The index where the card is located
+ * @param card The card to be removed
  * @return The deck with the removed card.
  */
-Deck &Deck::removeCard(const unsigned &index){
-    cardDeck->erase(cardDeck->begin() + index);
+Deck &Deck::removeCard(const Card &card) {
+    for (auto it = cardDeck->begin(); it != cardDeck->end();) {
+        if (*it == card) {
+            it = cardDeck->erase(it);
+            return *this;
+        }
+        else
+            ++it;
+    }
     return *this;
 }
 
@@ -207,7 +214,7 @@ void Deck::draw(Hand& hand) {
 
     std::cout << "Card from deck is " << &(cardDeck->at(random)) << std::endl;
     hand.addCard(cardDeck->at(random));
-    this->removeCard(random);
+    this->removeCard(cardDeck->at(random));
 }
 
 /**
