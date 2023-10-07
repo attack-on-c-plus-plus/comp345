@@ -56,9 +56,7 @@ public:
     bool removeTerritory(const Territory &territoryToRemove);
 
     // Add methods to manage the player's hand of cards
-    void drawCardFromDeck(Deck &deck);
-
-    void playCardFromHand(Card &card, Deck &deck);
+     void drawCardFromDeck(Deck &deck) const;
 
     [[nodiscard]] const Hand &getHand() const;
 
