@@ -12,17 +12,6 @@
 // Henri Stephane Carbon
 // Haris Mahmood
 
-enum mapReadState {
-    MapHeader,
-    MapSection,
-    ContinentsHeader,
-    ContinentsSection,
-    TerritoriesHeader,
-    TerritoriesSection,
-    Completed,
-    Error
-};
-
 Map::Map() : Map("") {
 }
 
@@ -48,7 +37,8 @@ Map::~Map() {
 }
 
 bool Map::validate() {
-    bool *visited = new bool[territories->size()];
+    std::vector<bool> visited;
+    visited.resize(territories->size());
     unsigned count = 0;
 
     // territory graph check
@@ -129,7 +119,7 @@ Map &Map::operator=(const Map &map) {
 
 Continent &Map::getContinent(unsigned id) const {
     return continents->at(id - 1);
-}map validate
+}
 
 Territory &Map::getTerritory(unsigned id) const {
     return territories->at(id - 1);
@@ -174,7 +164,7 @@ Map &Map::addContinent(const Continent& c) {
     return *this;
 }
 
-void Map::depthFirstSearchTerritory(bool visited[], unsigned &count, unsigned vertex) {
+void Map::depthFirstSearchTerritory(std::vector<bool> &visited, unsigned &count, unsigned vertex) {
     visited[vertex] = true;
     count++;
     for (auto nextVertex : (*adjacencies)[vertex]) {

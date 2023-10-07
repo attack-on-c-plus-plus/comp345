@@ -19,7 +19,7 @@ void testLoadMaps();
 /*
     Demonstrates the player capabilities, collection of hand, territories and retireving information.
 */
-void testplayer();
+void testPlayer();
 
 /*
     Demonstrates the game state can properly change on command and follows the flow of the game state.

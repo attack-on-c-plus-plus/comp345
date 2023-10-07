@@ -48,7 +48,7 @@ class Hand {
         explicit Hand(const int &collectionSize = 5);
         explicit Hand(const std::vector<Card>& cardCollection);
         Hand &addCard(const Card &card);
-        Hand &removeCard(const unsigned &index);
+        Hand &removeCard(const Card &index);
         Hand(const Hand&);
         ~Hand();
         Card& getCard(unsigned index);

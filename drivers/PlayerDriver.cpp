@@ -11,9 +11,7 @@ using namespace std;
 // Henri Stephane Carbon
 // Haris Mahmood
 
-void testplayer () {
-
-
+void testPlayer () {
     //Object with pointer created on the heap (Manually have to delete)
     Player *player = new Player("Bob");
 
@@ -37,7 +35,7 @@ void testplayer () {
 
     //---------------------------------
 
-     Player player1 ("Sally");
+    Player player1 ("Sally");
     Map map;
     MapLoader::load("maps/valid/3D.map", map);
 
