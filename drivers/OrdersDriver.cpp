@@ -36,8 +36,7 @@ void testOrderList() {
         std::cout << *order << std::endl;
     }
 
-    // TODO: Memory leak here
-    //ordersList.remove(2);
+    ordersList.remove(2);
 
     std::cout << "\n 2.Orders executed:\n";
     for (auto order : ordersList.getOrder()) {

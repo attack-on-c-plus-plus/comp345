@@ -57,11 +57,10 @@ private:
     std::vector<std::vector<unsigned>> *continentTerritories{};
     std::vector<Territory> *territories;
     std::vector<Continent> *continents;
+    void depthFirstSearchTerritory(bool visited[], unsigned &count, unsigned vertex);
     friend std::istream &operator>>(std::istream &is, Map &map);
     friend std::ostream &operator<<(std::ostream &os, const Map &map);
 };
-
-
 
 /*
  * Territory can have any number of adjacent territories.
@@ -118,6 +117,16 @@ private:
     friend Map &Map::addContinent(const Continent& c);
 };
 
+enum mapReadState {
+    MapHeader,
+    MapSection,
+    ContinentsHeader,
+    ContinentsSection,
+    TerritoriesHeader,
+    TerritoriesSection,
+    Completed,
+    Error
+};
 
 /*
  * MapLoader creates a map from a “Conquest” game map source files. It can read any map from
@@ -127,7 +136,24 @@ private:
 class MapLoader {
 public:
     static bool load(const std::string &, Map &);
+    static void readLine(std::istream &in, std::string &line);
+    static void parseTokenValuePair(const std::string &line, std::string &token, std::string &value);
 private:
+    static void removeCarriageReturn(std::string &);
+    static void readFile(const std::string &, Map &);
+    static mapReadState readMapHeader(std::ifstream &in, std::string &msg);
+    static mapReadState readMapSection(std::ifstream &, std::string &, Map &);
+    static mapReadState readContinentsHeader(std::ifstream &, std::string &);
+    static mapReadState readContinentsSection(std::ifstream &, std::string &, Map &);
+    static mapReadState readTerritoriesHeader(std::ifstream &, std::string &);
+    static mapReadState readTerritoriesSection(std::ifstream &, std::string &, Map &);
+    static mapReadState readHeader(std::ifstream &in, std::string &msg, const mapReadState &success,
+                            const std::string &header);
+    static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::ifstream &in);
+
+
 };
+
+
 
 #endif //COMP345_MAP_H
