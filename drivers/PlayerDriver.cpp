@@ -30,7 +30,7 @@ void testPlayer () {
 
     for (const Order* order : player->getOrderList())
     {
-        std::cout << *order << std::endl;
+      std::cout << *order << std::endl;
     }
 
     //---------------------------------
@@ -40,5 +40,5 @@ void testPlayer () {
     MapLoader::load("maps/valid/3D.map", map);
 
     map.getTerritory(1).setOwner(player1);
-   auto ts= map.getTerritories(player1);
+    auto ts= map.getTerritories(player1);
 };

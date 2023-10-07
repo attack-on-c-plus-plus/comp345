@@ -14,7 +14,7 @@ int main() {
 
     testLoadMaps();
 
-//    testPlayer();
+    testPlayer();
 
     testOrderList();
 
