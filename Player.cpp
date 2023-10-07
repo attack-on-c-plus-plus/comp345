@@ -130,19 +130,14 @@ void Player::issueOrder(const std::string &orderType, int sourceTerritory, int t
     }
 }
 
-void Player::drawCardFromDeck(Deck &deck) {
+void Player::drawCardFromDeck(Deck &deck) const {
     deck.draw(*hand);
-}
-
-void Player::playCardFromHand(Card &card, Deck &deck) {
-    // Implement logic to play the card
-    card.play();
-    hand->removeCard(card);
 }
 
 const Hand &Player::getHand() const {
     return *hand;
 }
+
 
 std::vector<Order*> Player::getOrderList()
 {
