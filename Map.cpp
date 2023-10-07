@@ -6,6 +6,23 @@
 #include <ranges>
 #include "Map.h"
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
+enum mapReadState {
+    MapHeader,
+    MapSection,
+    ContinentsHeader,
+    ContinentsSection,
+    TerritoriesHeader,
+    TerritoriesSection,
+    Completed,
+    Error
+};
+
 Map::Map() : Map("") {
 }
 
@@ -112,7 +129,7 @@ Map &Map::operator=(const Map &map) {
 
 Continent &Map::getContinent(unsigned id) const {
     return continents->at(id - 1);
-}
+}map validate
 
 Territory &Map::getTerritory(unsigned id) const {
     return territories->at(id - 1);

@@ -3,6 +3,12 @@
 #include <vector>
 #include "Player.h"
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 //Default Constructor
 Player::Player() //: Player("Player Default")
 {
@@ -12,7 +18,7 @@ Player::Player() //: Player("Player Default")
 
 //Parameterized Constructor
 Player::Player(const std::string &name)
-        : name{new std::string(name)}, ordersList{}, territories{new std::vector<Territory>} {
+        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory>} {
     std::cout << "* In the Parameterized constructor of player class *\n";
 }
 
@@ -99,8 +105,8 @@ std::vector<Territory> Player::toAttack(const Map &map) const {
 }
 
 
-void Player::issueOrder(const std::string &orderType, int sourceTerritory, int targetTerritory, int armies,
-                        int targetPlayerID) {
+void Player::issueOrder(const std::string &orderType, int sourceTerritory, int targetTerritory, int armies,int targetPlayerID)
+{
     if (orderType == "Deploy") {
         // Create a DeployOrder object
         ordersList->addOrder(new DeployOrder(armies));
@@ -137,6 +143,18 @@ void Player::playCardFromHand(Card &card, Deck &deck) {
 const Hand &Player::getHand() const {
     return *hand;
 }
+
+std::vector<Order*> Player::getOrderList()
+{
+    return ordersList->getOrder();
+}
+
+//?????????
+const std::vector<Territory>* Player::getTerritories() const {
+    return territories;
+}
+
+
 
 
 

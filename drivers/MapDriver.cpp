@@ -3,6 +3,12 @@
 #include "Drivers.h"
 #include "../Map.h"
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 void testLoadMaps() {
     std::cout << "Testing map loading..." << std::endl;
 

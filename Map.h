@@ -6,6 +6,12 @@
 #include <map>
 #include "Player.h"
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 /*
  * Map.h / Map.cpp incorporates a group of classes that implement the structure and operation of a map for the game
  * Warzone (https://www.warzone.com/).

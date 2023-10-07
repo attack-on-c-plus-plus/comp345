@@ -3,6 +3,13 @@
 #include "Orders.h"
 #include <iostream>
 #include <algorithm>
+
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 //To do:
 // Properly get the # of armies on source and target territories******
 // Implement the subclasses of Order (NegotiateOrder logic)

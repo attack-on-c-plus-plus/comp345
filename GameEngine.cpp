@@ -3,6 +3,11 @@
 #include <cctype>
 #include <algorithm>
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
 using namespace std;
 
 // Main constructor for the GameEngine object
