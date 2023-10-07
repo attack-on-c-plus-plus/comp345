@@ -31,20 +31,23 @@ void testOrderList() {
 
     // Display the results
 
-    std::cout << "Orders executed:\n";
+    std::cout << "\n 1. Added all given orders to the Orderlist:\n";
     for (auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
 
+    
+    // remove method
     ordersList.remove(2);
 
-    std::cout << "\n 2.Orders executed:\n";
+    std::cout << "\n 2.Orders executed after removing a given order:\n";
     for (auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
 
-    ordersList.move(3,6);
-    std::cout << "\n 3.Orders executed:\n";
+    // move method
+    ordersList.move(2,3);
+    std::cout << "\n 3.Orders executed after moving a given order:\n";
     for (auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
