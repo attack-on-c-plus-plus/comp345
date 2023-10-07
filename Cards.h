@@ -4,32 +4,43 @@
 #include <string>
 #include <vector>
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 /**
  * Cards.h includes groups of classes that implements a deck and a hand of Warzone cards.
-*/
+ */
 
 class Card;
 class Deck;
 class Hand;
 
+/**
+ * The Card Class.
+ * Stores a pointer to a string.
+ */
 class Card {
     private:
         std::string *cardType;
     public:
         explicit Card(const std::string& cardType);
-        // Copy Constructor
         Card(const Card&);
-        // Destructor
         ~Card();
-        
         [[nodiscard]] std::string getCardType() const;
-
-        // play() method
         void play();
         bool operator==(const Card& card) const;
         Card &operator=(const Card&);
+//        friend std::istream &operator>>(std::istream &is, Card &card);
+        friend std::ostream &operator<<(std::ostream &os, Card &card);
 };
 
+/**
+ * The Hand Class.
+ * Stores a pointer to a vector of Cards.
+ */
 class Hand {
     private:
         std::vector<Card> *cardCollection;
@@ -37,16 +48,20 @@ class Hand {
         explicit Hand(const int &collectionSize = 5);
         explicit Hand(const std::vector<Card>& cardCollection);
         Hand &addCard(const Card &card);
-        Hand &removeCard(const Card &card);
-        // Copy Constructor
+        Hand &removeCard(const unsigned &index);
         Hand(const Hand&);
-        // Destructor
         ~Hand();
         Card& getCard(unsigned index);
         [[nodiscard]] unsigned int getCardCount() const;
         Hand &operator=(const Hand&);
+//        friend std::istream &operator>>(std::istream &is, Hand &hand);
+        friend std::ostream &operator<<(std::ostream &os, Hand &hand);
 };
 
+/**
+ * The Hand Class.
+ * Stores a pointer to a vector of Cards.
+ */
 class Deck {
     private:
         std::vector<Card> *cardDeck;
@@ -57,11 +72,12 @@ class Deck {
         Deck &removeCard(const unsigned &index);
         Deck(const Deck&);
         ~Deck();
-        // To implement when Player is completed
         void draw(Hand&);
         [[nodiscard]] unsigned int getCardCount() const;
         Card& getCard(unsigned index);
         Deck &operator=(const Deck&);
+//        friend std::istream &operator>>(std::istream &is, Deck &deck);
+        friend std::ostream &operator<<(std::ostream &os, Deck &deck);
 };
 
 #endif

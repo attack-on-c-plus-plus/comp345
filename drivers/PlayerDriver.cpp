@@ -5,7 +5,14 @@
 
 using namespace std;
 
-void testplayer() {
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
+void testplayer () {
+
 
     //Object with pointer created on the heap (Manually have to delete)
     Player *player = new Player("Bob");

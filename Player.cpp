@@ -3,6 +3,12 @@
 #include <vector>
 #include "Player.h"
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 //Default Constructor
 Player::Player() //: Player("Player Default")
 {

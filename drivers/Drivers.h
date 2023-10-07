@@ -1,6 +1,12 @@
 #ifndef COMP345_DRIVERS_H
 #define COMP345_DRIVERS_H
 
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 static const char *const mapsPathValid = "maps/valid";
 
 static const char *const mapsPathInvalid = "maps/invalid";
