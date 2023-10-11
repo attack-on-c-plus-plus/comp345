@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "Map.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -15,7 +16,8 @@
 
 class Order {
 public:
-    Order();
+    //Order();
+    Order(const std::string &description);
     // Copy constructor
     Order(const Order&);
     virtual ~Order();
@@ -23,20 +25,14 @@ public:
     [[nodiscard]] virtual bool validate() const = 0;
     virtual void execute() = 0;
     friend std::ostream& operator<<(std::ostream& os, const Order& order);
-    void swap(Order& other) {
-        std::swap(*description, *(other.description));
-        std::swap(*effect, *(other.effect));
-    }
     // Public member functions to access and modify description and effect
-    [[nodiscard]] const std::string &getDescription() const;
-    [[nodiscard]] const std::string& getEffect() const;
-    void setDescription(const std::string& newDescription);
-    void setEffect(const std::string& newEffect);
+    [[nodiscard]] const std::string &description() const;
+    [[nodiscard]] const std::string &effect() const;
     Order &operator=(const Order&);
 
 protected:
-    std::string *description;
-    std::string *effect;
+    std::string *description_;
+    std::string *effect_;
 };
 
 
@@ -46,7 +42,7 @@ protected:
 
 class DeployOrder : public Order {
 public:
-    explicit DeployOrder(int armies);
+    explicit DeployOrder(unsigned armies);
     DeployOrder(const DeployOrder&);
     ~DeployOrder() override;
     [[nodiscard]] DeployOrder* clone() const override;
@@ -54,7 +50,7 @@ public:
     void execute() override;
     DeployOrder &operator=(const DeployOrder&);
 private:
-    int *armies_to_deploy;
+    unsigned *armies_;
 };
 
 
@@ -63,7 +59,7 @@ private:
 
 class AdvanceOrder : public Order {
 public:
-    AdvanceOrder(int source, int target, int armies);
+    AdvanceOrder(size_t source, size_t target, unsigned armies);
     AdvanceOrder(const AdvanceOrder&);
     ~AdvanceOrder() override;
     [[nodiscard]] AdvanceOrder* clone() const override;
@@ -71,9 +67,9 @@ public:
     void execute() override;
     AdvanceOrder &operator=(const AdvanceOrder&);
 private:
-    int *source_territory;
-    int *target_territory;
-    int *armies_to_advance;
+    size_t *sourceTerritory_;
+    size_t *targetTerritory_;
+    unsigned *armies_;
 };
 
 
@@ -82,7 +78,7 @@ private:
 
 class BombOrder : public Order {
 public:
-    explicit BombOrder(int target);
+    explicit BombOrder(size_t target);
     BombOrder(const BombOrder&);
     ~BombOrder() override;
     [[nodiscard]] BombOrder* clone() const override;
@@ -90,7 +86,7 @@ public:
     void execute() override;
     BombOrder &operator=(const BombOrder&);
 private:
-    int *target_territory;
+    size_t *targetTerritory_;
 };
 
 
@@ -99,7 +95,7 @@ private:
 
 class BlockadeOrder : public Order {
 public:
-    explicit BlockadeOrder(int target);
+    explicit BlockadeOrder(size_t target);
     BlockadeOrder(const BlockadeOrder&);
     ~BlockadeOrder() override;
     [[nodiscard]] BlockadeOrder* clone() const override;
@@ -107,7 +103,7 @@ public:
     void execute() override;
     BlockadeOrder &operator=(const BlockadeOrder&);
 private:
-    int *target_territory;
+    size_t *targetTerritory_;
 };
 
 
@@ -116,7 +112,7 @@ private:
 
 class AirliftOrder : public Order {
 public:
-    AirliftOrder(int armies, int source, int target);
+    AirliftOrder(size_t source, size_t target, unsigned armies);
     AirliftOrder(const AirliftOrder&);
     ~AirliftOrder() override;
     [[nodiscard]] AirliftOrder* clone() const override;
@@ -124,9 +120,9 @@ public:
     void execute() override;
     AirliftOrder &operator=(const AirliftOrder&);
 private:
-    int *source_territory;
-    int *target_territory;
-    int *armies_to_advance;
+    size_t *sourceTerritory_;
+    size_t *targetTerritory_;
+    unsigned *armies_;
 };
 
 
@@ -135,7 +131,7 @@ private:
 
 class NegotiateOrder : public Order {
 public:
-    explicit NegotiateOrder(int targetPlayer);
+    explicit NegotiateOrder(unsigned targetPlayer);
     NegotiateOrder(const NegotiateOrder&);
     ~NegotiateOrder() override;
     [[nodiscard]] NegotiateOrder* clone() const override;
@@ -143,7 +139,7 @@ public:
     void execute() override;
     NegotiateOrder &operator=(const NegotiateOrder&);
 private:
-    int *target_player;
+    unsigned *targetPlayer_;
 };
 
 //OrdersList class contains a list of Order objects
@@ -161,7 +157,7 @@ public:
     [[nodiscard]] std::vector<Order*> &getOrder() const;
     OrdersList &operator=(const OrdersList&);
 private:
-    std::vector<Order*> *orders; // Store pointers to Order objects
+    std::vector<Order*> *orders_; // Store pointers to Order objects
 };
 
 

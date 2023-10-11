@@ -11,85 +11,83 @@
 // Haris Mahmood
 
 
-const int MAX_TERRITORIES = 255; /*get the number for max territories in the given map*/
 // Implement the Order class
 
-Order::Order() {
-    description = nullptr;
-    effect = new std::string();
+//Order::Order() : Order("") {}
+
+Order::Order(const std::string &description) {
+    description_ = new std::string(description);
+    effect_ = new std::string();
 }
-Order::Order(const Order& other) : description(new std::string(*(other.description))), effect(new std::string(*(other.effect))) {}
+
+Order::Order(const Order& other) :
+        description_(new std::string(*(other.description_))),
+        effect_(new std::string(*(other.effect_))) {}
+
 Order::~Order() {
-    delete description;
-    delete effect;
-}
-std::ostream& operator<<(std::ostream& os, const Order& order) {
-    os << order.getDescription();
-    if (!order.getEffect().empty()) {
-        os << " (" << order.getEffect() << ")";
-    }
-    return os;
+    delete description_;
+    delete effect_;
 }
 
-const std::string &Order::getDescription() const  {
-    return *description;
+const std::string &Order::description() const  {
+    return *description_;
 }
 
-const std::string &Order::getEffect() const {
-    return *effect;
-}
-
-void Order::setDescription(const std::string &newDescription) {
-    description = new std::string(newDescription);
-}
-
-void Order::setEffect(const std::string &newEffect) {
-    effect = new std::string(newEffect);
+const std::string &Order::effect() const {
+    return *effect_;
 }
 
 Order &Order::operator=(const Order &order) {
     if (this != &order) {
         // clean up resources
-        delete description;
-        delete effect;
+        delete description_;
+        delete effect_;
 
-        description = new std::string(*order.description);
-        effect = new std::string(*order.effect);
+        description_ = new std::string(*order.description_);
+        effect_ = new std::string(*order.effect_);
     }
     return *this;
 }
 
+std::ostream& operator<<(std::ostream& os, const Order& order) {
+    os << order.description();
+    if (!order.effect().empty()) {
+        os << " (" << order.effect() << ")";
+    }
+    return os;
+}
+
 // Implement DeployOrder class
-DeployOrder::DeployOrder(int armies) : Order(), armies_to_deploy{new int(armies)} {
-    description = new std::string("Deploy");
+DeployOrder::DeployOrder(unsigned armies) :
+    Order("Deploy"),
+    armies_{new unsigned (armies)} {
 }
 
 // Validate method for DeployOrder
 bool DeployOrder::validate() const {
-    return *armies_to_deploy > 0;
+    return *armies_ > 0;
 }
 
 // Execute order for DeployOrder
 void DeployOrder::execute() {
     if (validate()) {
-        *effect = "Deployed " + std::to_string(*armies_to_deploy) + " armies.";
+        *effect_ = "Deployed " + std::to_string(*armies_) + " armies.";
     }
 }
 
 DeployOrder::DeployOrder(const DeployOrder &order) : Order(order) {
-    armies_to_deploy = new int(*order.armies_to_deploy);
+    armies_ = new unsigned(*order.armies_);
 }
 
 DeployOrder::~DeployOrder() {
-    delete armies_to_deploy;
-    armies_to_deploy = nullptr;
+    delete armies_;
 }
 
 DeployOrder &DeployOrder::operator=(const DeployOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete armies_to_deploy;
-        armies_to_deploy = new int(*order.armies_to_deploy);
+        delete armies_;
+        armies_ = new unsigned(*order.armies_);
     }
     return *this;
 }
@@ -99,21 +97,33 @@ DeployOrder *DeployOrder::clone() const {
 }
 
 // Implement AdvanceOrder class
-AdvanceOrder::AdvanceOrder(int source, int target, int armies) : Order(), armies_to_advance{new int(armies)}, target_territory{new int(target)}, source_territory{new int(source)} {
-    description = new std::string("Advance");
+AdvanceOrder::AdvanceOrder(size_t source, size_t target, unsigned armies) :
+    Order("Advance"),
+    sourceTerritory_{new size_t(source)},
+    targetTerritory_{new size_t(target)},
+    armies_{new unsigned(armies)} {
+
 }
 
 // Validate method for AdvanceOrder
 bool AdvanceOrder::validate() const {
-    // Check if source and target territories are valid
-    if (*source_territory < 0 || *target_territory < 0) {
+    // Check if the number of armies to advance is non-negative
+
+    if (*armies_ < 0) {
+        return false;
+    }
+//    if (armies_source_territory < *armies_) {
+//        *effect_ = "Failed to execute AdvanceOrder: Insufficient armies in the source territory.";
+//        return;
+//    }
+
+
+    // Check if the source and target territories exist
+    if (*sourceTerritory_ < 0 || *targetTerritory_ < 0) {
+        *effect_ = "Failed to execute AdvanceOrder: Invalid territories.";
         return false;
     }
 
-    // Check if the number of armies to advance is non-negative
-    if (*armies_to_advance < 0) {
-        return false;
-    }
 
     return true;
 }
@@ -121,51 +131,42 @@ bool AdvanceOrder::validate() const {
 // Execute method for AdvanceOrder
 void AdvanceOrder::execute() {
     if (validate()) {
-        // Check if the source and target territories exist 
-        if (*source_territory < 0 || *target_territory < 0) {
-            *effect = "Failed to execute AdvanceOrder: Invalid territories.";
-            return;
-        }
-
         // Check if the player has enough armies in the source territory to advance
         int armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
         int armies_in_target_territory = /* Get the number of armies in the target territory */ 0;
-        if (armies_in_source_territory < *armies_to_advance) {
-            *effect = "Failed to execute AdvanceOrder: Insufficient armies in the source territory.";
-            return;
-        }
+
         //If AdvanceOrder is valid, armies in source territory are reduced and armies in target territory are increased
-        armies_in_source_territory -= *armies_to_advance;
-        armies_in_target_territory += *armies_to_advance;
+        armies_in_source_territory -= *armies_;
+        armies_in_target_territory += *armies_;
 
         //Update the effect string to describe the action
-        *effect = "Advanced " + std::to_string(*armies_to_advance) + " armies from territory "
-                  + std::to_string(*source_territory) + " to territory " + std::to_string(*target_territory) + ".";
+        *effect_ = "Advanced " + std::to_string(*armies_) + " armies from territory "
+                   + std::to_string(*sourceTerritory_) + " to territory " + std::to_string(*targetTerritory_) + ".";
     }
 }
 
 AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : Order(order) {
-    source_territory = new int(*order.source_territory);
-    target_territory = new int(*order.target_territory);
-    armies_to_advance = new int(*order.armies_to_advance);
+    sourceTerritory_ = new size_t(*order.sourceTerritory_);
+    targetTerritory_ = new size_t(*order.targetTerritory_);
+    armies_ = new unsigned(*order.armies_);
 }
 
 AdvanceOrder::~AdvanceOrder() {
-    delete source_territory;
-    delete target_territory;
-    delete armies_to_advance;
+    delete sourceTerritory_;
+    delete targetTerritory_;
+    delete armies_;
 }
 
 AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete source_territory;
-        delete target_territory;
-        delete armies_to_advance;
+        delete sourceTerritory_;
+        delete targetTerritory_;
+        delete armies_;
 
-        source_territory = new int(*order.source_territory);
-        target_territory = new int(*order.target_territory);
-        armies_to_advance = new int(*order.armies_to_advance);
+        sourceTerritory_ = new size_t(*order.sourceTerritory_);
+        targetTerritory_ = new size_t(*order.targetTerritory_);
+        armies_ = new unsigned(*order.armies_);
     }
     return *this;
 }
@@ -176,49 +177,44 @@ AdvanceOrder *AdvanceOrder::clone() const {
 
 
 // Constructor for BombOrder
-BombOrder::BombOrder(int targetTerritory) : Order(), target_territory{new int(targetTerritory)} {
-    description = new std::string("Bomb");
+BombOrder::BombOrder(size_t targetTerritory) :
+    Order("Bomb"),
+    targetTerritory_{new size_t(targetTerritory)} {
 }
 
 // Validate method for BombOrder
 bool BombOrder::validate() const {
-
-
     // Check if the targetTerritory is within a valid range:
-    if (*target_territory < 0 || *target_territory >= MAX_TERRITORIES) {
-        return false;
-    }
-
     return true;
 }
 
 // Execute method for BombOrder
 void BombOrder::execute() {
     if (validate()) {
-
         // Remove armies from the target territory:
         int armies_in_target_territory = /* Get the number of armies in the target territory */ 0;
         armies_in_target_territory /= 2;
 
         // Update the effect string to describe the action
-        *effect = "Bombed territory " + std::to_string(*target_territory) + ".";
+        *effect_ = "Bombed territory " + std::to_string(*targetTerritory_) + ".";
     }
 }
 
-BombOrder::BombOrder(const BombOrder &order) : Order(order) {
-    target_territory = new int(*order.target_territory);
+BombOrder::BombOrder(const BombOrder &order) :
+    Order(order) {
+    targetTerritory_ = new size_t(*order.targetTerritory_);
 }
 
 BombOrder::~BombOrder() {
-    delete target_territory;
+    delete targetTerritory_;
 }
 
 BombOrder &BombOrder::operator=(const BombOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete target_territory;
+        delete targetTerritory_;
 
-        target_territory = new int(*order.target_territory);
+        targetTerritory_ = new size_t(*order.targetTerritory_);
     }
     return *this;
 }
@@ -229,18 +225,12 @@ BombOrder *BombOrder::clone() const {
 
 
 // Constructor for BlockadeOrder
-BlockadeOrder::BlockadeOrder(int target) : Order(), target_territory{new int(target)} {
-    description = new std::string("Block");
+BlockadeOrder::BlockadeOrder(size_t target) : Order("Block"),
+    targetTerritory_{new size_t(target)} {
 }
 
 // Validate method for BlockadeOrder
 bool BlockadeOrder::validate() const {
-
-    // check if the targetTerritory is within a valid range:
-    if (*target_territory < 0 || *target_territory >= MAX_TERRITORIES) {
-        return false;
-    }
-
     return true; //
 }
 
@@ -253,24 +243,24 @@ void BlockadeOrder::execute() {
         armies_in_target_territory *= 3;
 
         // Update the effect string to describe the action
-        *effect = "Blocked territory " + std::to_string(*target_territory) + ".";
+        *effect_ = "Blocked territory " + std::to_string(*targetTerritory_) + ".";
     }
 }
 
 BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order) {
-    target_territory = new int(*order.target_territory);
+    targetTerritory_ = new size_t(*order.targetTerritory_);
 }
 
 BlockadeOrder::~BlockadeOrder() {
-    delete target_territory;
+    delete targetTerritory_;
 }
 
 BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete target_territory;
+        delete targetTerritory_;
 
-        target_territory = new int(*order.target_territory);
+        targetTerritory_ = new size_t(*order.targetTerritory_);
     }
     return *this;
 }
@@ -281,23 +271,18 @@ BlockadeOrder *BlockadeOrder::clone() const {
 
 
 // Constructor for AirliftOrder
-AirliftOrder::AirliftOrder(int armies, int source, int target) : Order(), target_territory{new int(target)}, armies_to_advance{new int(armies)}, source_territory{new int(source)} {
-    description = new std::string("Airlift");
+AirliftOrder::AirliftOrder(size_t source, size_t target, unsigned armies) :
+    Order("Airlift"),
+    sourceTerritory_{new size_t(source)},
+    targetTerritory_{new size_t(target)},
+    armies_{new unsigned(armies)} {
 }
 
 // Validate method for AirliftOrder
 bool AirliftOrder::validate() const {
-    // Check if the sourceTerritory and targetTerritory are within a valid range:
-    if (*source_territory < 0 || *source_territory >= MAX_TERRITORIES ||
-        *target_territory < 0 || *target_territory >= MAX_TERRITORIES) {
-
-        return false;
-
-    }
-
     // Check if the player has enough armies in the source territory to airlift
     int armies_in_source_territory = /* Get the number of armies in the source territory */ 10;
-    if (armies_in_source_territory < *armies_to_advance) {
+    if (armies_in_source_territory < *armies_) {
 
         return false;
 
@@ -312,39 +297,40 @@ void AirliftOrder::execute() {
 
         // Reduce armies in source territory
         int armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
-        armies_in_source_territory -= *armies_to_advance;
+        armies_in_source_territory -= *armies_;
         // Increase armies in source territory
         int armies_in_target_territory = /* Get the number of armies in the source territory */ 0;
-        armies_in_target_territory += *armies_to_advance;
+        armies_in_target_territory += *armies_;
 
         // Update the effect string to describe the action
-        *effect = "Airlifted " + std::to_string(*armies_to_advance) + " armies from territory "
-                  + std::to_string(*source_territory) + " to territory " + std::to_string(*target_territory) + ".";
+        *effect_ = "Airlifted " + std::to_string(*armies_) + " armies from territory "
+                   + std::to_string(*sourceTerritory_) + " to territory " + std::to_string(*targetTerritory_) + ".";
     }
 }
 
-AirliftOrder::AirliftOrder(const AirliftOrder &order) : Order(order) {
-    source_territory = new int(*order.source_territory);
-    target_territory = new int(*order.target_territory);
-    armies_to_advance = new int(*order.armies_to_advance);
+AirliftOrder::AirliftOrder(const AirliftOrder &order) :
+    Order(order) {
+    sourceTerritory_ = new size_t(*order.sourceTerritory_);
+    targetTerritory_ = new size_t(*order.targetTerritory_);
+    armies_ = new unsigned(*order.armies_);
 }
 
 AirliftOrder::~AirliftOrder() {
-    delete source_territory;
-    delete target_territory;
-    delete armies_to_advance;
+    delete sourceTerritory_;
+    delete targetTerritory_;
+    delete armies_;
 }
 
 AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete source_territory;
-        delete target_territory;
-        delete armies_to_advance;
+        delete sourceTerritory_;
+        delete targetTerritory_;
+        delete armies_;
 
-        source_territory = new int(*order.source_territory);
-        target_territory = new int(*order.target_territory);
-        armies_to_advance = new int(*order.armies_to_advance);
+        sourceTerritory_ = new size_t(*order.sourceTerritory_);
+        targetTerritory_ = new size_t(*order.targetTerritory_);
+        armies_ = new unsigned(*order.armies_);
     }
     return *this;
 }
@@ -354,8 +340,8 @@ AirliftOrder *AirliftOrder::clone() const {
 }
 
 // Constructor for NegotiateOrder
-NegotiateOrder::NegotiateOrder(int targetPlayer) : Order(), target_player{new int(targetPlayer)} {
-    description = new std::string("Negotiation");
+NegotiateOrder::NegotiateOrder(unsigned targetPlayer) : Order("Negotiation"),
+    targetPlayer_{new unsigned(targetPlayer)} {
 }
 
 // Validate method for NegotiateOrder
@@ -377,24 +363,24 @@ void NegotiateOrder::execute() {
     if (validate()) {
         
         // Update the effect string to describe the action
-        *effect = "Initiated negotiation with player " + std::to_string(*target_player) + ".";
+        *effect_ = "Initiated negotiation with player " + std::to_string(*targetPlayer_) + ".";
     }
 }
 
 NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order) {
-    target_player = new int(*order.target_player);
+    targetPlayer_ = new unsigned(*order.targetPlayer_);
 }
 
 NegotiateOrder::~NegotiateOrder() {
-    delete target_player;
+    delete targetPlayer_;
 }
 
 NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete target_player;
+        delete targetPlayer_;
 
-        target_player = new int(*order.target_player);
+        targetPlayer_ = new unsigned(*order.targetPlayer_);
     }
     return *this;
 }
@@ -404,70 +390,72 @@ NegotiateOrder *NegotiateOrder::clone() const {
 }
 
 
-OrdersList::OrdersList() : orders{new std::vector<Order*>{}} {
+OrdersList::OrdersList() : orders_{new std::vector<Order*>{}} {
 
 }
 
 OrdersList& OrdersList::addOrder(Order* order) {
-    orders->push_back(order->clone()); // Store the pointer to the Order
+    orders_->push_back(order->clone()); // Store the pointer to the Order
     return *this;
 }
 
 OrdersList& OrdersList::remove(int index) {
-    if (index >= 0 && index < orders->size()) {
-        delete (*orders)[index]; // Delete the Order object
-        orders->erase(orders->begin() + index); // Remove it from the vector
+    if (index >= 0 && index < orders_->size()) {
+        delete (*orders_)[index]; // Delete the Order object
+        orders_->erase(orders_->begin() + index); // Remove it from the vector
     }
     return *this;
 }
 
 OrdersList& OrdersList::move(int from, int to) {
-    if (from >= 0 && from < orders->size() && to >= 0 && to < orders->size()) {
-        std::swap(orders[from], orders[to]); // Swap the Order pointers
+    if (from >= 0 && from < orders_->size() && to >= 0 && to < orders_->size()) {
+        auto temp = (*orders_)[from];
+        (*orders_)[from] = (*orders_)[to];
+        (*orders_)[to] = temp;
     }
 
     return *this;
 }
 
 OrdersList& OrdersList::executeOrders() {
-    for (auto &order : *orders) {
+    for (auto &order : *orders_) {
         order->execute();
     }
     return *this;
 }
 
 std::vector<Order*> &OrdersList::getOrder() const {
-    return *orders;
+    return *orders_;
 }
 
 OrdersList::~OrdersList() {
-    for (auto o: *orders) {
+    for (auto o: *orders_) {
         delete o;
     }
-    orders->clear();
-    delete orders;
+    orders_->clear();
+    delete orders_;
 }
 
 OrdersList::OrdersList(const OrdersList &ordersList) {
-    orders = new std::vector<Order*>{};
+    orders_ = new std::vector<Order*>{};
     // create a deep copy
-    for (auto & order : *ordersList.orders)
+    for (auto & order : *ordersList.orders_)
     {
-        orders->push_back(order->clone());
+        orders_->push_back(order->clone());
     }
 }
 
 OrdersList &OrdersList::operator=(const OrdersList &ordersList) {
     if (this != &ordersList) {
-        for (auto o: *orders) {
+        for (auto o: *orders_) {
             delete o;
         }
-        delete orders;
-        orders = new std::vector<Order*>{};
+        delete orders_;
+        orders_ = new std::vector<Order*>{};
         // create a deep copy
-        for (auto & order : *ordersList.orders)
+        for (auto & order : *ordersList.orders_)
         {
-            orders->push_back(order->clone());
+            orders_->push_back(order->clone());
         }
 
     }
