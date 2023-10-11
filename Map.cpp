@@ -22,9 +22,11 @@ Map::Map() : Map("") {
  * Constructor
  * @param name
  */
-Map::Map(const std::string &name) : name{new std::string(name)}, territories{new std::vector<Territory>},
-    continents{new std::vector<Continent>}, adjacencies{new std::vector<std::vector<unsigned>>},
-    continentTerritories{new std::vector<std::vector<unsigned>>} {
+Map::Map(const std::string &name) : name_{new std::string(name)},
+    territories_{new std::vector<Territory>},
+    continents_{new std::vector<Continent>},
+    territoryEdges_{new std::vector<std::vector<size_t>>},
+    continentEdges_{new std::vector<std::vector<size_t>>} {
 }
 
 /**
@@ -32,22 +34,22 @@ Map::Map(const std::string &name) : name{new std::string(name)}, territories{new
  * @param map
  */
 Map::Map(const Map &map) {
-    name = new std::string(*map.name);
-    continents = new std::vector<Continent>(*map.continents);
-    territories = new std::vector<Territory>(*map.territories);
-    adjacencies = new std::vector<std::vector<unsigned>>(*map.adjacencies);
-    continentTerritories = new std::vector<std::vector<unsigned>>(*map.continentTerritories);
+    name_ = new std::string(*map.name_);
+    continents_ = new std::vector<Continent>(*map.continents_);
+    territories_ = new std::vector<Territory>(*map.territories_);
+    territoryEdges_ = new std::vector<std::vector<size_t>>(*map.territoryEdges_);
+    continentEdges_ = new std::vector<std::vector<size_t>>(*map.continentEdges_);
 }
 
 /**
  * Destructor
  */
 Map::~Map() {
-    delete name;
-    delete territories;
-    delete continents;
-    delete adjacencies;
-    delete continentTerritories;
+    delete name_;
+    delete territories_;
+    delete continents_;
+    delete territoryEdges_;
+    delete continentEdges_;
 }
 
 /**
@@ -56,32 +58,37 @@ Map::~Map() {
  */
 bool Map::validate() {
     std::vector<bool> visited;
-    visited.resize(territories->size());
-    unsigned count = 0;
+    visited.resize(territories_->size());
+    size_t count = 0;
 
     // territory graph check
     depthFirstSearchTerritory(visited, count, 0);
 
-    if (count != territories->size())
+    if (count != territories_->size())
         return false;
 
     std::cout << "Map is a connected graph!" << std::endl;
 
     // Continent graph check
     count = 0;
-    for (const auto& ct: *continentTerritories) {
+    for (const auto& ct: *continentEdges_) {
         count += ct.size();
     }
 
-    if (count != territories->size())
+    if (count != territories_->size())
         return false;
 
     std::cout << "Continent are a connected subgraph!" << std::endl;
 
-    // Check each territory has one continent
-    for (const auto& t : *territories) {
-        if (!t.hasContinent())
-            return false;
+    visited.clear();
+    visited.resize(territories_->size());
+    for (const auto& ce : *continentEdges_) {
+        for (auto t : ce) {
+            if(!visited[t])
+                visited[t] = true;
+            else
+                return false;
+        }
     }
 
     std::cout << "Each Territory has a continent!" << std::endl;
@@ -91,52 +98,52 @@ bool Map::validate() {
 
 /**
  * Gets a Territory by name
- * @param tName
+ * @param name
  * @return
  */
-Territory &Map::getTerritory(const std::string &tName) const {
-    auto byName = [tName](const Territory& t) { return t.getName() == tName; };
-    auto &ts = territories;
+Territory &Map::territory(const std::string &name) const {
+    auto byName = [name](const Territory& t) { return t.name() == name; };
+    auto &ts = territories_;
     if (auto it = std::find_if(ts->begin(), ts->end(), byName); it != ts->end())
         return *it;
-    throw std::out_of_range("Territory with name " + tName + "not found");
+    throw std::out_of_range("Territory with name " + name + "not found");
 }
 
 /**
  * Gets a Continent by name
- * @param cName
+ * @param name
  * @return
  */
-Continent &Map::getContinent(const std::string &cName) const {
-    auto byName = [cName](const Continent& c) { return c.getName() == cName; };
-    auto &cs = continents;
+Continent &Map::continent(const std::string &name) const {
+    auto byName = [name](const Continent& c) { return c.name() == name; };
+    auto &cs = continents_;
     if (auto it = std::find_if(cs->begin(), cs->end(), byName); it != cs->end())
         return *it;
-    throw std::out_of_range("Continent with name " + cName + "not found");
+    throw std::out_of_range("Continent with name " + name + "not found");
 }
 
 /**
  * Gets the name of the Map
  * @return
  */
-std::string Map::getName() const {
-    return *name;
+std::string Map::name() const {
+    return *name_;
 }
 
 /**
  * Gets the count of Territories
  * @return
  */
-size_t Map::getTerritoryCount() const {
-    return territories->size();
+size_t Map::territoryCount() const {
+    return territories_->size();
 }
 
 /**
  * Gets the count of Continents
  * @return
  */
-size_t Map::getContinentCount() const {
-    return continents->size();
+size_t Map::continentCount() const {
+    return continents_->size();
 }
 
 /**
@@ -147,17 +154,17 @@ size_t Map::getContinentCount() const {
 Map &Map::operator=(const Map &map) {
     if (this != &map) {
         // clean up resources
-        delete name;
-        delete continents;
-        delete territories;
-        delete adjacencies;
-        delete continentTerritories;
+        delete name_;
+        delete continents_;
+        delete territories_;
+        delete territoryEdges_;
+        delete continentEdges_;
 
-        name = new std::string(*map.name);
-        continents = new std::vector<Continent>(*map.continents);
-        territories = new std::vector<Territory>(*map.territories);
-        adjacencies = new std::vector<std::vector<unsigned>>(*map.adjacencies);
-        continentTerritories = new std::vector<std::vector<unsigned>>(*map.continentTerritories);
+        name_ = new std::string(*map.name_);
+        continents_ = new std::vector<Continent>(*map.continents_);
+        territories_ = new std::vector<Territory>(*map.territories_);
+        territoryEdges_ = new std::vector<std::vector<size_t>>(*map.territoryEdges_);
+        continentEdges_ = new std::vector<std::vector<size_t>>(*map.continentEdges_);
     }
     return *this;
 }
@@ -167,8 +174,8 @@ Map &Map::operator=(const Map &map) {
  * @param id
  * @return the Continent
  */
-Continent &Map::getContinent(unsigned id) const {
-    return continents->at(id - 1);
+Continent &Map::continent(size_t id) const {
+    return continents_->at(id);
 }
 
 /**
@@ -176,8 +183,8 @@ Continent &Map::getContinent(unsigned id) const {
  * @param id
  * @return the Territory
  */
-Territory &Map::getTerritory(unsigned id) const {
-    return territories->at(id - 1);
+Territory &Map::territory(size_t id) const {
+    return territories_->at(id);
 }
 
 /**
@@ -185,10 +192,10 @@ Territory &Map::getTerritory(unsigned id) const {
  * @param continent
  * @return
  */
-std::vector<Territory> Map::getAdjacencies(const Continent &continent) const {
+std::vector<Territory> Map::adjacencies(const Continent &continent) const {
     std::vector<Territory> adj{};
-    for (auto i: continentTerritories->at(continent.getId()-1)) {
-        adj.push_back(territories->at(i));
+    for (auto i: continentEdges_->at(continent.id().value())) {
+        adj.push_back(territories_->at(i));
     }
     return adj;
 }
@@ -198,10 +205,10 @@ std::vector<Territory> Map::getAdjacencies(const Continent &continent) const {
  * @param territory
  * @return
  */
-std::vector<Territory> Map::getAdjacencies(const Territory &territory) const {
+std::vector<Territory> Map::adjacencies(const Territory &territory) const {
     std::vector<Territory> adj{};
-    for (auto i: adjacencies->at(territory.getId()-1)) {
-        adj.push_back(territories->at(i));
+    for (auto i: territoryEdges_->at(territory.id().value())) {
+        adj.push_back(territories_->at(i));
     }
     return adj;
 }
@@ -212,12 +219,21 @@ std::vector<Territory> Map::getAdjacencies(const Territory &territory) const {
  * @param continentName
  * @return
  */
-Map &Map::addTerritory(Territory &t, const std::string &continentName) {
-    *t.id = territories->size() + 1;
-    t.continent = &getContinent(continentName);
-    continentTerritories->at(t.continent->getId()-1).push_back(t.getId()-1);
-    territories->push_back(t);
-    adjacencies->emplace_back();
+Map &Map::add(const Territory &t) {
+    *t.id_ = territories_->size();
+    territories_->push_back(t);
+    territoryEdges_->emplace_back();
+    return *this;
+}
+
+/**
+ * Add an adjacent Territory to the Continent
+ * @param continent
+ * @param adjacent
+ * @return
+ */
+Map &Map::addEdge(const Continent& continent, const Territory& adjacent) {
+    continentEdges_->at(continent.id().value()).push_back(adjacent.id().value());
     return *this;
 }
 
@@ -227,10 +243,10 @@ Map &Map::addTerritory(Territory &t, const std::string &continentName) {
  * @param adjacent
  * @return
  */
-Map &Map::addAdjacencies(const Territory& territory, const Territory& adjacent) {
-    Territory &t = territories->at(territory.getId() - 1);
-    Territory &a = territories->at(adjacent.getId() - 1);
-    adjacencies->at(t.getId() - 1).push_back(a.getId() - 1);
+Map &Map::addEdge(const Territory& territory, const Territory& adjacent) {
+    Territory &t = territories_->at(territory.id().value());
+    Territory &a = territories_->at(adjacent.id().value());
+    territoryEdges_->at(t.id().value()).push_back(a.id().value());
     return *this;
 }
 
@@ -239,10 +255,10 @@ Map &Map::addAdjacencies(const Territory& territory, const Territory& adjacent) 
  * @param c
  * @return
  */
-Map &Map::addContinent(const Continent& c) {
-    *c.id = continents->size() + 1;
-    continents->push_back(c);
-    continentTerritories->emplace_back();
+Map &Map::add(const Continent& c) {
+    *c.id_ = continents_->size();
+    continents_->push_back(c);
+    continentEdges_->emplace_back();
     return *this;
 }
 
@@ -252,10 +268,10 @@ Map &Map::addContinent(const Continent& c) {
  * @param count
  * @param vertex
  */
-void Map::depthFirstSearchTerritory(std::vector<bool> &visited, unsigned &count, unsigned vertex) {
+void Map::depthFirstSearchTerritory(std::vector<bool> &visited, size_t &count, unsigned vertex) {
     visited[vertex] = true;
     count++;
-    for (auto nextVertex : (*adjacencies)[vertex]) {
+    for (auto nextVertex : (*territoryEdges_)[vertex]) {
         if (!visited[nextVertex]) depthFirstSearchTerritory(visited, count, nextVertex);
     }
 }
@@ -281,7 +297,7 @@ std::istream &operator>>(std::istream &is, Map &map) {
 
         // image value contains part of the name, so use that.
         std::istringstream n(value);
-        std::getline(n, *map.name, '.');
+        std::getline(n, *map.name_, '.');
     }
     return is;
 }
@@ -293,7 +309,7 @@ std::istream &operator>>(std::istream &is, Map &map) {
  * @return
  */
 std::ostream &operator<<(std::ostream &os, const Map &map) {
-    os << "Map: " << *map.name << " continents: " << map.continents->size() << " territories: " << map.territories->size();
+    os << "Map: " << *map.name_ << " continents: " << map.continents_->size() << " territories: " << map.territories_->size();
     return os;
 }
 
@@ -302,11 +318,11 @@ std::ostream &operator<<(std::ostream &os, const Map &map) {
  * @param p
  * @return
  */
-std::vector<Territory> Map::getTerritories(const Player &p) const {
+std::vector<Territory> Map::territories(const Player &p) const {
     auto byPlayer = [p](const Territory &territory)
-    { return territory.hasOwner() && territory.getOwner().getName() == p.getName(); };
+    { return territory.isOwned() && territory.owner().getName() == p.getName(); };
     std::vector<Territory> t{};
-    for (const auto& item: ((*territories) | std::views::filter(byPlayer))) {
+    for (const auto& item: ((*territories_) | std::views::filter(byPlayer))) {
         t.push_back(item);
     }
     return t;
@@ -315,9 +331,8 @@ std::vector<Territory> Map::getTerritories(const Player &p) const {
 /**
  * Constructor
  */
-Territory::Territory() : id{new unsigned(0)}, name{new std::string("")}, armyCount{new unsigned(0)} {
-    continent = nullptr;
-    owner = nullptr;
+Territory::Territory() : Territory("") {
+    owner_ = nullptr;
 }
 
 /**
@@ -326,12 +341,11 @@ Territory::Territory() : id{new unsigned(0)}, name{new std::string("")}, armyCou
  * @param name
  * @param continent
  */
-Territory::Territory(unsigned id, const std::string &name, const Continent &continent) {
-    this->id = new unsigned(id);
-    this->name = new std::string(name);
-    this->armyCount = new unsigned(0);
-    owner = nullptr;
-    this->continent = &continent;
+Territory::Territory(const std::string &name) :
+    id_{new std::optional<size_t>(std::nullopt)},
+    name_{new std::string(name)},
+    armyCount_{new unsigned(0)} {
+    owner_ = nullptr;
 }
 
 /**
@@ -339,32 +353,30 @@ Territory::Territory(unsigned id, const std::string &name, const Continent &cont
  * @param territory
  */
 Territory::Territory(const Territory &territory) {
-    id = new unsigned(*territory.id);
-    name = new std::string(*territory.name);
-    armyCount = new unsigned(*territory.armyCount);
-    owner = territory.owner;
-    continent = territory.continent;
+    id_ = new std::optional<size_t>(*territory.id_);
+    name_ = new std::string(*territory.name_);
+    armyCount_ = new unsigned(*territory.armyCount_);
+    owner_ = territory.owner_;
 }
 
 /**
  * Destructor
  */
 Territory::~Territory() {
-    delete id;
-    delete name;
-    delete armyCount;
+    delete id_;
+    delete name_;
+    delete armyCount_;
 
     // release links to other instances
-    owner = nullptr;
-    continent = nullptr;
+    owner_ = nullptr;
 }
 
 /**
  * Gets the name of a Territory
  * @return
  */
-std::string Territory::getName() const {
-    return *name;
+std::string Territory::name() const {
+    return *name_;
 }
 
 /**
@@ -372,8 +384,8 @@ std::string Territory::getName() const {
  * @param player
  * @return
  */
-Territory &Territory::setOwner(const Player &player) {
-    owner = &player;
+Territory &Territory::owner(const Player &player) {
+    owner_ = &player;
     return *this;
 }
 
@@ -381,32 +393,32 @@ Territory &Territory::setOwner(const Player &player) {
  * Gets the player that owns a Territory
  * @return
  */
-Player &Territory::getOwner() const {
-    return const_cast<Player &>(*owner);
+Player &Territory::owner() const {
+    return const_cast<Player &>(*owner_);
 }
 
 /**
  * Determines if the Territory has an owner
  * @return
  */
-bool Territory::hasOwner() const {
-    return owner;
+bool Territory::isOwned() const {
+    return owner_;
 }
 
 /**
  * Gets the army count for a Territory
  * @return
  */
-unsigned Territory::getArmyCount() const {
-    return *armyCount;
+unsigned Territory::armyCount() const {
+    return *armyCount_;
 }
 
 /**
  * Gets the id of a Territory
  * @return
  */
-unsigned Territory::getId() const {
-    return *id;
+std::optional<size_t> Territory::id() const {
+    return *id_;
 }
 
 /**
@@ -416,32 +428,16 @@ unsigned Territory::getId() const {
  */
 Territory &Territory::operator=(const Territory &territory) {
     if (this != &territory) {
-        delete id;
-        delete name;
-        delete armyCount;
+        delete id_;
+        delete name_;
+        delete armyCount_;
 
-        id = new unsigned(*territory.id);
-        name = new std::string(*territory.name);
-        armyCount = new unsigned(*territory.armyCount);
-        owner = territory.owner;
+        id_ = new std::optional<size_t>(*territory.id_);
+        name_ = new std::string(*territory.name_);
+        armyCount_ = new unsigned(*territory.armyCount_);
+        owner_ = territory.owner_;
     }
     return *this;
-}
-
-/**
- * Determines if a Territory has a Continent
- * @return
- */
-bool Territory::hasContinent() const {
-    return continent;
-}
-
-/**
- * Gets the Continent of a Territory
- * @return
- */
-const Continent &Territory::getContinent() const {
-    return *continent;
 }
 
 /**
@@ -452,7 +448,7 @@ const Continent &Territory::getContinent() const {
  */
 std::istream &operator>>(std::istream &is, Territory &territory) {
     std::string t;
-    std::getline(is, *territory.name, ',');
+    std::getline(is, *territory.name_, ',');
     std::getline(is, t, ',');
     std::getline(is, t, ',');
     return is;
@@ -481,9 +477,9 @@ Continent::Continent() : Continent(0, "", 0) {
  * @param bonusArmies
  */
 Continent::Continent(unsigned id, const std::string &name, unsigned bonusArmies) {
-    this->id = new unsigned(id);
-    this->name = new std::string(name);
-    this->bonusArmies = new unsigned(bonusArmies);
+    id_ = new std::optional<size_t>(id);
+    name_ = new std::string(name);
+    bonusArmies_ = new unsigned(bonusArmies);
 }
 
 /**
@@ -491,42 +487,42 @@ Continent::Continent(unsigned id, const std::string &name, unsigned bonusArmies)
  * @param continent
  */
 Continent::Continent(const Continent &continent) {
-    id = new unsigned(*continent.id);
-    name = new std::string(*continent.name);
-    bonusArmies = new unsigned(*continent.bonusArmies);
+    id_ = new std::optional<size_t>(*continent.id_);
+    name_ = new std::string(*continent.name_);
+    bonusArmies_ = new unsigned(*continent.bonusArmies_);
 }
 
 /**
  * Destructor
  */
 Continent::~Continent() {
-    delete id;
-    delete name;
-    delete bonusArmies;
+    delete id_;
+    delete name_;
+    delete bonusArmies_;
 }
 
 /**
  * Get the name of the Continent
  * @return the name
  */
-std::string Continent::getName() const {
-    return *name;
+std::string Continent::name() const {
+    return *name_;
 }
 
 /**
  * Gets the bonus armies for the Continent
  * @return the bonus armies
  */
-unsigned Continent::getBonusArmies() const {
-    return *bonusArmies;
+unsigned Continent::bonusArmies() const {
+    return *bonusArmies_;
 }
 
 /**
  * Gets the id of the continent
  * @return the id
  */
-unsigned Continent::getId() const {
-    return *id;
+std::optional<size_t> Continent::id() const {
+    return *id_;
 }
 
 /**
@@ -536,13 +532,13 @@ unsigned Continent::getId() const {
  */
 Continent &Continent::operator=(const Continent &continent) {
     if (this != &continent) {
-        delete id;
-        delete name;
-        delete bonusArmies;
+        delete id_;
+        delete name_;
+        delete bonusArmies_;
 
-        id = new unsigned(*continent.id);
-        name = new std::string(*continent.name);
-        bonusArmies = new unsigned(*continent.bonusArmies);
+        id_ = new std::optional<size_t>(*continent.id_);
+        name_ = new std::string(*continent.name_);
+        bonusArmies_ = new unsigned(*continent.bonusArmies_);
     }
     return *this;
 }
@@ -555,10 +551,10 @@ Continent &Continent::operator=(const Continent &continent) {
  */
 std::istream &operator>>(std::istream &is, Continent &continent) {
     std::string bonus;
-    std::getline(is, *continent.name, '=');
+    std::getline(is, *continent.name_, '=');
     std::getline(is, bonus);
 
-    if (!bonus.empty()) *continent.bonusArmies = stoi(bonus);
+    if (!bonus.empty()) *continent.bonusArmies_ = stoi(bonus);
 
     return is;
 }
@@ -678,7 +674,7 @@ mapReadState MapLoader::readMapHeader(std::ifstream &in, std::string &msg) {
  */
 mapReadState MapLoader::readMapSection(std::ifstream &in, std::string &msg, Map &m) {
     in >> m;
-    if (!m.getName().empty())
+    if (!m.name().empty())
         return ContinentsHeader;
 
     msg = "Invalid Map file format - Invalid [Map] section content.";
@@ -725,9 +721,9 @@ mapReadState MapLoader::readContinentsSection(std::ifstream &in, std::string &ms
 
         Continent c;
         std::istringstream(line) >> c;
-        m.addContinent(c);
+        m.add(c);
 
-        if (c.getBonusArmies() == 0 || c.getName().empty()) {
+        if (c.bonusArmies() == 0 || c.name().empty()) {
             msg = "Invalid Map file format - Invalid [Continents] section content.";
             return Error;
         }
@@ -784,16 +780,20 @@ mapReadState MapLoader::readTerritoriesSection(std::ifstream &in, std::string &m
 
         std::getline(s, continent, ',');
 
-        if (territory.getName().empty() || continent.empty()) {
+        if (territory.name().empty() || continent.empty()) {
             msg = "Invalid Map file format - Invalid [Territories] section content.";
             return Error;
         }
-        m.addTerritory(territory, continent);
+
+        // find the territory
+        m.add(territory);
+
+        m.addEdge(m.continent(continent), territory);
 
         std::getline(s, line);
         adjacencies.push_back(line);
     }
-    if (m.getTerritoryCount() == 0) {
+    if (m.territoryCount() == 0) {
         msg = "Invalid Map file format - No Territories found";
         return Error;
     }
@@ -805,7 +805,7 @@ mapReadState MapLoader::readTerritoriesSection(std::ifstream &in, std::string &m
             std::istringstream item(adjacencies[i]);
             while (!item.eof()) {
                 std::getline(item, tName, ',');
-                m.addAdjacencies(m.getTerritory(i + 1), m.getTerritory(tName));
+                m.addEdge(m.territory(i), m.territory(tName));
             }
         }
     }

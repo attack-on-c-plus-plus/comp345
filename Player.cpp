@@ -63,12 +63,12 @@ std::vector<Territory> Player::toDefend(const Map &map) const {
     // Iterate through the player's territories
     for (const Territory &territory: *territories) {
         // Get the adjacent territories of the current territory
-        std::vector<Territory> adjacentTerritories = map.getAdjacencies(territory);
+        std::vector<Territory> adjacentTerritories = map.adjacencies(territory);
 
         // Check if any adjacent territory is not owned by the player
         bool needsDefense = false;
         for (const Territory &adjacentTerritory: adjacentTerritories) {
-            if (adjacentTerritory.getOwner().name != this->name) {
+            if (adjacentTerritory.owner().name != this->name) {
                 needsDefense = true;
                 break; // At least one adjacent territory is not owned by the player
             }
@@ -90,11 +90,11 @@ std::vector<Territory> Player::toAttack(const Map &map) const {
     // Iterate through the player's territories
     for (const Territory &myTerritory: *territories) {
         // Get the adjacent territories of the current territory
-        std::vector<Territory> adjacentTerritories = map.getAdjacencies(myTerritory);
+        std::vector<Territory> adjacentTerritories = map.adjacencies(myTerritory);
 
         // Check if adjacent territories are owned by other players
         for (const Territory &adjacentTerritory: adjacentTerritories) {
-            if (&(adjacentTerritory.getOwner()) != this) {
+            if (&(adjacentTerritory.owner()) != this) {
                 // Add the adjacent territory to the list of territories to attack
                 territoriesToAttack.push_back(adjacentTerritory);
             }

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <optional>
 #include "Player.h"
 
 // Daniel Soldera
@@ -37,27 +38,28 @@ public:
     // Destructor
     ~Map();
     bool validate();
-    [[nodiscard]] std::string getName() const;
-    [[nodiscard]] Territory &getTerritory(const std::string &) const;
-    Map &addTerritory(Territory &t, const std::string &continentName);
-    Map &addAdjacencies(const Territory&, const Territory &);
-    [[nodiscard]] Continent &getContinent(const std::string &) const;
-    Map &addContinent(const Continent&);
-    [[nodiscard]] size_t getTerritoryCount() const;
-    [[nodiscard]] size_t getContinentCount() const;
-    [[nodiscard]] Continent &getContinent(unsigned) const;
-    [[nodiscard]] Territory &getTerritory(unsigned) const;
-    [[nodiscard]] std::vector<Territory> getTerritories(const Player&) const;
-    [[nodiscard]] std::vector<Territory> getAdjacencies(const Continent&) const;
-    [[nodiscard]] std::vector<Territory> getAdjacencies(const Territory&) const;
+    [[nodiscard]] std::string name() const;
+    [[nodiscard]] Territory &territory(const std::string &name) const;
+    Map &add(const Territory &t);
+    Map &addEdge(const Continent &continent, const Territory &adjacent);
+    Map &addEdge(const Territory &territory, const Territory &adjacent);
+    [[nodiscard]] Continent &continent(const std::string &name) const;
+    Map &add(const Continent &c);
+    [[nodiscard]] size_t territoryCount() const;
+    [[nodiscard]] size_t continentCount() const;
+    [[nodiscard]] Continent &continent(size_t id) const;
+    [[nodiscard]] Territory &territory(size_t id) const;
+    [[nodiscard]] std::vector<Territory> territories(const Player &p) const;
+    [[nodiscard]] std::vector<Territory> adjacencies(const Continent &continent) const;
+    [[nodiscard]] std::vector<Territory> adjacencies(const Territory &territory) const;
     Map &operator=(const Map&);
 private:
-    std::string *name;
-    std::vector<std::vector<unsigned>> *adjacencies{};
-    std::vector<std::vector<unsigned>> *continentTerritories{};
-    std::vector<Territory> *territories;
-    std::vector<Continent> *continents;
-    void depthFirstSearchTerritory(std::vector<bool> &visited, unsigned &count, unsigned vertex);
+    std::string *name_;
+    std::vector<std::vector<size_t>> *territoryEdges_{};
+    std::vector<std::vector<size_t>> *continentEdges_{};
+    std::vector<Territory> *territories_;
+    std::vector<Continent> *continents_;
+    void depthFirstSearchTerritory(std::vector<bool> &visited, size_t &count, unsigned vertex);
     friend std::istream &operator>>(std::istream &is, Map &map);
     friend std::ostream &operator<<(std::ostream &os, const Map &map);
 };
@@ -68,29 +70,26 @@ private:
 class Territory {
 public:
     Territory();
-    explicit Territory(unsigned, const std::string &, const Continent &);
+    explicit Territory(const std::string &);
     // Copy constructor
     Territory(const Territory&);
     // Destructor
     ~Territory();
-    [[nodiscard]] unsigned getId() const;
-    [[nodiscard]] std::string getName() const;
-    Territory &setOwner(const Player &player);
-    [[nodiscard]] Player &getOwner() const;
-    [[nodiscard]] bool hasOwner() const;
-    [[nodiscard]] unsigned getArmyCount() const;
-    [[nodiscard]] const Continent &getContinent() const;
-    [[nodiscard]] bool hasContinent() const;
+    [[nodiscard]] std::optional<size_t> id() const;
+    [[nodiscard]] std::string name() const;
+    Territory &owner(const Player &player);
+    [[nodiscard]] Player &owner() const;
+    [[nodiscard]] bool isOwned() const;
+    [[nodiscard]] unsigned armyCount() const;
     Territory &operator=(const Territory&);
 private:
-    unsigned *id;
-    std::string *name;
-    const Player *owner;
-    unsigned *armyCount;
-    const Continent *continent;
+    std::optional<size_t> *id_;
+    std::string *name_;
+    const Player *owner_;
+    unsigned *armyCount_;
     friend std::istream &operator>>(std::istream &is, Territory &territory);
     friend std::ostream &operator<<(std::ostream &os, const Territory &territory);
-    friend Map &Map::addTerritory(Territory &t, const std::string &continentName);
+    friend Map &Map::add(const Territory &t);
 };
 
 /*
@@ -104,17 +103,17 @@ public:
     Continent(const Continent&);
     // Destructor
     ~Continent();
-    [[nodiscard]] std::string getName() const;
-    [[nodiscard]] unsigned getBonusArmies() const;
+    [[nodiscard]] std::optional<size_t> id() const;
+    [[nodiscard]] std::string name() const;
+    [[nodiscard]] unsigned bonusArmies() const;
     Continent &operator=(const Continent &);
-    [[nodiscard]] unsigned getId() const;
 private:
-    unsigned *id;
-    std::string *name;
-    unsigned *bonusArmies;
+    std::optional<size_t> *id_;
+    std::string *name_;
+    unsigned *bonusArmies_;
     friend std::istream &operator>>(std::istream &is, Continent &continent);
     friend std::ostream &operator<<(std::ostream &os, const Continent &continent);
-    friend Map &Map::addContinent(const Continent& c);
+    friend Map &Map::add(const Continent& c);
 };
 
 enum mapReadState {

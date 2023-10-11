@@ -39,6 +39,6 @@ void testPlayer () {
     Map map;
     MapLoader::load("maps/valid/3D.map", map);
 
-    map.getTerritory(1).setOwner(player1);
-    auto ts= map.getTerritories(player1);
+    map.territory(1).owner(player1);
+    auto ts= map.territories(player1);
 };
