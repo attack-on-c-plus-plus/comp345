@@ -14,12 +14,11 @@ void testCards() {
     std::cout << "===================================" << std::endl;
 
     // Creating cards
-    int nbCards = 5;
-    Card card1{"bomb"};
-    Card card2{"reinforcement"};
-    Card card3{"blockade"};
-    Card card4{"airlift"};
-    Card card5{"diplomacy"};
+    Card card1{CardType::bomb};
+    Card card2{CardType::reinforcement};
+    Card card3{CardType::blockade};
+    Card card4{CardType::airlift};
+    Card card5{CardType::diplomacy};
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
@@ -29,33 +28,31 @@ void testCards() {
     // Creates an empty deck of cards
     // And adds the created cards to the deck
     Deck gameDeck{};
-    gameDeck.addCard(card1);
-    gameDeck.addCard(card2);
-    gameDeck.addCard(card3);
-    gameDeck.addCard(card4);
-    gameDeck.addCard(card5);
+    gameDeck.add(card1);
+    gameDeck.add(card2);
+    gameDeck.add(card3);
+    gameDeck.add(card4);
+    gameDeck.add(card5);
 
     std::cout<<std::endl;
+    std::cout << gameDeck << std::endl;
 
-    auto currentAmountInDeck{gameDeck.getCardCount()};
-    for (int i = 0; i < currentAmountInDeck; i++) {
-        std::cout << "Deck has a card " << &(gameDeck.getCard(i)) << " of type: "
-        << (gameDeck.getCard(i)).getCardType() << std::endl;
-    }
-
-    std::cout << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << "Creating a Hand and drawing from the deck" << std::endl;
     std::cout << "===================================" << std::endl;
 
     // Creates a Hand by drawing cards from the deck
     Hand playerHand{};
-    for (int i = 0; i < nbCards; i++) {
-        gameDeck.draw(playerHand);
+    while(!gameDeck.isEmpty()) {
+        std::cout << playerHand << std::endl;
+        std::cout << gameDeck << std::endl;
+        auto c = gameDeck.draw();
+        std::cout << "Drew: " << *c << std::endl;
+        playerHand.add(*c);
     }
 
     // Gets the number of cards from the hand
-    std::cout << "Player has " << playerHand.getCardCount() << " cards." << std::endl;
+    std::cout << "Player has " << playerHand.size() << " cards." << std::endl;
 
     std::cout << std::endl;
     std::cout << "===================================" << std::endl;
@@ -63,13 +60,13 @@ void testCards() {
     std::cout << "===================================" << std::endl;
 
     // Revised solution
-    while (playerHand.getCardCount() > 0) {
-        auto random {rand() % playerHand.getCardCount()};
+    while (!playerHand.isEmpty()) {
+        auto random {rand() % playerHand.size()};
         std::cout << "Index " << random << " is selected for playing card." << std::endl;
-        Card cardSelected = playerHand.getCard(random);
-        playerHand.removeCard(cardSelected);
-        cardSelected.play();
-        gameDeck.addCard(cardSelected);
+        Card cardSelected = playerHand.card(random);
+        std::cout << cardSelected << std::endl;
+        playerHand.remove(cardSelected);
+        gameDeck.add(cardSelected.play());
     }
 
     std::cout << std::endl;
@@ -77,10 +74,7 @@ void testCards() {
     std::cout << "Checking the cards from the Deck" << std::endl;
     std::cout << "===================================" << std::endl;
 
-    auto cardAmountInDeck{gameDeck.getCardCount()};
-    for (int i = 0; i < cardAmountInDeck; i++) {
-        std::cout << "Deck has a card " << &(gameDeck.getCard(i)) << " of type: "
-        << (gameDeck.getCard(i)).getCardType() << std::endl;
-    }
+    auto cardAmountInDeck{gameDeck.size()};
+    std::cout << gameDeck << std::endl;
 
 }

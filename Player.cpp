@@ -131,13 +131,13 @@ void Player::issueOrder(const std::string &orderType, int sourceTerritory, int t
 }
 
 void Player::drawCardFromDeck(Deck &deck) {
-    deck.draw(*hand);
+    hand->add(*deck.draw());
 }
 
 void Player::playCardFromHand(Card &card, Deck &deck) {
     // Implement logic to play the card
     card.play();
-    hand->removeCard(card);
+    hand->remove(card);
 }
 
 const Hand &Player::getHand() const {
