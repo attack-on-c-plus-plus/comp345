@@ -11,32 +11,54 @@
 // Haris Mahmood
 
 
-// Implement the Order class
+// Implementation Order class
 
-//Order::Order() : Order("") {}
-
+/**
+ * Constructor
+ * @param description
+ */
 Order::Order(const std::string &description) {
     description_ = new std::string(description);
     effect_ = new std::string();
 }
 
+/**
+ * Copy constructor
+ * @param other
+ */
 Order::Order(const Order& other) :
         description_(new std::string(*(other.description_))),
         effect_(new std::string(*(other.effect_))) {}
 
+/**
+ * Destructor
+ */
 Order::~Order() {
     delete description_;
     delete effect_;
 }
 
+/**
+ * Gets the order description
+ * @return
+ */
 const std::string &Order::description() const  {
     return *description_;
 }
 
+/**
+ * Gets the orders affect
+ * @return
+ */
 const std::string &Order::effect() const {
     return *effect_;
 }
 
+/**
+ * Operator= overload
+ * @param order
+ * @return
+ */
 Order &Order::operator=(const Order &order) {
     if (this != &order) {
         // clean up resources
@@ -49,6 +71,12 @@ Order &Order::operator=(const Order &order) {
     return *this;
 }
 
+/**
+ * Operator<< overload
+ * @param os
+ * @param order
+ * @return
+ */
 std::ostream& operator<<(std::ostream& os, const Order& order) {
     os << order.description();
     if (!order.effect().empty()) {
@@ -57,32 +85,53 @@ std::ostream& operator<<(std::ostream& os, const Order& order) {
     return os;
 }
 
-// Implement DeployOrder class
+// Implementation DeployOrder class
+/**
+ * Constructor
+ * @param armies
+ */
 DeployOrder::DeployOrder(unsigned armies) :
     Order("Deploy"),
     armies_{new unsigned (armies)} {
 }
 
-// Validate method for DeployOrder
+/**
+ * Copy constructor
+ * @param order
+ */
+DeployOrder::DeployOrder(const DeployOrder &order) : Order(order) {
+    armies_ = new unsigned(*order.armies_);
+}
+
+/**
+ * Destructor
+ */
+DeployOrder::~DeployOrder() {
+    delete armies_;
+}
+
+/**
+ * Validates the DeployOrder
+ * @return true if valid; false otherwise
+ */
 bool DeployOrder::validate() const {
     return *armies_ > 0;
 }
 
-// Execute order for DeployOrder
+/**
+ * Executes the DeployOrder
+ */
 void DeployOrder::execute() {
     if (validate()) {
         *effect_ = "Deployed " + std::to_string(*armies_) + " armies.";
     }
 }
 
-DeployOrder::DeployOrder(const DeployOrder &order) : Order(order) {
-    armies_ = new unsigned(*order.armies_);
-}
-
-DeployOrder::~DeployOrder() {
-    delete armies_;
-}
-
+/**
+ * Operator= overload
+ * @param order
+ * @return
+ */
 DeployOrder &DeployOrder::operator=(const DeployOrder &order) {
     if (this != &order) {
         Order::operator=(order);
@@ -92,11 +141,21 @@ DeployOrder &DeployOrder::operator=(const DeployOrder &order) {
     return *this;
 }
 
+/**
+ * Clones the DeployOrder
+ * @return
+ */
 DeployOrder *DeployOrder::clone() const {
     return new DeployOrder(*this);
 }
 
-// Implement AdvanceOrder class
+// Implementation AdvanceOrder class
+/**
+ * Constructor
+ * @param source
+ * @param target
+ * @param armies
+ */
 AdvanceOrder::AdvanceOrder(size_t source, size_t target, unsigned armies) :
     Order("Advance"),
     sourceTerritory_{new size_t(source)},
@@ -105,18 +164,35 @@ AdvanceOrder::AdvanceOrder(size_t source, size_t target, unsigned armies) :
 
 }
 
-// Validate method for AdvanceOrder
+/**
+ * Copy constructor
+ * @param order
+ */
+AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : Order(order) {
+    sourceTerritory_ = new size_t(*order.sourceTerritory_);
+    targetTerritory_ = new size_t(*order.targetTerritory_);
+    armies_ = new unsigned(*order.armies_);
+}
+
+/**
+ * Destructor
+ */
+AdvanceOrder::~AdvanceOrder() {
+    delete sourceTerritory_;
+    delete targetTerritory_;
+    delete armies_;
+}
+
+/**
+ * Validates the AdvanceOrder
+ * @return true if valid; false otherwise
+ */
 bool AdvanceOrder::validate() const {
     // Check if the number of armies to advance is non-negative
 
     if (*armies_ < 0) {
         return false;
     }
-//    if (armies_source_territory < *armies_) {
-//        *effect_ = "Failed to execute AdvanceOrder: Insufficient armies in the source territory.";
-//        return;
-//    }
-
 
     // Check if the source and target territories exist
     if (*sourceTerritory_ < 0 || *targetTerritory_ < 0) {
@@ -128,7 +204,9 @@ bool AdvanceOrder::validate() const {
     return true;
 }
 
-// Execute method for AdvanceOrder
+/**
+ * Executes the AdvanceOrder
+ */
 void AdvanceOrder::execute() {
     if (validate()) {
         // Check if the player has enough armies in the source territory to advance
@@ -145,18 +223,11 @@ void AdvanceOrder::execute() {
     }
 }
 
-AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : Order(order) {
-    sourceTerritory_ = new size_t(*order.sourceTerritory_);
-    targetTerritory_ = new size_t(*order.targetTerritory_);
-    armies_ = new unsigned(*order.armies_);
-}
-
-AdvanceOrder::~AdvanceOrder() {
-    delete sourceTerritory_;
-    delete targetTerritory_;
-    delete armies_;
-}
-
+/**
+ * Operator= overload
+ * @param order
+ * @return
+ */
 AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order) {
     if (this != &order) {
         Order::operator=(order);
@@ -171,24 +242,52 @@ AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order) {
     return *this;
 }
 
+/**
+ * Clones the AdvanceOrder
+ * @return
+ */
 AdvanceOrder *AdvanceOrder::clone() const {
     return new AdvanceOrder(*this);
 }
 
-
-// Constructor for BombOrder
+// Implementation BombOrder class
+/**
+ * Constructor
+ * @param targetTerritory
+ */
 BombOrder::BombOrder(size_t targetTerritory) :
     Order("Bomb"),
     targetTerritory_{new size_t(targetTerritory)} {
 }
 
-// Validate method for BombOrder
+/**
+ * Copy constructor
+ * @param order
+ */
+BombOrder::BombOrder(const BombOrder &order) :
+        Order(order) {
+    targetTerritory_ = new size_t(*order.targetTerritory_);
+}
+
+/**
+ * Destructor
+ */
+BombOrder::~BombOrder() {
+    delete targetTerritory_;
+}
+
+/**
+ * Validates the BombOrder
+ * @return
+ */
 bool BombOrder::validate() const {
     // Check if the targetTerritory is within a valid range:
     return true;
 }
 
-// Execute method for BombOrder
+/**
+ * Executes the BombOrder
+ */
 void BombOrder::execute() {
     if (validate()) {
         // Remove armies from the target territory:
@@ -200,15 +299,11 @@ void BombOrder::execute() {
     }
 }
 
-BombOrder::BombOrder(const BombOrder &order) :
-    Order(order) {
-    targetTerritory_ = new size_t(*order.targetTerritory_);
-}
-
-BombOrder::~BombOrder() {
-    delete targetTerritory_;
-}
-
+/**
+ * Operator= overload
+ * @param order
+ * @return
+ */
 BombOrder &BombOrder::operator=(const BombOrder &order) {
     if (this != &order) {
         Order::operator=(order);
@@ -219,22 +314,51 @@ BombOrder &BombOrder::operator=(const BombOrder &order) {
     return *this;
 }
 
+/**
+ * Clones the BombOrder
+ * @return
+ */
 BombOrder *BombOrder::clone() const {
     return new BombOrder(*this);
 }
 
 
-// Constructor for BlockadeOrder
+// Implementation BlockadeOrder class
+
+/**
+ * Constructor
+ * @param target
+ */
 BlockadeOrder::BlockadeOrder(size_t target) : Order("Block"),
     targetTerritory_{new size_t(target)} {
 }
 
-// Validate method for BlockadeOrder
+/**
+ * Copy constructor
+ * @param order
+ */
+BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order) {
+    targetTerritory_ = new size_t(*order.targetTerritory_);
+}
+
+/**
+ * Destructor
+ */
+BlockadeOrder::~BlockadeOrder() {
+    delete targetTerritory_;
+}
+
+/**
+ * Validates the BlockadeOrder
+ * @return
+ */
 bool BlockadeOrder::validate() const {
     return true; //
 }
 
-// Execute method for BlockadeOrder
+/**
+ * Executes the BlockadeOrder
+ */
 void BlockadeOrder::execute() {
     if (validate()) {
 
@@ -247,14 +371,11 @@ void BlockadeOrder::execute() {
     }
 }
 
-BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order) {
-    targetTerritory_ = new size_t(*order.targetTerritory_);
-}
-
-BlockadeOrder::~BlockadeOrder() {
-    delete targetTerritory_;
-}
-
+/**
+ * Operator= overload
+ * @param order
+ * @return
+ */
 BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order) {
     if (this != &order) {
         Order::operator=(order);
@@ -265,12 +386,22 @@ BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order) {
     return *this;
 }
 
+/**
+ * Clones the BlockadeOrder
+ * @return
+ */
 BlockadeOrder *BlockadeOrder::clone() const {
     return new BlockadeOrder(*this);
 }
 
 
-// Constructor for AirliftOrder
+// Implementation AirliftOrder
+/**
+ * Constructor
+ * @param source
+ * @param target
+ * @param armies
+ */
 AirliftOrder::AirliftOrder(size_t source, size_t target, unsigned armies) :
     Order("Airlift"),
     sourceTerritory_{new size_t(source)},
@@ -278,7 +409,30 @@ AirliftOrder::AirliftOrder(size_t source, size_t target, unsigned armies) :
     armies_{new unsigned(armies)} {
 }
 
-// Validate method for AirliftOrder
+/**
+ * Copy constructor
+ * @param order
+ */
+AirliftOrder::AirliftOrder(const AirliftOrder &order) :
+        Order(order) {
+    sourceTerritory_ = new size_t(*order.sourceTerritory_);
+    targetTerritory_ = new size_t(*order.targetTerritory_);
+    armies_ = new unsigned(*order.armies_);
+}
+
+/**
+ * Destructor
+ */
+AirliftOrder::~AirliftOrder() {
+    delete sourceTerritory_;
+    delete targetTerritory_;
+    delete armies_;
+}
+
+/**
+ * Validates the AirliftOrder
+ * @return
+ */
 bool AirliftOrder::validate() const {
     // Check if the player has enough armies in the source territory to airlift
     int armies_in_source_territory = /* Get the number of armies in the source territory */ 10;
@@ -291,7 +445,9 @@ bool AirliftOrder::validate() const {
     return true;
 }
 
-// Execute method for AirliftOrder
+/**
+ * Executes the AirliftOrder
+ */
 void AirliftOrder::execute() {
     if (validate()) {
 
@@ -308,19 +464,11 @@ void AirliftOrder::execute() {
     }
 }
 
-AirliftOrder::AirliftOrder(const AirliftOrder &order) :
-    Order(order) {
-    sourceTerritory_ = new size_t(*order.sourceTerritory_);
-    targetTerritory_ = new size_t(*order.targetTerritory_);
-    armies_ = new unsigned(*order.armies_);
-}
-
-AirliftOrder::~AirliftOrder() {
-    delete sourceTerritory_;
-    delete targetTerritory_;
-    delete armies_;
-}
-
+/**
+ * Operator= overload
+ * @param order
+ * @return
+ */
 AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order) {
     if (this != &order) {
         Order::operator=(order);
@@ -335,16 +483,42 @@ AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order) {
     return *this;
 }
 
+/**
+ * Clones the AirliftOrder
+ * @return
+ */
 AirliftOrder *AirliftOrder::clone() const {
     return new AirliftOrder(*this);
 }
 
-// Constructor for NegotiateOrder
+// Implementation NegotiateOrder class
+/**
+ * Constructor
+ * @param targetPlayer
+ */
 NegotiateOrder::NegotiateOrder(unsigned targetPlayer) : Order("Negotiation"),
     targetPlayer_{new unsigned(targetPlayer)} {
 }
 
-// Validate method for NegotiateOrder
+/**
+ * Copy constructor
+ * @param order
+ */
+NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order) {
+    targetPlayer_ = new unsigned(*order.targetPlayer_);
+}
+
+/**
+ * Destructor
+ */
+NegotiateOrder::~NegotiateOrder() {
+    delete targetPlayer_;
+}
+
+/**
+ * Validates the NegotiateOrder
+ * @return
+ */
 bool NegotiateOrder::validate() const {
 
     // check if the target player exists:
@@ -358,23 +532,22 @@ bool NegotiateOrder::validate() const {
     return true; // Replace with actual validation logic
 }
 
-// Execute method for NegotiateOrder
+/**
+ * Executes the NegotiateOrder
+ */
 void NegotiateOrder::execute() {
     if (validate()) {
-        
+
         // Update the effect string to describe the action
         *effect_ = "Initiated negotiation with player " + std::to_string(*targetPlayer_) + ".";
     }
 }
 
-NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order) {
-    targetPlayer_ = new unsigned(*order.targetPlayer_);
-}
-
-NegotiateOrder::~NegotiateOrder() {
-    delete targetPlayer_;
-}
-
+/**
+ * Operator= overload
+ * @param order
+ * @return
+ */
 NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order) {
     if (this != &order) {
         Order::operator=(order);
@@ -385,57 +558,24 @@ NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order) {
     return *this;
 }
 
+/**
+ * Clones the NegotiateOrder
+ * @return
+ */
 NegotiateOrder *NegotiateOrder::clone() const {
     return new NegotiateOrder(*this);
 }
 
+// Implementation OrdersList
+/**
+ * Constructor
+ */
+OrdersList::OrdersList() : orders_{new std::vector<Order*>{}} { }
 
-OrdersList::OrdersList() : orders_{new std::vector<Order*>{}} {
-
-}
-
-OrdersList& OrdersList::addOrder(Order* order) {
-    orders_->push_back(order->clone()); // Store the pointer to the Order
-    return *this;
-}
-
-OrdersList& OrdersList::remove(int index) {
-    if (index >= 0 && index < orders_->size()) {
-        delete (*orders_)[index]; // Delete the Order object
-        orders_->erase(orders_->begin() + index); // Remove it from the vector
-    }
-    return *this;
-}
-
-OrdersList& OrdersList::move(int from, int to) {
-    if (from >= 0 && from < orders_->size() && to >= 0 && to < orders_->size()) {
-        auto temp = (*orders_)[from];
-        (*orders_)[from] = (*orders_)[to];
-        (*orders_)[to] = temp;
-    }
-
-    return *this;
-}
-
-OrdersList& OrdersList::executeOrders() {
-    for (auto &order : *orders_) {
-        order->execute();
-    }
-    return *this;
-}
-
-std::vector<Order*> &OrdersList::getOrder() const {
-    return *orders_;
-}
-
-OrdersList::~OrdersList() {
-    for (auto o: *orders_) {
-        delete o;
-    }
-    orders_->clear();
-    delete orders_;
-}
-
+/**
+ * Copy constructor
+ * @param ordersList
+ */
 OrdersList::OrdersList(const OrdersList &ordersList) {
     orders_ = new std::vector<Order*>{};
     // create a deep copy
@@ -445,6 +585,79 @@ OrdersList::OrdersList(const OrdersList &ordersList) {
     }
 }
 
+/**
+ * Destructor
+ */
+OrdersList::~OrdersList() {
+    for (auto o: *orders_) {
+        delete o;
+    }
+    orders_->clear();
+    delete orders_;
+}
+
+/**
+ * Adds an Order to the OrdersList
+ * @param order
+ * @return
+ */
+OrdersList& OrdersList::addOrder(Order* order) {
+    orders_->push_back(order->clone()); // Store the pointer to the Order
+    return *this;
+}
+
+/**
+ * Removes an Order from the OrdersList
+ * @param index
+ * @return
+ */
+OrdersList& OrdersList::remove(int index) {
+    if (index >= 0 && index < orders_->size()) {
+        delete (*orders_)[index]; // Delete the Order object
+        orders_->erase(orders_->begin() + index); // Remove it from the vector
+    }
+    return *this;
+}
+
+/**
+ * Moves an Order in the OrdersList
+ * @param from index
+ * @param to index
+ * @return
+ */
+OrdersList& OrdersList::move(int from, int to) {
+    if (from >= 0 && from < orders_->size() && to >= 0 && to < orders_->size()) {
+        auto temp = (*orders_)[from];
+        (*orders_)[from] = (*orders_)[to];
+        (*orders_)[to] = temp;
+    }
+    return *this;
+}
+
+/**
+ * Executes all the orders in the OrdersList
+ * @return
+ */
+OrdersList& OrdersList::executeOrders() {
+    for (auto &order : *orders_) {
+        order->execute();
+    }
+    return *this;
+}
+
+/**
+ * Returns a the list of orders
+ * @return
+ */
+const std::vector<Order*> &OrdersList::getOrder() const {
+    return *orders_;
+}
+
+/**
+ * Operator= overload
+ * @param ordersList
+ * @return
+ */
 OrdersList &OrdersList::operator=(const OrdersList &ordersList) {
     if (this != &ordersList) {
         for (auto o: *orders_) {

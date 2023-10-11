@@ -16,7 +16,6 @@
 
 class Order {
 public:
-    //Order();
     Order(const std::string &description);
     // Copy constructor
     Order(const Order&);
@@ -59,7 +58,7 @@ private:
 
 class AdvanceOrder : public Order {
 public:
-    AdvanceOrder(size_t source, size_t target, unsigned armies);
+    explicit AdvanceOrder(size_t source, size_t target, unsigned armies);
     AdvanceOrder(const AdvanceOrder&);
     ~AdvanceOrder() override;
     [[nodiscard]] AdvanceOrder* clone() const override;
@@ -112,7 +111,7 @@ private:
 
 class AirliftOrder : public Order {
 public:
-    AirliftOrder(size_t source, size_t target, unsigned armies);
+    explicit AirliftOrder(size_t source, size_t target, unsigned armies);
     AirliftOrder(const AirliftOrder&);
     ~AirliftOrder() override;
     [[nodiscard]] AirliftOrder* clone() const override;
@@ -154,7 +153,7 @@ public:
     OrdersList& remove(int index);
     OrdersList& move(int from, int to);
     OrdersList& executeOrders();
-    [[nodiscard]] std::vector<Order*> &getOrder() const;
+    [[nodiscard]]const std::vector<Order*> &getOrder() const;
     OrdersList &operator=(const OrdersList&);
 private:
     std::vector<Order*> *orders_; // Store pointers to Order objects
