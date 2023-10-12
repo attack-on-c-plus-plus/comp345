@@ -13,7 +13,7 @@
  * Creates a new card
  * @param type The card type
  */
-Card::Card(const CardType& type) : type_(new CardType(type)) {
+Card::Card(const CardType& type) : type_(std::make_unique<CardType>(type)) {
 }
 
 /**
@@ -21,15 +21,13 @@ Card::Card(const CardType& type) : type_(new CardType(type)) {
  * @param cardToCopy The card to be copied.
  */
 Card::Card(const Card& cardToCopy) :
-    type_(new CardType(*cardToCopy.type_)) {
+    type_{std::make_unique<CardType>(*cardToCopy.type_)} {
 }
 
 /**
  * Default Card destructor. Deletes the cardType pointer.
  */
-Card::~Card() {
-    delete type_;
-}
+Card::~Card() = default;
 
 /**
  * Gets the card type
@@ -42,10 +40,9 @@ const CardType &Card::type() const {
 /**
  * Creates a special order
  */
-Card &Card::play() {
+void Card::play() const {
     // Special orders logic here
-    std::cout << "Played card " << *this;
-    return *this;
+    std::cout << "Played card " << *this << std::endl;
 }
 
 /**
@@ -68,14 +65,10 @@ bool Card::operator==(const Card &card) const {
  */
 Card &Card::operator=(const Card &card) {
     if (this != &card) {
-        delete type_;
-        type_ = new CardType(*card.type_);
+        type_ = std::make_unique<CardType>(*card.type_);
     }
     return *this;
 }
-
-// TO DO
-//std::istream &operator>>(std::istream &is, Card &card) {}
 
 /**
  * Output stream operator of Card
@@ -100,8 +93,8 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
  * @param index The index of the selected card from the player's card collection.
  * @return The selected card
  */
-Card &Hand::card(size_t index) const {
-    return *cards_->at(index);
+const std::shared_ptr<Card> &Hand::card(size_t index) const {
+    return cards_->at(index);
 }
 
 /**
@@ -116,7 +109,8 @@ size_t Hand::size() const {
  * Creates a hand object of a specific size
  * @param collectionSize: The number of cards a hand can hold initially.
  */
-Hand::Hand(const int &collectionSize) : cards_(new std::vector<Card*>()) {
+Hand::Hand(const int &collectionSize) :
+    cards_{std::make_unique<std::vector<std::shared_ptr<Card>>>()} {
     cards_->reserve(collectionSize);
 }
 
@@ -124,8 +118,11 @@ Hand::Hand(const int &collectionSize) : cards_(new std::vector<Card*>()) {
  * Creates a hand object by providing an existing card collection
  * @param cardCollection The card collection.
  */
-Hand::Hand(const std::vector<Card*>& cardCollection) {
-    this->cards_ = new std::vector<Card*>(cardCollection);
+Hand::Hand(const std::vector<Card>& cardCollection) {
+    cards_ = std::make_unique<std::vector<std::shared_ptr<Card>>>();
+    for (const auto& c: cardCollection) {
+        cards_->push_back(std::make_shared<Card>(c));
+    }
 }
 
 /**
@@ -133,19 +130,16 @@ Hand::Hand(const std::vector<Card*>& cardCollection) {
  * @param handToCopy The hand to be copied.
  */
 Hand::Hand(const Hand& handToCopy) {
-    this->cards_ = new std::vector<Card*>(*handToCopy.cards_);
+    cards_ = std::make_unique<std::vector<std::shared_ptr<Card>>>();
+    for (const auto& c: *handToCopy.cards_) {
+        cards_->push_back(std::make_shared<Card>(*c));
+    }
 }
 
 /**
  * Default Card destructor. Deletes the cardType pointer.
  */
-Hand::~Hand() {
-    for (auto c: *cards_) {
-        delete c;
-    }
-    cards_->clear();
-    delete cards_;
-}
+Hand::~Hand() = default;
 
 bool Hand::isEmpty() const {
     return cards_->empty();
@@ -156,9 +150,8 @@ bool Hand::isEmpty() const {
  * @param card The card to be added
  * @return The hand with the new card.
  */
-Hand &Hand::add(const Card &card) {
-    std::cout << "Pushing back" << std::endl;
-    cards_->push_back(new Card(card));
+Hand &Hand::add(const std::shared_ptr<Card> &card) {
+    cards_->push_back(card);
     return *this;
 }
 
@@ -167,10 +160,9 @@ Hand &Hand::add(const Card &card) {
  * @param card
  * @return The hand with the removed card.
  */
-Hand &Hand::remove(const Card &card) {
+Hand &Hand::remove(const std::shared_ptr<Card> &card) {
     for (auto it = cards_->begin(); it != cards_->end(); ++it) {
-        if (**it == card) {
-            delete *it;
+        if (*it == card) {
             cards_->erase(it);
             return *this;
         }
@@ -188,14 +180,13 @@ Hand &Hand::remove(const Card &card) {
  */
 Hand &Hand::operator=(const Hand &hand) {
     if (this != &hand) {
-        delete cards_;
-        cards_ = new std::vector<Card*>(*hand.cards_);
+        cards_ = std::make_unique<std::vector<std::shared_ptr<Card>>>();
+        for (const auto& c: *hand.cards_) {
+            add(std::make_shared<Card>(*c));
+        }
     }
     return *this;
 }
-// TO DO
-
-//std::istream &operator>>(std::istream &is, Hand &hand) {}
 
 /**
  * Output stream when printing hand to console
@@ -205,18 +196,25 @@ Hand &Hand::operator=(const Hand &hand) {
  */
 std::ostream &operator<<(std::ostream &os, const Hand &hand) {
     os << "Hand (size: " << hand.cards_->size() << "): " << std::endl;
-    for (auto it = hand.cards_->begin(); it != hand.cards_->end(); ++it) {
-        os << "\t" << **it << std::endl;
+    for (auto & it : *hand.cards_) {
+        os << "\t" << *it << std::endl;
     }
     return os;
+}
+
+const std::vector<std::shared_ptr<Card>> &Hand::cards() const {
+    return *cards_;
 }
 
 /**
  * A constructor for the Deck class
  * @param cardDeck an existing vector of Cards
  */
-Deck::Deck(const std::vector<Card*> &cardDeck) {
-    this->cards_ = new std::vector<Card*>(cardDeck);
+Deck::Deck(const std::vector<Card> &cardDeck) {
+    cards_ = std::make_unique<std::vector<std::shared_ptr<Card>>>();
+    for (const auto& c: cardDeck) {
+        cards_->push_back(std::make_shared<Card>(c));
+    }
 }
 
 /**
@@ -224,9 +222,8 @@ Deck::Deck(const std::vector<Card*> &cardDeck) {
  * @param card The card to be added
  * @return The Deck with the new card.
  */
-Deck &Deck::add(const Card &card){
-    std::cout << "Adding card " << card << " to deck." << std::endl;
-    cards_->push_back(new Card(card));
+Deck &Deck::add(const std::shared_ptr<Card> &card) {
+    cards_->push_back(card);
     return *this;
 }
 
@@ -235,9 +232,9 @@ Deck &Deck::add(const Card &card){
  * @param card The card to be removed
  * @return The deck with the removed card.
  */
-Deck &Deck::remove(const Card &card) {
+Deck &Deck::remove(const std::shared_ptr<Card> &card) {
     for (auto it = cards_->begin(); it != cards_->end(); ++it) {
-        if (**it == card) {
+        if (*it == card) {
             cards_->erase(it);
             return *this;
         }
@@ -250,32 +247,32 @@ Deck &Deck::remove(const Card &card) {
  * @param deckToCopy The deck to be copied.
  */
 Deck::Deck(const Deck& deckToCopy) {
-    this->cards_ = new std::vector<Card*>(*deckToCopy.cards_);
+    cards_ = std::make_unique<std::vector<std::shared_ptr<Card>>>();
+    for (const auto& c: *deckToCopy.cards_) {
+        cards_->push_back(std::make_shared<Card>(*c));
+    }
 }
 
 /**
  * Destructor for the Deck class. Deletes the cardDeck pointer.
  */
-Deck::~Deck() {
-    for (auto c: *cards_) {
-        delete c;
-    }
-    cards_->clear();
-    delete cards_;
-}
+Deck::~Deck() = default;
 
 /**
  * Draw cards from the deck and place it directly into a hand
  * @param hand The hand where the randomly chosen card will be placed.
  */
-Card *Deck::draw() {
+Deck &Deck::draw(Hand &hand) {
     if (cards_->empty()) {
         throw std::out_of_range("No more cards in the deck");
     }
     auto random = rand() % cards_->size();
-    auto c = cards_->at(random);
-    remove(*c);
-    return c;
+
+    hand.add(cards_->at(random));
+
+    remove(cards_->at(random));
+
+    return *this;
 }
 
 /**
@@ -283,7 +280,7 @@ Card *Deck::draw() {
  * @param deckSize The deck size. By default, the size is set to 5.
  */
 Deck::Deck(const int &deckSize) {
-    this->cards_ = new std::vector<Card*>();
+    cards_ = std::make_unique<std::vector<std::shared_ptr<Card>>>();
     cards_->reserve(deckSize);
 }
 
@@ -299,7 +296,7 @@ size_t Deck::size() const {
     return cards_->size();
 }
 
-const std::vector<Card*> &Deck::cards() const {
+const std::vector<std::shared_ptr<Card>> &Deck::cards() const {
     return *cards_;
 }
 
@@ -308,8 +305,8 @@ const std::vector<Card*> &Deck::cards() const {
  * @param index The index of the selected card from the Deck of cards.
  * @return The selected card
  */
-const Card &Deck::card(size_t index) const {
-    return *cards_->at(index);
+const std::shared_ptr<Card> &Deck::card(size_t index) const {
+    return cards_->at(index);
 }
 
 /**
@@ -322,19 +319,18 @@ const Card &Deck::card(size_t index) const {
  */
 Deck &Deck::operator=(const Deck &deck) {
     if (this != &deck) {
-        delete cards_;
-        cards_ = new std::vector<Card*>(*deck.cards_);
+        cards_ = std::make_unique<std::vector<std::shared_ptr<Card>>>();
+        for (const auto& c: *deck.cards_) {
+            add(std::make_shared<Card>(*c));
+        }
     }
     return *this;
 }
-// TO DO
-
-//std::istream &operator>>(std::istream &is, Deck &deck) {}
 
 std::ostream &operator<<(std::ostream &os, const Deck &deck) {
     os << "Deck (size: " << deck.cards_->size() << "): " << std::endl;
-    for (auto it = deck.cards_->begin(); it != deck.cards_->end(); ++it) {
-        os << "\t" << **it << std::endl;
+    for (auto & card : *deck.cards_) {
+        os << "\t" << *card << std::endl;
     }
     return os;
 }

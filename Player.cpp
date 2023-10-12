@@ -131,12 +131,12 @@ void Player::issueOrder(const std::string &orderType, int sourceTerritory, int t
 }
 
 void Player::drawCardFromDeck(Deck &deck) {
-    hand->add(*deck.draw());
+    deck.draw(*hand);
 }
 
-void Player::playCardFromHand(Card &card, Deck &deck) {
+void Player::playCardFromHand(const std::shared_ptr<Card> &card, Deck &deck) {
     // Implement logic to play the card
-    card.play();
+    card->play();
     hand->remove(card);
 }
 
