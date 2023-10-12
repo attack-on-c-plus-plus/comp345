@@ -51,14 +51,14 @@ private:
  */
 class Hand {
 public:
-    explicit Hand(const int &collectionSize = 5);
+    explicit Hand(unsigned size = 0);
     explicit Hand(const std::vector<Card>& cardCollection);
     Hand &add(const std::shared_ptr<Card> &card);
     Hand &remove(const std::shared_ptr<Card> &card);
     Hand(const Hand&);
     ~Hand();
     [[nodiscard]] const std::shared_ptr<Card> &card(size_t index) const;
-    [[nodiscard]] bool isEmpty() const;
+    [[nodiscard]] bool empty() const;
     [[nodiscard]] const std::vector<std::shared_ptr<Card>> &cards() const;
     [[nodiscard]] size_t size() const;
     Hand &operator=(const Hand&);
@@ -73,14 +73,14 @@ private:
  */
 class Deck {
 public:
-    explicit Deck(const int &deckSize = 5);
+    explicit Deck(unsigned size = 5);
     explicit Deck(const std::vector<Card> &cardDeck);
     Deck &add(const std::shared_ptr<Card> &card);
     Deck &remove(const std::shared_ptr<Card> &card);
     Deck(const Deck&);
     ~Deck();
     Deck &draw(Hand &hand);
-    [[nodiscard]] bool isEmpty() const;
+    [[nodiscard]] bool empty() const;
     [[nodiscard]] size_t size() const;
     [[nodiscard]] const std::vector<std::shared_ptr<Card>> &cards() const;
     [[nodiscard]] const std::shared_ptr<Card> &card(size_t index) const;

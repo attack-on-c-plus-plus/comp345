@@ -47,7 +47,7 @@ void testCards() {
 
     // Creates a Hand by drawing cards from the deck
     Hand playerHand{};
-    while(!gameDeck.isEmpty()) {
+    while(!gameDeck.empty()) {
         std::cout << playerHand << std::endl;
         std::cout << gameDeck << std::endl;
         gameDeck.draw(playerHand);
@@ -63,7 +63,7 @@ void testCards() {
     std::cout << "===================================" << std::endl;
 
     // Revised solution
-    while (!playerHand.isEmpty()) {
+    while (!playerHand.empty()) {
         std::cout << playerHand << std::flush;
         std::uniform_int_distribution<size_t> u(0, playerHand.size() - 1);
         std::default_random_engine e(r());
