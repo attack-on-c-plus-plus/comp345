@@ -11,14 +11,14 @@
 
 //Default Constructor
 Player::Player() //: Player("Player Default")
+        : name{new std::string("Test")}, ordersList{new OrdersList()}, territories{new std::vector<Territory>}, hand{new Hand()}
 {
-    name = new std::string("Test");
     std::cout << "* In the default constructor of player class * \n";
 }
 
 //Parameterized Constructor
 Player::Player(const std::string &name)
-        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory>} {
+        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory>},hand{new Hand()} {
     std::cout << "* In the Parameterized constructor of player class *\n";
 }
 
@@ -29,12 +29,12 @@ Player::Player(const Player &other)
     std::cout << "* In the copy constructor of player class *\n";
 }
 
-
+//Destructor
 Player::~Player() {
-    delete name;
-    delete ordersList;
-    delete hand;
-    delete territories;
+   delete name;
+   delete ordersList;
+   delete hand;
+   delete territories;
     std::cout << "Default Destructor is called\n";
 }
 
@@ -48,12 +48,13 @@ void Player::changeName(const std::string &newName) {
 
 
 // Add a method to add a territory to the player's collection
-void Player::addTerritory(const Territory &territory) {
+void Player::addTerritory(Territory &territory) {
     territories->push_back(territory);
+    territory.setOwner(*this);
 }
 
-bool Player::removeTerritory(const Territory &territoryToRemove) {
-    return true;
+const std::vector<Territory>& Player::getTerritories() const {
+    return *territories;
 }
 
 
@@ -84,7 +85,8 @@ std::vector<Territory> Player::toDefend(const Map &map) const {
 }
 
 
-std::vector<Territory> Player::toAttack(const Map &map) const {
+std::vector<Territory> Player::toAttack(const Map &map) const
+{
     std::vector<Territory> territoriesToAttack;
 
     // Iterate through the player's territories
@@ -94,9 +96,20 @@ std::vector<Territory> Player::toAttack(const Map &map) const {
 
         // Check if adjacent territories are owned by other players
         for (auto adjacentTerritory: adjacentTerritories) {
-            if (&(adjacentTerritory->owner()) != this) {
-                // Add the adjacent territory to the list of territories to attack
-                territoriesToAttack.push_back(*adjacentTerritory);
+            if (&(adjacentTerritory.getOwner()) != this) {
+
+                // Check if adjacentTerritory is not already in territoriesToAttack
+                bool isUnique = true;
+                for (const Territory &attackTerritory : territoriesToAttack) {
+                    if (attackTerritory.getName() == adjacentTerritory.getName()) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                // If it's unique, add it to the list of territories to attack
+                if (isUnique) {
+                    territoriesToAttack.push_back(adjacentTerritory);
+                }
             }
         }
     }
@@ -134,12 +147,10 @@ void Player::drawCardFromDeck(Deck &deck) {
     deck.draw(*hand);
 }
 
-void Player::playCardFromHand(Card &card, Deck &deck) {
+void Player::playCardFromHand(const Card &card, Deck &deck) {
     // Implement logic to play the card
-    card.play();
-    hand->removeCard(card);
+    hand->discard(card.play(), deck);
 }
-
 const Hand &Player::getHand() const {
     return *hand;
 }
@@ -149,10 +160,8 @@ std::vector<Order*> Player::getOrderList()
     return ordersList->getOrder();
 }
 
-//?????????
-const std::vector<Territory>* Player::getTerritories() const {
-    return territories;
-}
+
+
 
 
 

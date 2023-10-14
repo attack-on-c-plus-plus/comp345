@@ -1,12 +1,10 @@
-//
-// Created by Haris Mahmood on 2023-09-27.
-//
 
 #ifndef COMP345_PLAYER_H
 #define COMP345_PLAYER_H
 
 #include <string>
 #include <vector>
+#include <memory>
 #include "Cards.h"
 #include "Map.h"
 #include "Orders.h"
@@ -38,11 +36,9 @@ public:
 
     //Methods
     [[nodiscard]] std::string &getName() const;
-
     void changeName(const std::string &newName);
 
     [[nodiscard]] std::vector<Territory> toAttack(const Map &) const;
-
     [[nodiscard]] std::vector<Territory> toDefend(const Map &) const;
 
     void issueOrder(const std::string &orderType, int sourceTerritory, int targetTerritory, int armies, int targetPlayerID);
@@ -51,18 +47,16 @@ public:
     std::vector<Order*> getOrderList();
 
     // Add methods to manage the player's territory
-    void addTerritory(const Territory &territory);
+    void addTerritory(Territory &territory);
 
-    bool removeTerritory(const Territory &territoryToRemove);
+    const std::vector<Territory>& getTerritories() const;
 
     // Add methods to manage the player's hand of cards
     void drawCardFromDeck(Deck &deck);
 
-    void playCardFromHand(Card &card, Deck &deck);
+    void playCardFromHand(const Card &card, Deck &deck);
 
     [[nodiscard]] const Hand &getHand() const;
-
-    const std::vector<Territory>* getTerritories() const;
 
 private:
     //Attributes
