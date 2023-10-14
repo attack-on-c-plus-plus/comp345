@@ -31,10 +31,10 @@ Player::Player(const Player &other)
 
 //Destructor
 Player::~Player() {
-//    delete name;
-//    delete ordersList;
-//    delete hand;
-//    delete territories;
+   delete name;
+   delete ordersList;
+   delete hand;
+   delete territories;
     std::cout << "Default Destructor is called\n";
 }
 
