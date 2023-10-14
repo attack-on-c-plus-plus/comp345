@@ -29,7 +29,7 @@ enum class CardType {
 
 /**
  * The Card Class.
- * Stores a pointer to a string.
+ * Stores a pointer to a CardType.
  */
 class Card {
 public:
