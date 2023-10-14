@@ -59,7 +59,7 @@ public:
     // Add methods to manage the player's hand of cards
     void drawCardFromDeck(Deck &deck);
 
-    void playCardFromHand(const std::shared_ptr<Card> &card, Deck &deck);
+    void playCardFromHand(const Card &card, Deck &deck);
 
     [[nodiscard]] const Hand &getHand() const;
 

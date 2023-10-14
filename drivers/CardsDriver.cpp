@@ -8,21 +8,22 @@
 // Henri Stephane Carbon
 // Haris Mahmood
 
+size_t randomInt(size_t min, size_t max);
+
 void testCards() {
-    std::random_device r;
     std::cout << "Testing the implementation of Cards" << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << "Creating New Cards" << std::endl;
     std::cout << "===================================" << std::endl;
 
     // Creating cards
-    auto card1{std::make_shared<Card>(CardType::bomb)};
-    auto card2{std::make_shared<Card>(CardType::reinforcement)};
-    auto card3{std::make_shared<Card>(CardType::blockade)};
-    auto card4{std::make_shared<Card>(CardType::airlift)};
-    auto card5{std::make_shared<Card>(CardType::diplomacy)};
+    auto card1{new Card(CardType::bomb)};
+    auto card2{new Card(CardType::reinforcement)};
+    auto card3{new Card(CardType::blockade)};
+    auto card4{new Card(CardType::airlift)};
+    auto card5{new Card(CardType::diplomacy)};
 
-    auto card6{std::make_shared<Card>(CardType::bomb)};
+    auto card6{new Card(CardType::bomb)};
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
@@ -65,16 +66,12 @@ void testCards() {
     // Revised solution
     while (!playerHand.empty()) {
         std::cout << playerHand << std::flush;
-        std::uniform_int_distribution<size_t> u(0, playerHand.size() - 1);
-        std::default_random_engine e(r());
-        auto random = u(e);
+        auto hs = playerHand.size();
+        auto random = randomInt(0, hs);
 
-        //std::cout << "Index " << random << " is selected for playing card." << std::endl;
         auto cardSelected = playerHand.card(random);
-        std::cout << "Playing " << *cardSelected << " at index " << random << std::endl;
-        playerHand.remove(cardSelected);
-        cardSelected->play();
-        gameDeck.add(cardSelected);
+        std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
+        playerHand.discard(cardSelected.play(), gameDeck);
         std::cout << std::endl;
     }
 
@@ -86,4 +83,11 @@ void testCards() {
     auto cardAmountInDeck{gameDeck.size()};
     std::cout << gameDeck << std::endl;
 
+}
+
+size_t randomInt(size_t min, size_t max) {
+    std::random_device r;
+    std::uniform_int_distribution<size_t> u(0, max - 1);
+    std::default_random_engine e(r());
+    return u(e);
 }

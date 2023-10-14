@@ -134,10 +134,9 @@ void Player::drawCardFromDeck(Deck &deck) {
     deck.draw(*hand);
 }
 
-void Player::playCardFromHand(const std::shared_ptr<Card> &card, Deck &deck) {
+void Player::playCardFromHand(const Card &card, Deck &deck) {
     // Implement logic to play the card
-    card->play();
-    hand->remove(card);
+    hand->discard(card.play(), deck);
 }
 
 const Hand &Player::getHand() const {
