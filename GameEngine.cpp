@@ -139,6 +139,10 @@ Command::~Command() {
     gameEngine_ = nullptr;
 }
 
+Command::Command(const Command &command) {
+    gameEngine_ = command.gameEngine_;
+}
+
 Command &Command::operator=(const Command &command) {
     if (this != &command)
     {
@@ -148,15 +152,20 @@ Command &Command::operator=(const Command &command) {
     return *this;
 }
 
-Command::Command(const Command &command) {
-    gameEngine_ = command.gameEngine_;
-}
-
 LoadMapCommand::LoadMapCommand(GameEngine &gameEngine) :
     Command(gameEngine) {}
 
-LoadMapCommand::~LoadMapCommand() {
+LoadMapCommand::LoadMapCommand(const LoadMapCommand &loadMap) :
+        Command(loadMap) {}
 
+LoadMapCommand::~LoadMapCommand() {}
+
+LoadMapCommand &LoadMapCommand::operator=(const LoadMapCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
+    return *this;
 }
 
 bool LoadMapCommand::valid() {
@@ -177,20 +186,20 @@ LoadMapCommand *LoadMapCommand::clone() const {
     return new LoadMapCommand(*this);
 }
 
-LoadMapCommand &LoadMapCommand::operator=(const LoadMapCommand &command) {
-    return *this;
-}
-
-LoadMapCommand::LoadMapCommand(const LoadMapCommand &loadMap) :
-    Command(loadMap) {
-
-}
-
 ValidateMapCommand::ValidateMapCommand(GameEngine &gameEngine) :
     Command(gameEngine) {}
 
-ValidateMapCommand::~ValidateMapCommand() {
+ValidateMapCommand::ValidateMapCommand(const ValidateMapCommand &validateMap) :
+        Command(validateMap) {}
 
+ValidateMapCommand::~ValidateMapCommand() {}
+
+ValidateMapCommand &ValidateMapCommand::operator=(const ValidateMapCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
+    return *this;
 }
 
 bool ValidateMapCommand::valid() {
@@ -211,21 +220,19 @@ ValidateMapCommand *ValidateMapCommand::clone() const {
     return new ValidateMapCommand(*this);
 }
 
-ValidateMapCommand &ValidateMapCommand::operator=(const ValidateMapCommand &command) {
+AddPlayerCommand::AddPlayerCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+
+AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand &addPlayer) :
+        Command(addPlayer) {}
+
+AddPlayerCommand::~AddPlayerCommand() {}
+
+AddPlayerCommand &AddPlayerCommand::operator=(const AddPlayerCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
     return *this;
-}
-
-ValidateMapCommand::ValidateMapCommand(const ValidateMapCommand &validateMap) :
-    Command(validateMap) {
-
-}
-
-AddPlayerCommand::AddPlayerCommand(GameEngine &gameEngine) : Command(gameEngine) {
-
-}
-
-AddPlayerCommand::~AddPlayerCommand() {
-
 }
 
 bool AddPlayerCommand::valid() {
@@ -246,22 +253,20 @@ AddPlayerCommand *AddPlayerCommand::clone() const {
     return new AddPlayerCommand(*this);
 }
 
-AddPlayerCommand &AddPlayerCommand::operator=(const AddPlayerCommand &command) {
-    return *this;
-}
-
-AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand &addPlayer) :
-    Command(addPlayer) {
-
-}
-
 AssignTerritoriesCommand::AssignTerritoriesCommand(GameEngine &gameEngine) :
-    Command(gameEngine) {
+    Command(gameEngine) {}
 
-}
+AssignTerritoriesCommand::AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories) :
+        Command(assignTerritories) {}
 
-AssignTerritoriesCommand::~AssignTerritoriesCommand() {
+AssignTerritoriesCommand::~AssignTerritoriesCommand() {}
 
+AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerritoriesCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
+    return *this;
 }
 
 bool AssignTerritoriesCommand::valid() {
@@ -282,21 +287,20 @@ AssignTerritoriesCommand *AssignTerritoriesCommand::clone() const {
     return new AssignTerritoriesCommand(*this);
 }
 
-AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerritoriesCommand &command) {
+IssueOrdersCommand::IssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+
+IssueOrdersCommand::IssueOrdersCommand(const IssueOrdersCommand &issueOrders) :
+        Command(issueOrders){
+}
+
+IssueOrdersCommand::~IssueOrdersCommand() {}
+
+IssueOrdersCommand &IssueOrdersCommand::operator=(const IssueOrdersCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
     return *this;
-}
-
-AssignTerritoriesCommand::AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories) :
-    Command(assignTerritories) {
-
-}
-
-IssueOrdersCommand::IssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {
-
-}
-
-IssueOrdersCommand::~IssueOrdersCommand() {
-
 }
 
 bool IssueOrdersCommand::valid() {
@@ -317,21 +321,19 @@ IssueOrdersCommand *IssueOrdersCommand::clone() const {
     return new IssueOrdersCommand(*this);
 }
 
-IssueOrdersCommand &IssueOrdersCommand::operator=(const LoadMapCommand &command) {
+EndIssueOrdersCommand::EndIssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+
+EndIssueOrdersCommand::EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders) :
+        Command(endIssueOrders) {}
+
+EndIssueOrdersCommand::~EndIssueOrdersCommand() {}
+
+EndIssueOrdersCommand &EndIssueOrdersCommand::operator=(const EndIssueOrdersCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
     return *this;
-}
-
-IssueOrdersCommand::IssueOrdersCommand(const IssueOrdersCommand &issueOrders) :
-        Command(issueOrders){
-
-}
-
-EndIssueOrdersCommand::EndIssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {
-
-}
-
-EndIssueOrdersCommand::~EndIssueOrdersCommand() {
-
 }
 
 bool EndIssueOrdersCommand::valid() {
@@ -352,21 +354,20 @@ EndIssueOrdersCommand *EndIssueOrdersCommand::clone() const {
     return new EndIssueOrdersCommand(*this);
 }
 
-EndIssueOrdersCommand &EndIssueOrdersCommand::operator=(const EndIssueOrdersCommand &command) {
+ExecuteOrdersCommand::ExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+
+ExecuteOrdersCommand::ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders) :
+        Command(executeOrders) {
+}
+
+ExecuteOrdersCommand::~ExecuteOrdersCommand() {}
+
+ExecuteOrdersCommand &ExecuteOrdersCommand::operator=(const ExecuteOrdersCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
     return *this;
-}
-
-EndIssueOrdersCommand::EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders) :
-    Command(endIssueOrders) {
-
-}
-
-ExecuteOrdersCommand::ExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {
-
-}
-
-ExecuteOrdersCommand::~ExecuteOrdersCommand() {
-
 }
 
 bool ExecuteOrdersCommand::valid() {
@@ -387,21 +388,20 @@ ExecuteOrdersCommand *ExecuteOrdersCommand::clone() const {
     return new ExecuteOrdersCommand(*this);
 }
 
-ExecuteOrdersCommand &ExecuteOrdersCommand::operator=(const ExecuteOrdersCommand &command) {
+EndExecuteOrdersCommand::EndExecuteOrdersCommand(GameEngine &gameEngine) :
+    Command(gameEngine) {}
+
+EndExecuteOrdersCommand::EndExecuteOrdersCommand(const EndExecuteOrdersCommand &endExecuteOrders) :
+        Command(endExecuteOrders) {}
+
+EndExecuteOrdersCommand::~EndExecuteOrdersCommand() {}
+
+EndExecuteOrdersCommand &EndExecuteOrdersCommand::operator=(const EndExecuteOrdersCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
     return *this;
-}
-
-ExecuteOrdersCommand::ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders) :
-    Command(executeOrders) {
-
-}
-
-EndExecuteOrdersCommand::EndExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {
-
-}
-
-EndExecuteOrdersCommand::~EndExecuteOrdersCommand() {
-
 }
 
 bool EndExecuteOrdersCommand::valid() {
@@ -422,21 +422,19 @@ EndExecuteOrdersCommand *EndExecuteOrdersCommand::clone() const {
     return new EndExecuteOrdersCommand(*this);
 }
 
-EndExecuteOrdersCommand &EndExecuteOrdersCommand::operator=(const EndExecuteOrdersCommand &command) {
+WinCommand::WinCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+
+WinCommand::WinCommand(const WinCommand &win) :
+        Command(win) {}
+
+WinCommand::~WinCommand() {}
+
+WinCommand &WinCommand::operator=(const WinCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
     return *this;
-}
-
-EndExecuteOrdersCommand::EndExecuteOrdersCommand(const EndExecuteOrdersCommand &endExecuteOrders) :
-    Command(endExecuteOrders) {
-
-}
-
-WinCommand::WinCommand(GameEngine &gameEngine) : Command(gameEngine) {
-
-}
-
-WinCommand::~WinCommand() {
-
 }
 
 bool WinCommand::valid() {
@@ -457,21 +455,19 @@ WinCommand *WinCommand::clone() const {
     return new WinCommand(*this);
 }
 
-WinCommand &WinCommand::operator=(const WinCommand &command) {
+PlayCommand::PlayCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+
+PlayCommand::PlayCommand(const PlayCommand &play) :
+        Command(play) {}
+
+PlayCommand::~PlayCommand() {}
+
+PlayCommand &PlayCommand::operator=(const PlayCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
     return *this;
-}
-
-WinCommand::WinCommand(const WinCommand &win) :
-    Command(win) {
-
-}
-
-PlayCommand::PlayCommand(GameEngine &gameEngine) : Command(gameEngine) {
-
-}
-
-PlayCommand::~PlayCommand() {
-
 }
 
 bool PlayCommand::valid() {
@@ -492,21 +488,19 @@ PlayCommand *PlayCommand::clone() const {
     return new PlayCommand(*this);
 }
 
-PlayCommand &PlayCommand::operator=(const PlayCommand &command) {
+QuitCommand::QuitCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+
+QuitCommand::QuitCommand(const QuitCommand &quit) :
+        Command(quit) {}
+
+QuitCommand::~QuitCommand() {}
+
+QuitCommand &QuitCommand::operator=(const QuitCommand &command) {
+    if (this != &command)
+    {
+        Command::operator=(command);
+    }
     return *this;
-}
-
-PlayCommand::PlayCommand(const PlayCommand &play) :
-    Command(play) {
-
-}
-
-QuitCommand::QuitCommand(GameEngine &gameEngine) : Command(gameEngine) {
-
-}
-
-QuitCommand::~QuitCommand() {
-
 }
 
 bool QuitCommand::valid() {
@@ -525,13 +519,4 @@ GameState QuitCommand::execute() {
 
 QuitCommand *QuitCommand::clone() const {
     return new QuitCommand(*this);
-}
-
-QuitCommand &QuitCommand::operator=(const QuitCommand &command) {
-    return *this;
-}
-
-QuitCommand::QuitCommand(const QuitCommand &quit) :
-    Command(quit) {
-
 }

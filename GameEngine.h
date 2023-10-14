@@ -125,7 +125,7 @@ public:
     bool valid() override;
     GameState execute() override;
     [[nodiscard]] IssueOrdersCommand* clone() const override;
-    IssueOrdersCommand &operator=(const LoadMapCommand& command);
+    IssueOrdersCommand &operator=(const IssueOrdersCommand& command);
 };
 class EndIssueOrdersCommand : public Command {
 public:
