@@ -30,7 +30,7 @@ enum class GameState
     issueOrders,
     executeOrders,
     win,
-    gameover
+    gameOver
 };
 
 /**
@@ -56,7 +56,7 @@ public:
     Command *readCommand();
 private:
     GameState *state_;
-    friend std::ostream &operator<<(std::ostream &is, GameEngine &gameEngine);
+    friend std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
 };
 
 std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);

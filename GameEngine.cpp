@@ -62,11 +62,11 @@ GameState GameEngine::state() const {
  */
 bool GameEngine::gameOver() const
 {
-    return *state_ == GameState::win;
+    return *state_ == GameState::gameOver;
 }
 
 void GameEngine::gameLoop() {
-    while (*state_ != GameState::gameover) {
+    while (*state_ != GameState::gameOver) {
         std::cout << "Preparing game" << std::endl;
         startup();
         std::cout << "Playing game" << std::endl;
@@ -86,7 +86,7 @@ void GameEngine::startup() {
 
 void GameEngine::play() {
     Command *command;
-    while (*state_ != GameState::gameover) {
+    while (*state_ != GameState::gameOver) {
         command = readCommand();
         if (command == nullptr) continue;
         *state_ = command->execute();
@@ -155,10 +155,9 @@ Command &Command::operator=(const Command &command) {
 LoadMapCommand::LoadMapCommand(GameEngine &gameEngine) :
     Command(gameEngine) {}
 
-LoadMapCommand::LoadMapCommand(const LoadMapCommand &loadMap) :
-        Command(loadMap) {}
+LoadMapCommand::LoadMapCommand(const LoadMapCommand &loadMap) = default;
 
-LoadMapCommand::~LoadMapCommand() {}
+LoadMapCommand::~LoadMapCommand() = default;
 
 LoadMapCommand &LoadMapCommand::operator=(const LoadMapCommand &command) {
     if (this != &command)
@@ -189,10 +188,9 @@ LoadMapCommand *LoadMapCommand::clone() const {
 ValidateMapCommand::ValidateMapCommand(GameEngine &gameEngine) :
     Command(gameEngine) {}
 
-ValidateMapCommand::ValidateMapCommand(const ValidateMapCommand &validateMap) :
-        Command(validateMap) {}
+ValidateMapCommand::ValidateMapCommand(const ValidateMapCommand &validateMap) = default;
 
-ValidateMapCommand::~ValidateMapCommand() {}
+ValidateMapCommand::~ValidateMapCommand() = default;
 
 ValidateMapCommand &ValidateMapCommand::operator=(const ValidateMapCommand &command) {
     if (this != &command)
@@ -222,10 +220,9 @@ ValidateMapCommand *ValidateMapCommand::clone() const {
 
 AddPlayerCommand::AddPlayerCommand(GameEngine &gameEngine) : Command(gameEngine) {}
 
-AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand &addPlayer) :
-        Command(addPlayer) {}
+AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand &addPlayer) = default;
 
-AddPlayerCommand::~AddPlayerCommand() {}
+AddPlayerCommand::~AddPlayerCommand() = default;
 
 AddPlayerCommand &AddPlayerCommand::operator=(const AddPlayerCommand &command) {
     if (this != &command)
@@ -256,10 +253,9 @@ AddPlayerCommand *AddPlayerCommand::clone() const {
 AssignTerritoriesCommand::AssignTerritoriesCommand(GameEngine &gameEngine) :
     Command(gameEngine) {}
 
-AssignTerritoriesCommand::AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories) :
-        Command(assignTerritories) {}
+AssignTerritoriesCommand::AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories) = default;
 
-AssignTerritoriesCommand::~AssignTerritoriesCommand() {}
+AssignTerritoriesCommand::~AssignTerritoriesCommand() = default;
 
 AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerritoriesCommand &command) {
     if (this != &command)
@@ -289,11 +285,9 @@ AssignTerritoriesCommand *AssignTerritoriesCommand::clone() const {
 
 IssueOrdersCommand::IssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
 
-IssueOrdersCommand::IssueOrdersCommand(const IssueOrdersCommand &issueOrders) :
-        Command(issueOrders){
-}
+IssueOrdersCommand::IssueOrdersCommand(const IssueOrdersCommand &issueOrders) = default;
 
-IssueOrdersCommand::~IssueOrdersCommand() {}
+IssueOrdersCommand::~IssueOrdersCommand() = default;
 
 IssueOrdersCommand &IssueOrdersCommand::operator=(const IssueOrdersCommand &command) {
     if (this != &command)
@@ -323,10 +317,9 @@ IssueOrdersCommand *IssueOrdersCommand::clone() const {
 
 EndIssueOrdersCommand::EndIssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
 
-EndIssueOrdersCommand::EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders) :
-        Command(endIssueOrders) {}
+EndIssueOrdersCommand::EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders) = default;
 
-EndIssueOrdersCommand::~EndIssueOrdersCommand() {}
+EndIssueOrdersCommand::~EndIssueOrdersCommand() = default;
 
 EndIssueOrdersCommand &EndIssueOrdersCommand::operator=(const EndIssueOrdersCommand &command) {
     if (this != &command)
@@ -356,11 +349,9 @@ EndIssueOrdersCommand *EndIssueOrdersCommand::clone() const {
 
 ExecuteOrdersCommand::ExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
 
-ExecuteOrdersCommand::ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders) :
-        Command(executeOrders) {
-}
+ExecuteOrdersCommand::ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders) = default;
 
-ExecuteOrdersCommand::~ExecuteOrdersCommand() {}
+ExecuteOrdersCommand::~ExecuteOrdersCommand() = default;
 
 ExecuteOrdersCommand &ExecuteOrdersCommand::operator=(const ExecuteOrdersCommand &command) {
     if (this != &command)
@@ -391,10 +382,9 @@ ExecuteOrdersCommand *ExecuteOrdersCommand::clone() const {
 EndExecuteOrdersCommand::EndExecuteOrdersCommand(GameEngine &gameEngine) :
     Command(gameEngine) {}
 
-EndExecuteOrdersCommand::EndExecuteOrdersCommand(const EndExecuteOrdersCommand &endExecuteOrders) :
-        Command(endExecuteOrders) {}
+EndExecuteOrdersCommand::EndExecuteOrdersCommand(const EndExecuteOrdersCommand &endExecuteOrders) = default;
 
-EndExecuteOrdersCommand::~EndExecuteOrdersCommand() {}
+EndExecuteOrdersCommand::~EndExecuteOrdersCommand() = default;
 
 EndExecuteOrdersCommand &EndExecuteOrdersCommand::operator=(const EndExecuteOrdersCommand &command) {
     if (this != &command)
@@ -424,10 +414,9 @@ EndExecuteOrdersCommand *EndExecuteOrdersCommand::clone() const {
 
 WinCommand::WinCommand(GameEngine &gameEngine) : Command(gameEngine) {}
 
-WinCommand::WinCommand(const WinCommand &win) :
-        Command(win) {}
+WinCommand::WinCommand(const WinCommand &win) = default;
 
-WinCommand::~WinCommand() {}
+WinCommand::~WinCommand() = default;
 
 WinCommand &WinCommand::operator=(const WinCommand &command) {
     if (this != &command)
@@ -457,10 +446,9 @@ WinCommand *WinCommand::clone() const {
 
 PlayCommand::PlayCommand(GameEngine &gameEngine) : Command(gameEngine) {}
 
-PlayCommand::PlayCommand(const PlayCommand &play) :
-        Command(play) {}
+PlayCommand::PlayCommand(const PlayCommand &play) = default;
 
-PlayCommand::~PlayCommand() {}
+PlayCommand::~PlayCommand() = default;
 
 PlayCommand &PlayCommand::operator=(const PlayCommand &command) {
     if (this != &command)
@@ -490,10 +478,9 @@ PlayCommand *PlayCommand::clone() const {
 
 QuitCommand::QuitCommand(GameEngine &gameEngine) : Command(gameEngine) {}
 
-QuitCommand::QuitCommand(const QuitCommand &quit) :
-        Command(quit) {}
+QuitCommand::QuitCommand(const QuitCommand &quit) = default;
 
-QuitCommand::~QuitCommand() {}
+QuitCommand::~QuitCommand() = default;
 
 QuitCommand &QuitCommand::operator=(const QuitCommand &command) {
     if (this != &command)
@@ -514,7 +501,7 @@ bool QuitCommand::valid() {
 GameState QuitCommand::execute() {
     if (!valid()) return gameEngine_->state();
     std::cout << "Quitting" << std::endl;
-    return GameState::gameover;
+    return GameState::gameOver;
 }
 
 QuitCommand *QuitCommand::clone() const {
