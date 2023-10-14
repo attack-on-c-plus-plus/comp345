@@ -59,6 +59,9 @@ private:
     std::vector<std::vector<size_t>> *continentEdges_{};
     std::vector<Territory*> *territories_;
     std::vector<Continent*> *continents_;
+    bool isConnectedGraph();
+    bool hasContinentSubGraphs();
+    bool hasOneContinentPerTerritory();
     void depthFirstSearchTerritory(std::vector<bool> &visited, size_t &count, unsigned vertex);
     friend std::istream &operator>>(std::istream &is, Map &map);
     friend std::ostream &operator<<(std::ostream &os, const Map &map);
@@ -98,7 +101,7 @@ private:
 class Continent {
 public:
     Continent();
-    explicit Continent(unsigned, const std::string &, unsigned);
+    explicit Continent(const std::string &, unsigned);
     // Copy constructor
     Continent(const Continent&);
     // Destructor

@@ -59,40 +59,24 @@ Map::~Map() {
  * @return
  */
 bool Map::validate() {
-    std::vector<bool> visited;
-    visited.resize(territories_->size());
-    size_t count = 0;
+    if (name_->empty()) {
+        std::cout << "Map has no name!" << std::endl;
+        return false;
+    }
+    if (continents_->empty()) {
+        std::cout << "Map has no continents!" << std::endl;
+        return false;
+    }
+    if (territories_->empty()) {
+        std::cout << "Map has no territories!" << std::endl;
+        return false;
+    }
 
-    // territory graph check
-    depthFirstSearchTerritory(visited, count, 0);
-
-    if (count != territories_->size())
+    if (!isConnectedGraph() || !hasContinentSubGraphs() || !hasOneContinentPerTerritory())
         return false;
 
     std::cout << "Map is a connected graph!" << std::endl;
-
-    // Continent graph check
-    count = 0;
-    for (const auto& ct: *continentEdges_) {
-        count += ct.size();
-    }
-
-    if (count != territories_->size())
-        return false;
-
-    std::cout << "Continent are a connected subgraph!" << std::endl;
-
-    visited.clear();
-    visited.resize(territories_->size());
-    for (const auto& ce : *continentEdges_) {
-        for (auto t : ce) {
-            if(!visited[t])
-                visited[t] = true;
-            else
-                return false;
-        }
-    }
-
+    std::cout << "Continents are a connected subgraph!" << std::endl;
     std::cout << "Each Territory has a continent!" << std::endl;
 
     return true;
@@ -108,7 +92,7 @@ Territory &Map::territory(const std::string &name) const {
     auto &ts = territories_;
     if (auto it = std::find_if(ts->begin(), ts->end(), byName); it != ts->end())
         return **it;
-    throw std::out_of_range("Territory with name " + name + "not found");
+    throw std::out_of_range("Territory with name " + name + " not found");
 }
 
 /**
@@ -121,7 +105,7 @@ Continent &Map::continent(const std::string &name) const {
     auto &cs = continents_;
     if (auto it = std::find_if(cs->begin(), cs->end(), byName); it != cs->end())
         return **it;
-    throw std::out_of_range("Continent with name " + name + "not found");
+    throw std::out_of_range("Continent with name " + name + " not found");
 }
 
 /**
@@ -230,8 +214,9 @@ std::vector<const Territory*> Map::adjacencies(const Territory &territory) const
  * @return
  */
 Map &Map::add(const Territory &t) {
-    *t.id_ = territories_->size();
-    territories_->push_back(new Territory(t));
+    auto *pt = new Territory(t);
+    *pt->id_ = std::optional<size_t>(territories_->size());
+    territories_->push_back(pt);
     territoryEdges_->emplace_back();
     return *this;
 }
@@ -243,7 +228,9 @@ Map &Map::add(const Territory &t) {
  * @return
  */
 Map &Map::addEdge(const Continent& continent, const Territory& adjacent) {
-    continentEdges_->at(continent.id().value()).push_back(adjacent.id().value());
+    auto c = this->continent(continent.name());
+    auto t = this->territory(adjacent.name());
+    continentEdges_->at(c.id().value()).push_back(t.id().value());
     return *this;
 }
 
@@ -254,9 +241,9 @@ Map &Map::addEdge(const Continent& continent, const Territory& adjacent) {
  * @return
  */
 Map &Map::addEdge(const Territory& territory, const Territory& adjacent) {
-    auto t = territories_->at(territory.id().value());
-    auto a = territories_->at(adjacent.id().value());
-    territoryEdges_->at(t->id().value()).push_back(a->id().value());
+    auto t = this->territory(territory.name());
+    auto a = this->territory(adjacent.name());
+    territoryEdges_->at(t.id().value()).push_back(a.id().value());
     return *this;
 }
 
@@ -266,10 +253,71 @@ Map &Map::addEdge(const Territory& territory, const Territory& adjacent) {
  * @return
  */
 Map &Map::add(const Continent& c) {
-    *c.id_ = continents_->size();
-    continents_->push_back(new Continent(c));
+    auto *pc = new Continent(c);
+    *pc->id_ = std::optional<size_t>(continents_->size());
+    continents_->push_back(pc);
     continentEdges_->emplace_back();
     return *this;
+}
+
+/**
+ * Determines if graph is fully connected
+ * @return true if fully connected; false otherwise
+ */
+bool Map::isConnectedGraph() {
+    std::vector<bool> visited;
+    size_t count;
+    // try starting from each vertex
+    for (int startVertex = 0; startVertex < territories_->size(); ++startVertex) {
+        count = 0;
+        visited.clear();
+        visited.resize(territories_->size());
+        // territory graph check
+        if (!territoryEdges_->empty())
+            depthFirstSearchTerritory(visited, count, startVertex);
+
+        if (count != territories_->size()) { // We weren't able to visit each vertex.
+            std::cout << "Map is not a connected graph!" << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+/**
+ * Determines if all continents are sub graphs
+ * @return true if all continents are sub graphs; false otherwise
+ */
+bool Map::hasContinentSubGraphs() {
+    // Continent graph check
+    size_t count = 0;
+    for (const auto& ct: *continentEdges_) {
+        count += ct.size();
+    }
+
+    if (count == territories_->size()) return true;
+
+    std::cout << "Continents are not a connected subgraph!" << std::endl;
+    return false;
+}
+
+/**
+ * Checks if all territories have one continent
+ * @return true if each territory has one continent; false otherwise
+ */
+bool Map::hasOneContinentPerTerritory() {
+    std::vector<bool> visited;
+    visited.resize(territories_->size());
+    for (const auto& ce : *continentEdges_) {
+        for (auto t : ce) {
+            if(!visited[t])
+                visited[t] = true;
+            else {
+                std::cout << "Not every Territory has a continent!" << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 /**
@@ -477,7 +525,7 @@ std::ostream &operator<<(std::ostream &os, const Territory &territory) {
 /**
  * Constructor
  */
-Continent::Continent() : Continent(0, "", 0) {
+Continent::Continent() : Continent("", 0) {
 }
 
 /**
@@ -486,8 +534,8 @@ Continent::Continent() : Continent(0, "", 0) {
  * @param name
  * @param bonusArmies
  */
-Continent::Continent(unsigned id, const std::string &name, unsigned bonusArmies) {
-    id_ = new std::optional<size_t>(id);
+Continent::Continent(const std::string &name, unsigned bonusArmies) {
+    id_ = new std::optional<size_t>();
     name_ = new std::string(name);
     bonusArmies_ = new unsigned(bonusArmies);
 }
