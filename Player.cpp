@@ -147,6 +147,10 @@ void Player::drawCardFromDeck(Deck &deck) {
     deck.draw(*hand);
 }
 
+void Player::playCardFromHand(const Card &card, Deck &deck) {
+    // Implement logic to play the card
+    hand->discard(card.play(), deck);
+}
 const Hand &Player::getHand() const {
     return *hand;
 }

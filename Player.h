@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include "Cards.h"
 #include "Map.h"
 #include "Orders.h"
@@ -52,6 +53,8 @@ public:
 
     // Add methods to manage the player's hand of cards
     void drawCardFromDeck(Deck &deck);
+
+    void playCardFromHand(const Card &card, Deck &deck);
 
     [[nodiscard]] const Hand &getHand() const;
 
