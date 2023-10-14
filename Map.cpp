@@ -23,8 +23,8 @@ Map::Map() : Map("") {
  * @param name
  */
 Map::Map(const std::string &name) : name_{new std::string(name)},
-    territories_{new std::vector<Territory>},
-    continents_{new std::vector<Continent>},
+    territories_{new std::vector<Territory*>},
+    continents_{new std::vector<Continent*>},
     territoryEdges_{new std::vector<std::vector<size_t>>},
     continentEdges_{new std::vector<std::vector<size_t>>} {
 }
@@ -35,8 +35,8 @@ Map::Map(const std::string &name) : name_{new std::string(name)},
  */
 Map::Map(const Map &map) {
     name_ = new std::string(*map.name_);
-    continents_ = new std::vector<Continent>(*map.continents_);
-    territories_ = new std::vector<Territory>(*map.territories_);
+    continents_ = new std::vector<Continent*>(*map.continents_);
+    territories_ = new std::vector<Territory*>(*map.territories_);
     territoryEdges_ = new std::vector<std::vector<size_t>>(*map.territoryEdges_);
     continentEdges_ = new std::vector<std::vector<size_t>>(*map.continentEdges_);
 }
@@ -46,7 +46,9 @@ Map::Map(const Map &map) {
  */
 Map::~Map() {
     delete name_;
+    for(auto t : *territories_) delete t;
     delete territories_;
+    for(auto c : *continents_) delete c;
     delete continents_;
     delete territoryEdges_;
     delete continentEdges_;
@@ -102,10 +104,10 @@ bool Map::validate() {
  * @return
  */
 Territory &Map::territory(const std::string &name) const {
-    auto byName = [name](const Territory& t) { return t.name() == name; };
+    auto byName = [name](const Territory* t) { return t->name() == name; };
     auto &ts = territories_;
     if (auto it = std::find_if(ts->begin(), ts->end(), byName); it != ts->end())
-        return *it;
+        return **it;
     throw std::out_of_range("Territory with name " + name + "not found");
 }
 
@@ -115,10 +117,10 @@ Territory &Map::territory(const std::string &name) const {
  * @return
  */
 Continent &Map::continent(const std::string &name) const {
-    auto byName = [name](const Continent& c) { return c.name() == name; };
+    auto byName = [name](const Continent* c) { return c->name() == name; };
     auto &cs = continents_;
     if (auto it = std::find_if(cs->begin(), cs->end(), byName); it != cs->end())
-        return *it;
+        return **it;
     throw std::out_of_range("Continent with name " + name + "not found");
 }
 
@@ -155,14 +157,22 @@ Map &Map::operator=(const Map &map) {
     if (this != &map) {
         // clean up resources
         delete name_;
-        delete continents_;
+        for(auto t : *territories_) delete t;
         delete territories_;
+        for(auto c : *continents_) delete c;
+        delete continents_;
         delete territoryEdges_;
         delete continentEdges_;
 
         name_ = new std::string(*map.name_);
-        continents_ = new std::vector<Continent>(*map.continents_);
-        territories_ = new std::vector<Territory>(*map.territories_);
+        continents_ = new std::vector<Continent*>();
+        for (auto c: *map.continents_) {
+            continents_->push_back(new Continent(*c));
+        }
+        territories_ = new std::vector<Territory*>(*map.territories_);
+        for (auto t: *map.territories_) {
+            territories_->push_back(new Territory(*t));
+        }
         territoryEdges_ = new std::vector<std::vector<size_t>>(*map.territoryEdges_);
         continentEdges_ = new std::vector<std::vector<size_t>>(*map.continentEdges_);
     }
@@ -175,7 +185,7 @@ Map &Map::operator=(const Map &map) {
  * @return the Continent
  */
 Continent &Map::continent(size_t id) const {
-    return continents_->at(id);
+    return *continents_->at(id);
 }
 
 /**
@@ -184,7 +194,7 @@ Continent &Map::continent(size_t id) const {
  * @return the Territory
  */
 Territory &Map::territory(size_t id) const {
-    return territories_->at(id);
+    return *territories_->at(id);
 }
 
 /**
@@ -192,8 +202,8 @@ Territory &Map::territory(size_t id) const {
  * @param continent
  * @return
  */
-std::vector<Territory> Map::adjacencies(const Continent &continent) const {
-    std::vector<Territory> adj{};
+std::vector<const Territory*> Map::adjacencies(const Continent &continent) const {
+    std::vector<const Territory*> adj{};
     for (auto i: continentEdges_->at(continent.id().value())) {
         adj.push_back(territories_->at(i));
     }
@@ -205,8 +215,8 @@ std::vector<Territory> Map::adjacencies(const Continent &continent) const {
  * @param territory
  * @return
  */
-std::vector<Territory> Map::adjacencies(const Territory &territory) const {
-    std::vector<Territory> adj{};
+std::vector<const Territory*> Map::adjacencies(const Territory &territory) const {
+    std::vector<const Territory*> adj{};
     for (auto i: territoryEdges_->at(territory.id().value())) {
         adj.push_back(territories_->at(i));
     }
@@ -221,7 +231,7 @@ std::vector<Territory> Map::adjacencies(const Territory &territory) const {
  */
 Map &Map::add(const Territory &t) {
     *t.id_ = territories_->size();
-    territories_->push_back(t);
+    territories_->push_back(new Territory(t));
     territoryEdges_->emplace_back();
     return *this;
 }
@@ -244,9 +254,9 @@ Map &Map::addEdge(const Continent& continent, const Territory& adjacent) {
  * @return
  */
 Map &Map::addEdge(const Territory& territory, const Territory& adjacent) {
-    Territory &t = territories_->at(territory.id().value());
-    Territory &a = territories_->at(adjacent.id().value());
-    territoryEdges_->at(t.id().value()).push_back(a.id().value());
+    auto t = territories_->at(territory.id().value());
+    auto a = territories_->at(adjacent.id().value());
+    territoryEdges_->at(t->id().value()).push_back(a->id().value());
     return *this;
 }
 
@@ -257,7 +267,7 @@ Map &Map::addEdge(const Territory& territory, const Territory& adjacent) {
  */
 Map &Map::add(const Continent& c) {
     *c.id_ = continents_->size();
-    continents_->push_back(c);
+    continents_->push_back(new Continent(c));
     continentEdges_->emplace_back();
     return *this;
 }
@@ -318,10 +328,10 @@ std::ostream &operator<<(std::ostream &os, const Map &map) {
  * @param p
  * @return
  */
-std::vector<Territory> Map::territories(const Player &p) const {
-    auto byPlayer = [p](const Territory &territory)
-    { return territory.isOwned() && territory.owner().getName() == p.getName(); };
-    std::vector<Territory> t{};
+std::vector<const Territory*> Map::territories(const Player &p) const {
+    auto byPlayer = [p](const Territory *territory)
+    { return territory->isOwned() && territory->owner().getName() == p.getName(); };
+    std::vector<const Territory*> t{};
     for (const auto& item: ((*territories_) | std::views::filter(byPlayer))) {
         t.push_back(item);
     }

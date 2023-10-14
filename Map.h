@@ -49,16 +49,16 @@ public:
     [[nodiscard]] size_t continentCount() const;
     [[nodiscard]] Continent &continent(size_t id) const;
     [[nodiscard]] Territory &territory(size_t id) const;
-    [[nodiscard]] std::vector<Territory> territories(const Player &p) const;
-    [[nodiscard]] std::vector<Territory> adjacencies(const Continent &continent) const;
-    [[nodiscard]] std::vector<Territory> adjacencies(const Territory &territory) const;
+    [[nodiscard]] std::vector<const Territory*> territories(const Player &p) const;
+    [[nodiscard]] std::vector<const Territory*> adjacencies(const Continent &continent) const;
+    [[nodiscard]] std::vector<const Territory*> adjacencies(const Territory &territory) const;
     Map &operator=(const Map&);
 private:
     std::string *name_;
     std::vector<std::vector<size_t>> *territoryEdges_{};
     std::vector<std::vector<size_t>> *continentEdges_{};
-    std::vector<Territory> *territories_;
-    std::vector<Continent> *continents_;
+    std::vector<Territory*> *territories_;
+    std::vector<Continent*> *continents_;
     void depthFirstSearchTerritory(std::vector<bool> &visited, size_t &count, unsigned vertex);
     friend std::istream &operator>>(std::istream &is, Map &map);
     friend std::ostream &operator<<(std::ostream &os, const Map &map);
