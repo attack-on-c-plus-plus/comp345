@@ -122,22 +122,28 @@ void Player::issueOrder(const std::string &orderType, int sourceTerritory, int t
 {
     if (orderType == "Deploy") {
         // Create a DeployOrder object
-        ordersList->addOrder(new DeployOrder(armies));
+        DeployOrder d{armies};
+        ordersList->addOrder(&d);
     } else if (orderType == "Advance") {
         // Create an AdvanceOrder object
-        ordersList->addOrder(new AdvanceOrder(sourceTerritory, targetTerritory, armies));
+        AdvanceOrder a{sourceTerritory, targetTerritory, armies};
+        ordersList->addOrder(&a);
     } else if (orderType == "Bomb") {
         // Create a BombOrder object
-        ordersList->addOrder(new BombOrder(targetTerritory));
+        BombOrder b{targetTerritory};
+        ordersList->addOrder(&b);
     } else if (orderType == "Blockade") {
         // Create a BlockadeOrder object
-        ordersList->addOrder(new BlockadeOrder(targetTerritory));
+        BlockadeOrder b{targetTerritory};
+        ordersList->addOrder(&b);
     } else if (orderType == "Airlift") {
         // Create an AirliftOrder object
-        ordersList->addOrder(new AirliftOrder(armies, sourceTerritory, targetTerritory));
+        AirliftOrder a{armies, sourceTerritory, targetTerritory};
+        ordersList->addOrder(&a);
     } else if (orderType == "Negotiate") {
         // Create a NegotiateOrder object with the target player ID
-        ordersList->addOrder(new NegotiateOrder(targetPlayerID));
+        NegotiateOrder n{targetPlayerID};
+        ordersList->addOrder(&n);
     } else {
         return;
     }
