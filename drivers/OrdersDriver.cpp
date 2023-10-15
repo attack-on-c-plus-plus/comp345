@@ -9,22 +9,33 @@
 // Haris Mahmood
 
 void testOrderList() {
+    Player p1{"p1"};
+    Player p2{"p2"};
+
+    Territory t1{};
+    Territory t2{};
+    Territory t3{};
+
+    t1.setOwner(p1);
+    t2.setOwner(p1);
+    t3.setOwner(p2);
+
     // Create some sample orders
-    DeployOrder deployOrder(10);
-    AdvanceOrder advanceOrder(1, 2, 5);
-    BombOrder bombOrder(3);
-    BlockadeOrder blockadeOrder(4);
-    AirliftOrder airliftOrder(5, 6, 7);
-    NegotiateOrder negotiateOrder(8);
+    DeployOrder deployOrder{p1, t1, 10};
+    AdvanceOrder advanceOrder{p1, t1, t2, 5};
+    BombOrder bombOrder{p1, t3};
+    BlockadeOrder blockadeOrder{p1, t2};
+    AirliftOrder airliftOrder{p1, t2, t1, 2};
+    NegotiateOrder negotiateOrder{p2, p1};
 
     // Create an OrdersList and add orders to it
     OrdersList ordersList;
-    ordersList.addOrder(&deployOrder)
-            .addOrder(&advanceOrder)
-            .addOrder(&bombOrder)
-            .addOrder(&blockadeOrder)
-            .addOrder(&airliftOrder)
-            .addOrder(&negotiateOrder);
+    ordersList.addOrder(deployOrder)
+            .addOrder(advanceOrder)
+            .addOrder(bombOrder)
+            .addOrder(blockadeOrder)
+            .addOrder(airliftOrder)
+            .addOrder(negotiateOrder);
 
     // Execute the orders
     ordersList.executeOrders();

@@ -17,7 +17,8 @@
  * Constructor
  * @param description
  */
-Order::Order(const std::string &description) {
+Order::Order(const Player &player, const std::string &description) {
+    player_ = &player;
     description_ = new std::string(description);
     effect_ = new std::string();
 }
@@ -27,8 +28,10 @@ Order::Order(const std::string &description) {
  * @param other
  */
 Order::Order(const Order& other) :
-        description_(new std::string(*(other.description_))),
-        effect_(new std::string(*(other.effect_))) {}
+    description_(new std::string(*(other.description_))),
+    effect_(new std::string(*(other.effect_))) {
+    player_ = other.player_;
+}
 
 /**
  * Destructor
@@ -90,9 +93,10 @@ std::ostream& operator<<(std::ostream& os, const Order& order) {
  * Constructor
  * @param armies
  */
-DeployOrder::DeployOrder(unsigned armies) :
-    Order("Deploy"),
+DeployOrder::DeployOrder(const Player &player, Territory &target, unsigned armies) :
+    Order(player, "Deploy"),
     armies_{new unsigned (armies)} {
+    target_ = &target;
 }
 
 /**
@@ -101,6 +105,7 @@ DeployOrder::DeployOrder(unsigned armies) :
  */
 DeployOrder::DeployOrder(const DeployOrder &order) : Order(order) {
     armies_ = new unsigned(*order.armies_);
+    target_ = order.target_;
 }
 
 /**
@@ -156,12 +161,11 @@ DeployOrder *DeployOrder::clone() const {
  * @param target
  * @param armies
  */
-AdvanceOrder::AdvanceOrder(size_t source, size_t target, unsigned armies) :
-    Order("Advance"),
-    sourceTerritory_{new size_t(source)},
-    targetTerritory_{new size_t(target)},
+AdvanceOrder::AdvanceOrder(const Player &player, Territory &source, Territory &target, unsigned armies) :
+    Order(player, "Advance"),
     armies_{new unsigned(armies)} {
-
+    source_ = &source;
+    target_ = &target;
 }
 
 /**
@@ -169,8 +173,8 @@ AdvanceOrder::AdvanceOrder(size_t source, size_t target, unsigned armies) :
  * @param order
  */
 AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : Order(order) {
-    sourceTerritory_ = new size_t(*order.sourceTerritory_);
-    targetTerritory_ = new size_t(*order.targetTerritory_);
+    source_ = order.source_;
+    target_ = order.target_;
     armies_ = new unsigned(*order.armies_);
 }
 
@@ -178,8 +182,7 @@ AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : Order(order) {
  * Destructor
  */
 AdvanceOrder::~AdvanceOrder() {
-    delete sourceTerritory_;
-    delete targetTerritory_;
+    // only delete non-weak ptr
     delete armies_;
 }
 
@@ -190,15 +193,11 @@ AdvanceOrder::~AdvanceOrder() {
 bool AdvanceOrder::validate() const {
     // Check if the number of armies to advance is non-negative
 
-    if (*armies_ < 0) {
-        return false;
-    }
-
     // Check if the source and target territories exist
-    if (*sourceTerritory_ < 0 || *targetTerritory_ < 0) {
-        *effect_ = "Failed to execute AdvanceOrder: Invalid territories.";
-        return false;
-    }
+//    if (source_->getOwner() == *player_ || target_->getOwner() == *player_) {
+//        *effect_ = "Failed to execute AdvanceOrder: Invalid territories.";
+//        return false;
+//    }
 
 
     return true;
@@ -210,8 +209,8 @@ bool AdvanceOrder::validate() const {
 void AdvanceOrder::execute() {
     if (validate()) {
         // Check if the player has enough armies in the source territory to advance
-        int armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
-        int armies_in_target_territory = /* Get the number of armies in the target territory */ 0;
+        unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
+        unsigned armies_in_target_territory = /* Get the number of armies in the target territory */ 0;
 
         //If AdvanceOrder is valid, armies in source territory are reduced and armies in target territory are increased
         armies_in_source_territory -= *armies_;
@@ -219,7 +218,7 @@ void AdvanceOrder::execute() {
 
         //Update the effect string to describe the action
         *effect_ = "Advanced " + std::to_string(*armies_) + " armies from territory "
-                   + std::to_string(*sourceTerritory_) + " to territory " + std::to_string(*targetTerritory_) + ".";
+                   + source_->getName() + " to territory " + target_->getName() + ".";
     }
 }
 
@@ -231,12 +230,10 @@ void AdvanceOrder::execute() {
 AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete sourceTerritory_;
-        delete targetTerritory_;
         delete armies_;
 
-        sourceTerritory_ = new size_t(*order.sourceTerritory_);
-        targetTerritory_ = new size_t(*order.targetTerritory_);
+        source_ = order.source_;
+        target_ = order.target_;
         armies_ = new unsigned(*order.armies_);
     }
     return *this;
@@ -255,9 +252,9 @@ AdvanceOrder *AdvanceOrder::clone() const {
  * Constructor
  * @param targetTerritory
  */
-BombOrder::BombOrder(size_t targetTerritory) :
-    Order("Bomb"),
-    targetTerritory_{new size_t(targetTerritory)} {
+BombOrder::BombOrder(const Player &player, Territory &target) :
+    Order(player, "Bomb") {
+    target_ = &target;
 }
 
 /**
@@ -266,15 +263,13 @@ BombOrder::BombOrder(size_t targetTerritory) :
  */
 BombOrder::BombOrder(const BombOrder &order) :
         Order(order) {
-    targetTerritory_ = new size_t(*order.targetTerritory_);
+    target_ = order.target_;
 }
 
 /**
  * Destructor
  */
-BombOrder::~BombOrder() {
-    delete targetTerritory_;
-}
+BombOrder::~BombOrder() = default;
 
 /**
  * Validates the BombOrder
@@ -295,7 +290,7 @@ void BombOrder::execute() {
         armies_in_target_territory /= 2;
 
         // Update the effect string to describe the action
-        *effect_ = "Bombed territory " + std::to_string(*targetTerritory_) + ".";
+        *effect_ = "Bombed territory " + target_->getName() + ".";
     }
 }
 
@@ -307,9 +302,7 @@ void BombOrder::execute() {
 BombOrder &BombOrder::operator=(const BombOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete targetTerritory_;
-
-        targetTerritory_ = new size_t(*order.targetTerritory_);
+        target_ = order.target_;
     }
     return *this;
 }
@@ -329,8 +322,9 @@ BombOrder *BombOrder::clone() const {
  * Constructor
  * @param target
  */
-BlockadeOrder::BlockadeOrder(size_t target) : Order("Block"),
-    targetTerritory_{new size_t(target)} {
+BlockadeOrder::BlockadeOrder(const Player &player, Territory &target) :
+    Order(player, "Block") {
+    target_ = &target;
 }
 
 /**
@@ -338,15 +332,13 @@ BlockadeOrder::BlockadeOrder(size_t target) : Order("Block"),
  * @param order
  */
 BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order) {
-    targetTerritory_ = new size_t(*order.targetTerritory_);
+    target_ = order.target_;
 }
 
 /**
  * Destructor
  */
-BlockadeOrder::~BlockadeOrder() {
-    delete targetTerritory_;
-}
+BlockadeOrder::~BlockadeOrder() = default;
 
 /**
  * Validates the BlockadeOrder
@@ -363,11 +355,11 @@ void BlockadeOrder::execute() {
     if (validate()) {
 
         // Triple armies from the target territory:
-        int armies_in_target_territory = /* Get the number of armies  : Order()in the target territory */ 0;
+        unsigned armies_in_target_territory = /* Get the number of armies  : Order()in the target territory */ 0;
         armies_in_target_territory *= 3;
 
         // Update the effect string to describe the action
-        *effect_ = "Blocked territory " + std::to_string(*targetTerritory_) + ".";
+        *effect_ = "Blocked territory " + target_->getName() + ".";
     }
 }
 
@@ -379,9 +371,7 @@ void BlockadeOrder::execute() {
 BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete targetTerritory_;
-
-        targetTerritory_ = new size_t(*order.targetTerritory_);
+        target_ = order.target_;
     }
     return *this;
 }
@@ -402,11 +392,11 @@ BlockadeOrder *BlockadeOrder::clone() const {
  * @param target
  * @param armies
  */
-AirliftOrder::AirliftOrder(size_t source, size_t target, unsigned armies) :
-    Order("Airlift"),
-    sourceTerritory_{new size_t(source)},
-    targetTerritory_{new size_t(target)},
+AirliftOrder::AirliftOrder(const Player &player, Territory &source, Territory &target, unsigned armies) :
+    Order(player, "Airlift"),
     armies_{new unsigned(armies)} {
+    source_ = &source;
+    target_ = &target;
 }
 
 /**
@@ -415,8 +405,8 @@ AirliftOrder::AirliftOrder(size_t source, size_t target, unsigned armies) :
  */
 AirliftOrder::AirliftOrder(const AirliftOrder &order) :
         Order(order) {
-    sourceTerritory_ = new size_t(*order.sourceTerritory_);
-    targetTerritory_ = new size_t(*order.targetTerritory_);
+    source_ = order.source_;
+    target_ = order.target_;
     armies_ = new unsigned(*order.armies_);
 }
 
@@ -424,8 +414,6 @@ AirliftOrder::AirliftOrder(const AirliftOrder &order) :
  * Destructor
  */
 AirliftOrder::~AirliftOrder() {
-    delete sourceTerritory_;
-    delete targetTerritory_;
     delete armies_;
 }
 
@@ -435,7 +423,7 @@ AirliftOrder::~AirliftOrder() {
  */
 bool AirliftOrder::validate() const {
     // Check if the player has enough armies in the source territory to airlift
-    int armies_in_source_territory = /* Get the number of armies in the source territory */ 10;
+    unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 10;
     if (armies_in_source_territory < *armies_) {
 
         return false;
@@ -452,15 +440,15 @@ void AirliftOrder::execute() {
     if (validate()) {
 
         // Reduce armies in source territory
-        int armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
+        unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
         armies_in_source_territory -= *armies_;
         // Increase armies in source territory
-        int armies_in_target_territory = /* Get the number of armies in the source territory */ 0;
+        unsigned armies_in_target_territory = /* Get the number of armies in the source territory */ 0;
         armies_in_target_territory += *armies_;
 
         // Update the effect string to describe the action
         *effect_ = "Airlifted " + std::to_string(*armies_) + " armies from territory "
-                   + std::to_string(*sourceTerritory_) + " to territory " + std::to_string(*targetTerritory_) + ".";
+                   + source_->getName() + " to territory " + target_->getName() + ".";
     }
 }
 
@@ -472,12 +460,10 @@ void AirliftOrder::execute() {
 AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete sourceTerritory_;
-        delete targetTerritory_;
         delete armies_;
 
-        sourceTerritory_ = new size_t(*order.sourceTerritory_);
-        targetTerritory_ = new size_t(*order.targetTerritory_);
+        source_ = order.source_;
+        target_ = order.target_;
         armies_ = new unsigned(*order.armies_);
     }
     return *this;
@@ -494,10 +480,12 @@ AirliftOrder *AirliftOrder::clone() const {
 // Implementation NegotiateOrder class
 /**
  * Constructor
- * @param targetPlayer
+ * @param player
+ * @param otherPlayer
  */
-NegotiateOrder::NegotiateOrder(unsigned targetPlayer) : Order("Negotiation"),
-    targetPlayer_{new unsigned(targetPlayer)} {
+NegotiateOrder::NegotiateOrder(const Player &player, const Player &otherPlayer) :
+    Order(player,"Negotiation") {
+    otherPlayer_ = &otherPlayer;
 }
 
 /**
@@ -505,15 +493,13 @@ NegotiateOrder::NegotiateOrder(unsigned targetPlayer) : Order("Negotiation"),
  * @param order
  */
 NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order) {
-    targetPlayer_ = new unsigned(*order.targetPlayer_);
+    otherPlayer_ = order.otherPlayer_;
 }
 
 /**
  * Destructor
  */
-NegotiateOrder::~NegotiateOrder() {
-    delete targetPlayer_;
-}
+NegotiateOrder::~NegotiateOrder() = default;
 
 /**
  * Validates the NegotiateOrder
@@ -527,7 +513,7 @@ bool NegotiateOrder::validate() const {
         return false;
     }
 
-    // check if player has negotiate card ?
+    // check if player has a negotiate card ?
 
     return true; // Replace with actual validation logic
 }
@@ -539,7 +525,7 @@ void NegotiateOrder::execute() {
     if (validate()) {
 
         // Update the effect string to describe the action
-        *effect_ = "Initiated negotiation with player " + std::to_string(*targetPlayer_) + ".";
+        *effect_ = "Initiated negotiation with player " + otherPlayer_->getName() + ".";
     }
 }
 
@@ -551,9 +537,7 @@ void NegotiateOrder::execute() {
 NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order) {
     if (this != &order) {
         Order::operator=(order);
-        delete targetPlayer_;
-
-        targetPlayer_ = new unsigned(*order.targetPlayer_);
+        otherPlayer_ = order.otherPlayer_;
     }
     return *this;
 }
@@ -601,8 +585,8 @@ OrdersList::~OrdersList() {
  * @param order
  * @return
  */
-OrdersList& OrdersList::addOrder(Order* order) {
-    orders_->push_back(order->clone()); // Store the pointer to the Order
+OrdersList& OrdersList::addOrder(const Order& order) {
+    orders_->push_back(order.clone()); // Store the pointer to the Order
     return *this;
 }
 
