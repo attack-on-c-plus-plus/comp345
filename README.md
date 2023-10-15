@@ -1,4 +1,12 @@
-# COMP 345
+# COMP 345 - Section N - Fall 2023
+
+## Team
+
+- Daniel Soldera
+- Carson Senthilkumar
+- Joe El-Khoury
+- Henri Stephane Carbon
+- Haris Mahmood
 
 ## Git basics
 
