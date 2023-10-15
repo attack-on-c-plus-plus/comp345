@@ -17,10 +17,9 @@
 
 // forward declaration
 class Map;
-
 class Territory;
-
 class OrdersList;
+class Order;
 
 class Player {
 public:
