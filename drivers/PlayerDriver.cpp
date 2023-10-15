@@ -47,9 +47,9 @@ void testPlayer() {
 
     // Create a deck and add some cards to it
     Deck deck;
-    deck.add(new Card(CardType::bomb));
-    deck.add(new Card(CardType::airlift));
-    deck.add(new Card(CardType::blockade));
+    deck.add(Card(CardType::bomb));
+    deck.add(Card(CardType::airlift));
+    deck.add(Card(CardType::blockade));
 
     // Create a player
     Player player1("Player1");

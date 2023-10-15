@@ -17,13 +17,13 @@ void testCards() {
     std::cout << "===================================" << std::endl;
 
     // Creating cards
-    auto card1{new Card(CardType::bomb)};
-    auto card2{new Card(CardType::reinforcement)};
-    auto card3{new Card(CardType::blockade)};
-    auto card4{new Card(CardType::airlift)};
-    auto card5{new Card(CardType::diplomacy)};
+    Card card1{CardType::bomb};
+    Card card2{CardType::reinforcement};
+    Card card3{CardType::blockade};
+    Card card4{CardType::airlift};
+    Card card5{CardType::diplomacy};
 
-    auto card6{new Card(CardType::bomb)};
+    Card card6{CardType::bomb};
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
@@ -71,7 +71,7 @@ void testCards() {
 
         auto cardSelected = playerHand.card(random);
         std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
-        playerHand.discard(cardSelected.play(), gameDeck);
+        gameDeck.discard(cardSelected.play(), playerHand);
         std::cout << std::endl;
     }
 
