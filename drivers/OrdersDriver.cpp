@@ -16,9 +16,9 @@ void testOrderList() {
     Territory t2{};
     Territory t3{};
 
-    t1.setOwner(p1);
-    t2.setOwner(p1);
-    t3.setOwner(p2);
+    t1.owner(p1);
+    t2.owner(p1);
+    t3.owner(p2);
 
     // Create some sample orders
     DeployOrder deployOrder{p1, t1, 10};

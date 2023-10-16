@@ -11,21 +11,21 @@
 
 //Default Constructor
 Player::Player() //: Player("Player Default")
-        : name{new std::string("Test")}, ordersList{new OrdersList()}, territories{new std::vector<Territory>}, hand{new Hand()}
+        : name{new std::string("Test")}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}
 {
     std::cout << "* In the default constructor of player class * \n";
 }
 
 //Parameterized Constructor
 Player::Player(const std::string &name)
-        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory>},hand{new Hand()} {
+        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},hand{new Hand()} {
     std::cout << "* In the Parameterized constructor of player class *\n";
 }
 
 //Copy Constructor
 Player::Player(const Player &other)
         : name{new std::string(*(other.name))},
-          ordersList{other.ordersList}, territories{new std::vector<Territory>(*other.territories)} {
+          ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)} {
     std::cout << "* In the copy constructor of player class *\n";
 }
 
@@ -49,22 +49,22 @@ void Player::changeName(const std::string &newName) {
 
 // Add a method to add a territory to the player's collection
 void Player::addTerritory(Territory &territory) {
-    territories->push_back(territory);
-    territory.setOwner(*this);
+    territories->push_back(&territory);
+    territory.owner(*this);
 }
 
-const std::vector<Territory>& Player::getTerritories() const {
+const std::vector<Territory *> &Player::getTerritories() const {
     return *territories;
 }
 
 
-std::vector<Territory> Player::toDefend(const Map &map) const {
-    std::vector<Territory> territoriesToDefend;
+std::vector<const Territory *> Player::toDefend(const Map &map) const {
+    std::vector<const Territory *> territoriesToDefend;
 
     // Iterate through the player's territories
-    for (const Territory &territory: *territories) {
+    for (auto territory: *territories) {
         // Get the adjacent territories of the current territory
-        auto adjacentTerritories = map.adjacencies(territory);
+        auto adjacentTerritories = map.adjacencies(*territory);
 
         // Check if any adjacent territory is not owned by the player
         bool needsDefense = false;
@@ -85,23 +85,23 @@ std::vector<Territory> Player::toDefend(const Map &map) const {
 }
 
 
-std::vector<Territory> Player::toAttack(const Map &map) const
+std::vector<const Territory *> Player::toAttack(const Map &map) const
 {
-    std::vector<Territory> territoriesToAttack;
+    std::vector<const Territory*> territoriesToAttack;
 
     // Iterate through the player's territories
-    for (const Territory &myTerritory: *territories) {
+    for (auto myTerritory: *territories) {
         // Get the adjacent territories of the current territory
-        auto adjacentTerritories = map.adjacencies(myTerritory);
+        auto adjacentTerritories = map.adjacencies(*myTerritory);
 
         // Check if adjacent territories are owned by other players
         for (auto adjacentTerritory: adjacentTerritories) {
-            if (&(adjacentTerritory.getOwner()) != this) {
+            if (&(adjacentTerritory->owner()) != this) {
 
                 // Check if adjacentTerritory is not already in territoriesToAttack
                 bool isUnique = true;
-                for (const Territory &attackTerritory : territoriesToAttack) {
-                    if (attackTerritory.getName() == adjacentTerritory.getName()) {
+                for (auto attackTerritory : territoriesToAttack) {
+                    if (attackTerritory->name() == adjacentTerritory->name()) {
                         isUnique = false;
                         break;
                     }
@@ -118,32 +118,26 @@ std::vector<Territory> Player::toAttack(const Map &map) const
 }
 
 
-void Player::issueOrder(const std::string &orderType, int sourceTerritory, int targetTerritory, int armies,int targetPlayerID)
+void Player::issueOrder(const std::string &orderType, Territory &source, Territory &target, unsigned armies, const Player &otherPlayer)
 {
     if (orderType == "Deploy") {
         // Create a DeployOrder object
-        DeployOrder d{armies};
-        ordersList->addOrder(&d);
+        ordersList->addOrder(DeployOrder{*this, target, armies});
     } else if (orderType == "Advance") {
         // Create an AdvanceOrder object
-        AdvanceOrder a{sourceTerritory, targetTerritory, armies};
-        ordersList->addOrder(&a);
+        ordersList->addOrder(AdvanceOrder{*this, source, target, armies});
     } else if (orderType == "Bomb") {
         // Create a BombOrder object
-        BombOrder b{targetTerritory};
-        ordersList->addOrder(&b);
+        ordersList->addOrder(BombOrder{*this, target});
     } else if (orderType == "Blockade") {
         // Create a BlockadeOrder object
-        BlockadeOrder b{targetTerritory};
-        ordersList->addOrder(&b);
+        ordersList->addOrder(BlockadeOrder{*this, target});
     } else if (orderType == "Airlift") {
         // Create an AirliftOrder object
-        AirliftOrder a{armies, sourceTerritory, targetTerritory};
-        ordersList->addOrder(&a);
+        ordersList->addOrder(AirliftOrder{*this, source, target, armies});
     } else if (orderType == "Negotiate") {
         // Create a NegotiateOrder object with the target player ID
-        NegotiateOrder n{targetPlayerID};
-        ordersList->addOrder(&n);
+        ordersList->addOrder(NegotiateOrder{*this, otherPlayer});
     } else {
         return;
     }

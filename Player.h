@@ -37,10 +37,10 @@ public:
     [[nodiscard]] std::string &getName() const;
     void changeName(const std::string &newName);
 
-    [[nodiscard]] std::vector<Territory> toAttack(const Map &) const;
-    [[nodiscard]] std::vector<Territory> toDefend(const Map &) const;
+    [[nodiscard]] std::vector<const Territory *> toAttack(const Map &) const;
+    [[nodiscard]] std::vector<const Territory *> toDefend(const Map &) const;
 
-    void issueOrder(const std::string &orderType, int sourceTerritory, int targetTerritory, int armies, int targetPlayerID);
+    void issueOrder(const std::string &orderType, Territory &source, Territory &target, unsigned armies, const Player &otherPlayer);
 
     //method that views the order list of the player
     std::vector<Order*> getOrderList();
@@ -48,7 +48,7 @@ public:
     // Add methods to manage the player's territory
     void addTerritory(Territory &territory);
 
-    const std::vector<Territory>& getTerritories() const;
+    [[nodiscard]] const std::vector<Territory *> &getTerritories() const;
 
     // Add methods to manage the player's hand of cards
     void drawCardFromDeck(Deck &deck);
@@ -60,7 +60,7 @@ public:
 private:
     //Attributes
     std::string *name;
-    std::vector<Territory> *territories;
+    std::vector<Territory *> *territories;
     OrdersList *ordersList;
     Hand *hand;
 

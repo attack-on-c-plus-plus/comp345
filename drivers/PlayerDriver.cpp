@@ -11,6 +11,8 @@ using namespace std;
 // Henri Stephane Carbon
 // Haris Mahmood
 
+void createMap(Map &map);
+
 void testPlayer() {
 
 //------------------------------------------------------------------------------------------------------
@@ -19,23 +21,22 @@ void testPlayer() {
 
     std::cout << "\nDisplaying Territories + Player Relation Testing\n";
     std::cout << "********************************************\n";
-    Player player("Sally");
+    Player player1("Sally");
+    Player player2("Bob");
+
     Map map;
-    std::cout << "\nMap Information:\n";
-    MapLoader::load("maps/valid/3D.map", map);
+    createMap(map);
 
-    Territory &territoryToAdd1 = map.getTerritory(3);
-    Territory &territoryToAdd2 = map.getTerritory(4);
-
-    player.addTerritory(territoryToAdd1);
-    player.addTerritory(territoryToAdd2);
+    player1.addTerritory(map.territory(0));
+    player1.addTerritory(map.territory(1));
+    player2.addTerritory(map.territory(2));
 
     // Display the territories owned by the player
-    std::cout << "\nPlayer Information:\nThe Player \"" << player.getName() << "\" Has the following Territories:"
+    std::cout << "\nPlayer Information:\nThe Player \"" << player1.getName() << "\" Has the following Territories:"
               << std::endl;
-    const std::vector<Territory> &ownedTerritories = player.getTerritories();
-    for (const Territory &territory: ownedTerritories) {
-        std::cout << "\tTerritory ID: " << territory.getId() << ", Name: " << territory.getName() << std::endl;
+    auto ownedTerritories = player1.getTerritories();
+    for (auto territory: ownedTerritories) {
+        std::cout << "\tTerritory: " << *territory << std::endl;
     }
 
 //------------------------------------------------------------------------------------------------------
@@ -50,9 +51,6 @@ void testPlayer() {
     deck.add(Card(CardType::bomb));
     deck.add(Card(CardType::airlift));
     deck.add(Card(CardType::blockade));
-
-    // Create a player
-    Player player1("Player1");
 
     // Draw cards from the deck and add them to the player's hand
     player1.drawCardFromDeck(deck);
@@ -72,49 +70,37 @@ void testPlayer() {
 
     std::cout << "\nDisplaying Territories + Player Relation Testing\n";
     std::cout << "********************************************\n";
-    Player playerA("Sally");
-    Player playerB("Richard");
-    Map map1;
     std::cout << "\nMap Information:\n";
-    MapLoader::load("maps/valid/3D.map", map1);
-
-    Territory &territoryToAdd3 = map1.getTerritory(3);
-    Territory &territoryToAdd4 = map1.getTerritory(4);
-    Territory &territoryToAdd5 = map1.getTerritory(2);
-
-    playerA.addTerritory(territoryToAdd3);
-    playerA.addTerritory(territoryToAdd4);
-    playerB.addTerritory(territoryToAdd5);
 
     // Display the territories owned by the players
-    std::cout << "\nPlayer Information:\nPlayer " << playerA.getName() << "\" Has the following Territories:"
+    std::cout << "\nPlayer Information:\nPlayer " << player1.getName() << "\" Has the following Territories:"
               << std::endl;
-    const std::vector<Territory> &ownedTerritories2 = playerA.getTerritories();
-    for (const Territory &territory: ownedTerritories2) {
-        std::cout << "\tTerritory ID: " << territory.getId() << ", Name: " << territory.getName() << std::endl;
+    auto ownedTerritories2 = player1.getTerritories();
+    for (auto territory: ownedTerritories2) {
+        std::cout << "\tTerritory: " << *territory << std::endl;
     }
 
-    std::cout << "\nPlayer Information:\nPlayer " << playerB.getName() << "\" Has the following Territories:"
+    std::cout << "\nPlayer Information:\nPlayer " << player2.getName() << "\" Has the following Territories:"
               << std::endl;
-    const std::vector<Territory> &ownedTerritories3 = playerB.getTerritories();
-    for (const Territory &territory: ownedTerritories3) {
-        std::cout << "\tTerritory ID: " << territory.getId() << ", Name: " << territory.getName() << std::endl;
+    auto ownedTerritories3 = player2.getTerritories();
+    for (auto territory: ownedTerritories3) {
+        std::cout << "\tTerritory: " << *territory << std::endl;
     }
 
-    std::vector<Territory> attackTerritories = playerA.toAttack(map1);
+    std::vector<const Territory *> attackTerritories = player1.toAttack(map);
 
     // Display the territories to attack
-    std::cout << "\nPlayer " << playerA.getName() << " (attacking) territories:" << std::endl;
-    for (const Territory &territory: attackTerritories) {
-        std::cout << territory.getName() << std::endl;
+    std::cout << "\nPlayer " << player1.getName() << " (attacking) territories:" << std::endl;
+    for (auto territory: attackTerritories) {
+        std::cout << *territory << std::endl;
     }
 
-    std::vector<Territory> defendTerritories = playerB.toDefend(map1);
+    std::vector<const Territory *> defendTerritories = player2.toDefend(map);
 
     // Display the territories to defend
-    std::cout << "\nPlayer " << playerB.getName() << " (defending) territories:" << std::endl;
-    for (const Territory &territory: defendTerritories) {
-        std::cout << territory.getName() << std::endl;
+    std::cout << "\nPlayer " << player2.getName() << " (defending) territories:" << std::endl;
+    for (auto territory: defendTerritories) {
+        std::cout << *territory << std::endl;
     }
 
 //------------------------------------------------------------------------------------------------------
@@ -122,24 +108,35 @@ void testPlayer() {
     // OrderList + Player Relation Testing : "Player contains a issueOrder() method that creates an order object and adds it to the list of orders."
     std::cout << "\nDisplaying OrderList + Player Relation\n";
     std::cout << "**************************************\n";
-    //Object with pointer created on the heap (Manually have to delete)
-    Player playerX{"Bob"};
 
     // Issue some orders
-    playerX.issueOrder("Deploy", 1, 2, 3, 4);
-    playerX.issueOrder("Advance", 2, 3, 2, 5);
-    playerX.issueOrder("Bomb", 3, 4, 0, 0);
-    playerX.issueOrder("Blockade", 4, 5, 0, 0);
-    playerX.issueOrder("Airlift", 5, 6, 4, 0);
-    playerX.issueOrder("Negotiate", 7, 0, 0, 8);
+    player1.issueOrder("Deploy", *player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2);
+    player1.issueOrder("Advance", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2);
+    player1.issueOrder("Bomb", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2);
+    player1.issueOrder("Blockade", *player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2);
+    player1.issueOrder("Airlift",*player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2);
+    player1.issueOrder("Negotiate", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2);
 
     // Check the orders that were given
-    std::cout << "\n\tOrders executed: Player Name is " << playerX.getName() << "\n";
+    std::cout << "\n\tOrders executed: Player Name is " << player1.getName() << "\n";
     std::cout << "\t****************\n";
 
-    for (const Order *order: playerX.getOrderList()) {
+    for (const Order *order: player1.getOrderList()) {
         std::cout << "\t" << *order << std::endl;
     }
 
 //-----------------------------------------------------------------------------------------------------------
 };
+
+void createMap(Map &map) {
+    map = Map{"Test"};
+    Continent c1{"c1", 1}, c2{"c2", 2};
+    map.add(c1).add(c2);
+    Territory t1{"t1"}, t2{"t2"}, t3{"t3"};
+    map.add(t1).add(t2).add(t3);
+    map.addEdge(t1, t2).addEdge(t1, t3);
+    map.addEdge(t2, t1);
+    map.addEdge(t3, t1);
+    map.addEdge(c1,t1);
+    map.addEdge(c2,t2).addEdge(c2,t3);
+}

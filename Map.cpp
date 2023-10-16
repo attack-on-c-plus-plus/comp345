@@ -519,6 +519,7 @@ std::istream &operator>>(std::istream &is, Territory &territory) {
  * @return
  */
 std::ostream &operator<<(std::ostream &os, const Territory &territory) {
+    os << "Id: " << std::to_string(territory.id_->value()) << " Name: " << *territory.name_;
     return os;
 }
 

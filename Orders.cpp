@@ -218,7 +218,7 @@ void AdvanceOrder::execute() {
 
         //Update the effect string to describe the action
         *effect_ = "Advanced " + std::to_string(*armies_) + " armies from territory "
-                   + source_->getName() + " to territory " + target_->getName() + ".";
+                   + source_->name() + " to territory " + target_->name() + ".";
     }
 }
 
@@ -290,7 +290,7 @@ void BombOrder::execute() {
         armies_in_target_territory /= 2;
 
         // Update the effect string to describe the action
-        *effect_ = "Bombed territory " + target_->getName() + ".";
+        *effect_ = "Bombed territory " + target_->name() + ".";
     }
 }
 
@@ -359,7 +359,7 @@ void BlockadeOrder::execute() {
         armies_in_target_territory *= 3;
 
         // Update the effect string to describe the action
-        *effect_ = "Blocked territory " + target_->getName() + ".";
+        *effect_ = "Blocked territory " + target_->name() + ".";
     }
 }
 
@@ -448,7 +448,7 @@ void AirliftOrder::execute() {
 
         // Update the effect string to describe the action
         *effect_ = "Airlifted " + std::to_string(*armies_) + " armies from territory "
-                   + source_->getName() + " to territory " + target_->getName() + ".";
+                   + source_->name() + " to territory " + target_->name() + ".";
     }
 }
 
