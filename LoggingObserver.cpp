@@ -1,5 +1,7 @@
-//
-// Created by hsc on 15/10/23.
-//
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
 
 #include "LoggingObserver.h"

@@ -1,13 +1,24 @@
-//
-// Created by hsc on 15/10/23.
-//
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
 
 #ifndef COMP345_LOGGINGOBSERVER_H
 #define COMP345_LOGGINGOBSERVER_H
 
+#include <string>
+
+/**
+ * ILoggable is an interface that creates a string to log
+ */
 class ILoggable {
 public:
-    virtual void stringToLog() = 0;
+    /**
+     * Creates a string to log
+     * @return the string
+     */
+    virtual std::string stringToLog() = 0;
 };
 
 #endif //COMP345_LOGGINGOBSERVER_H
