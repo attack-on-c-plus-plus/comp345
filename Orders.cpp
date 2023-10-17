@@ -88,6 +88,10 @@ std::ostream& operator<<(std::ostream& os, const Order& order) {
     return os;
 }
 
+std::string Order::stringToLog() const {
+    return {};
+}
+
 // Implementation DeployOrder class
 /**
  * Constructor
@@ -657,4 +661,8 @@ OrdersList &OrdersList::operator=(const OrdersList &ordersList) {
 
     }
     return *this;
+}
+
+std::string OrdersList::stringToLog() const {
+    return {};
 }

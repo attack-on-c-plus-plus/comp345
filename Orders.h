@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "Map.h"
 #include "Player.h"
+#include "LoggingObserver.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -22,7 +23,7 @@ class Territory;
 /**
  *
  */
-class Order {
+class Order : public ILoggable {
 public:
     Order(const Player &player, const std::string &description);
     // Copy constructor
@@ -34,6 +35,7 @@ public:
     [[nodiscard]] const std::string &description() const;
     [[nodiscard]] const std::string &effect() const;
     Order &operator=(const Order&);
+    [[nodiscard]] std::string stringToLog() const override;
 protected:
     const Player *player_; // weak ptr
     std::string *description_;
@@ -154,7 +156,7 @@ private:
 /**
  * OrdersList class contains a list of Order objects
  */
-class OrdersList {
+class OrdersList : public ILoggable {
 public:
     OrdersList();
     OrdersList(const OrdersList&);
@@ -165,6 +167,7 @@ public:
     OrdersList& move(int from, int to);
     OrdersList& executeOrders();
     [[nodiscard]]const std::vector<Order*> &getOrder() const;
+    [[nodiscard]] std::string stringToLog() const override;
     OrdersList &operator=(const OrdersList&);
 private:
     std::vector<Order*> *orders_; // Store pointers to Order objects

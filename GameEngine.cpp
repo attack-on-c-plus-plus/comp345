@@ -131,6 +131,10 @@ Command *GameEngine::readCommand() {
     else { std::cout << "Invalid command. " << s << std::endl; return nullptr; }
 }
 
+std::string GameEngine::stringToLog() const {
+    return {};
+}
+
 Command::Command(GameEngine &gameEngine) {
         gameEngine_ = &gameEngine;
 }
@@ -150,6 +154,10 @@ Command &Command::operator=(const Command &command) {
         gameEngine_ = command.gameEngine_;
     }
     return *this;
+}
+
+std::string Command::stringToLog() const {
+    return {};
 }
 
 LoadMapCommand::LoadMapCommand(GameEngine &gameEngine) :

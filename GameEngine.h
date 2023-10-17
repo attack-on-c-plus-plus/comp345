@@ -2,6 +2,7 @@
 #define COMP345_GAMEENGINE_H
 
 #include <string>
+#include "LoggingObserver.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -38,8 +39,7 @@ enum class GameState
  * the string representing the state and the boolean being used as a
  * check as to whether the game has ended.
  */
-class GameEngine
-{
+class GameEngine : public ILoggable {
 public:
     explicit GameEngine(const GameState &gameStates);
     // Copy constructor
@@ -54,6 +54,9 @@ public:
     void startup();
     void play();
     Command *readCommand();
+
+    std::string stringToLog() const override;
+
 private:
     GameState *state_;
     friend std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
@@ -61,7 +64,7 @@ private:
 
 std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
 
-class Command {
+class Command : public ILoggable {
 public:
     explicit Command(GameEngine &gameEngine);
     Command(const Command &command);
@@ -69,6 +72,7 @@ public:
     virtual bool valid() = 0;
     virtual GameState execute() = 0;
     [[nodiscard]] virtual Command* clone() const = 0;
+    [[nodiscard]] std::string stringToLog() const override;
     Command &operator=(const Command& command);
 protected:
     GameEngine *gameEngine_;

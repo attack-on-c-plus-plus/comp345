@@ -18,7 +18,7 @@ public:
      * Creates a string to log
      * @return the string
      */
-    virtual std::string stringToLog() = 0;
+    [[nodiscard]] virtual std::string stringToLog() const = 0;
 };
 
 #endif //COMP345_LOGGINGOBSERVER_H
