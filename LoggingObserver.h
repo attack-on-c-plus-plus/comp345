@@ -24,6 +24,9 @@ public:
     [[nodiscard]] virtual std::string stringToLog() const = 0;
 };
 
+/**
+ * Subject class used for Observer pattern
+ */
 class Subject {
 public:
     Subject();
