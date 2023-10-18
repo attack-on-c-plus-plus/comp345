@@ -8,6 +8,9 @@
 #define COMP345_LOGGINGOBSERVER_H
 
 #include <string>
+#include <list>
+
+class Observer;
 
 /**
  * ILoggable is an interface that creates a string to log
@@ -19,6 +22,18 @@ public:
      * @return the string
      */
     [[nodiscard]] virtual std::string stringToLog() const = 0;
+};
+
+class Subject {
+public:
+    Subject();
+    Subject(const Subject &subject);
+    ~Subject();
+    virtual void attach(const Observer &observer);
+    virtual void detach(const Observer &observer);
+    virtual void Notify(const ILoggable &loggable);
+private:
+    std::list<const Observer *> *observers_;
 };
 
 #endif //COMP345_LOGGINGOBSERVER_H
