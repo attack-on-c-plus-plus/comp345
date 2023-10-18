@@ -39,7 +39,7 @@ enum class GameState
  * the string representing the state and the boolean being used as a
  * check as to whether the game has ended.
  */
-class GameEngine : public ILoggable {
+class GameEngine : public ILoggable, Subject {
 public:
     explicit GameEngine(const GameState &gameStates);
     // Copy constructor
@@ -54,17 +54,16 @@ public:
     void startup();
     void play();
     Command *readCommand();
-
-    std::string stringToLog() const override;
-
+    [[nodiscard]] std::string stringToLog() const override;
 private:
+    void transition(GameState gameState);
     GameState *state_;
     friend std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
 };
 
 std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
 
-class Command : public ILoggable {
+class Command : public ILoggable, Subject {
 public:
     explicit Command(GameEngine &gameEngine);
     Command(const Command &command);

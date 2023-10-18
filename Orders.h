@@ -23,7 +23,7 @@ class Territory;
 /**
  *
  */
-class Order : public ILoggable {
+class Order : public ILoggable, Subject {
 public:
     Order(const Player &player, const std::string &description);
     // Copy constructor
@@ -31,7 +31,7 @@ public:
     virtual ~Order();
     [[nodiscard]] virtual Order* clone() const = 0;
     [[nodiscard]] virtual bool validate() const = 0;
-    virtual void execute() = 0;
+    virtual void execute();
     [[nodiscard]] const std::string &description() const;
     [[nodiscard]] const std::string &effect() const;
     Order &operator=(const Order&);
@@ -156,7 +156,7 @@ private:
 /**
  * OrdersList class contains a list of Order objects
  */
-class OrdersList : public ILoggable {
+class OrdersList : public ILoggable, Subject {
 public:
     OrdersList();
     OrdersList(const OrdersList&);
