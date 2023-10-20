@@ -3,6 +3,7 @@
 
 #include <string>
 #include "LoggingObserver.h"
+#include "Map.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -51,6 +52,8 @@ public:
     void gameLoop();
     [[nodiscard]] GameState state() const;
     [[nodiscard]] bool gameOver() const;
+    void setMap(Map &newMap);
+
     void startup();
     void play();
     Command *readCommand();
@@ -59,6 +62,7 @@ public:
 
 private:
     GameState *state_;
+    Map *map_;
     friend std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
 };
 

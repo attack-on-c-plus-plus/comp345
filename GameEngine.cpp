@@ -13,8 +13,7 @@
  * Main constructor for the GameEngine object
  * @param gameStates
  */
-GameEngine::GameEngine(const GameState &state) :
-        state_{new GameState(state)} {}
+GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {}
 
 /**
  * Copy constructor
@@ -56,6 +55,13 @@ GameState GameEngine::state() const {
     return *state_;
 }
 
+/*
+Sets the map to the gameEngine
+*/
+void GameEngine::setMap(Map &newMap)
+{
+    this->map_ = &newMap;
+}
 /**
  * Determines if the game is over
  * @return true if over; false otherwise
@@ -112,7 +118,6 @@ std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine) {
 
 Command *GameEngine::readCommand() {
     std::string s;
-
     std::cout << "Enter your command." << std::endl;
     std::cin >> s;
     std::transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -185,8 +190,20 @@ bool LoadMapCommand::valid() {
 
 GameState LoadMapCommand::execute() {
     if (!valid()) return gameEngine_->state();
-    std::cout << "Map loaded." << std::endl;
-    return GameState::mapLoaded;
+    while (true)
+    {
+        std::cout << "Enter the file path for the map you want" << std::endl;
+        std::string file;
+        std::cin >> file;
+        Map board;
+        if (MapLoader::load(file, board))
+        {
+            Map *ptr = &board;
+            gameEngine_->setMap(*ptr);
+            std::cout << "Map loaded." << std::endl;
+            return GameState::mapLoaded;
+        }
+    }
 }
 
 LoadMapCommand *LoadMapCommand::clone() const {
