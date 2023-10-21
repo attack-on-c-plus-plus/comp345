@@ -28,6 +28,14 @@ GameEngine::GameEngine(const GameEngine &gameEngine) :
 GameEngine::~GameEngine()
 {
     delete state_;
+    delete map_;
+    // Delete each object in vector
+    for (auto p : *players)
+    {
+        delete p;
+    }
+    players->clear();
+    delete players;
 }
 
 /**
@@ -54,13 +62,30 @@ GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
 GameState GameEngine::state() const {
     return *state_;
 }
-
 /*
-Sets the map to the gameEngine
-*/
+ * Gets the current map
+ */
+Map GameEngine::getMap() const
+{
+    Map *pointer = this->map_;
+    Map result = *pointer;
+    return result;
+}
+/*
+ * Sets the map to the gameEngine
+ */
 void GameEngine::setMap(Map &newMap)
 {
     this->map_ = &newMap;
+}
+/**
+ * Gets the vector containing the players
+ */
+std::vector<Player *> GameEngine::getPlayers() const
+{
+    std::vector<Player *> *pointer = this->players;
+    std::vector<Player *> result = *pointer;
+    return result;
 }
 /**
  * Determines if the game is over
@@ -235,8 +260,16 @@ bool ValidateMapCommand::valid() {
 
 GameState ValidateMapCommand::execute() {
     if (!valid()) return gameEngine_->state();
-    std::cout << "Map validated." << std::endl;
-    return GameState::mapValidated;
+    if (gameEngine_->getMap().validate())
+    {
+        std::cout << "Map validated." << std::endl;
+        return GameState::mapValidated;
+    }
+    else
+    {
+        std::cout << "Map not valid, enter a new map please." << std::endl;
+        return gameEngine_->state();
+    }
 }
 
 ValidateMapCommand *ValidateMapCommand::clone() const {
@@ -267,7 +300,21 @@ bool AddPlayerCommand::valid() {
 
 GameState AddPlayerCommand::execute() {
     if (!valid()) return gameEngine_->state();
+    if (gameEngine_->getPlayers().size() >= 6)
+    {
+       std::cout << "Already reached maximum player count of 6." << std::endl;
+       return gameEngine_->state();
+    }
+    std::cout << "Enter Name of Player" << std::endl;
+    std::string name;
+    std::cin >> name;
+    Player *newPlayer = new Player(name);
+    gameEngine_->getPlayers().push_back(newPlayer);
     std::cout << "Player added." << std::endl;
+    if (gameEngine_->getPlayers().size() <= 1)
+    {
+       std::cout << "You still need another player." << std::endl;
+    }
     return GameState::playersAdded;
 }
 

@@ -2,6 +2,7 @@
 #define COMP345_GAMEENGINE_H
 
 #include <string>
+
 #include "LoggingObserver.h"
 #include "Map.h"
 
@@ -52,6 +53,8 @@ public:
     void gameLoop();
     [[nodiscard]] GameState state() const;
     [[nodiscard]] bool gameOver() const;
+    [[nodiscard]] Map getMap() const;
+    [[nodiscard]] std::vector<Player *> getPlayers() const;
     void setMap(Map &newMap);
 
     void startup();
@@ -63,6 +66,7 @@ public:
 private:
     GameState *state_;
     Map *map_;
+    std::vector<Player *> *players;
     friend std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
 };
 
