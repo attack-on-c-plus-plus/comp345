@@ -20,7 +20,8 @@ GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {}
  * @param gameEngine
  */
 GameEngine::GameEngine(const GameEngine &gameEngine) :
-        state_{new GameState(*gameEngine.state_)} {}
+    Subject(gameEngine),
+    state_{new GameState(*gameEngine.state_)} {}
 
 /**
  * Destructor
@@ -110,7 +111,7 @@ void GameEngine::startup() {
     while (*state_ != GameState::assignReinforcements) {
         command = readCommand();
         if (command == nullptr) continue;
-        *state_ = command->execute();
+        transition(command->execute());
         delete command;
     }
 }
@@ -120,7 +121,7 @@ void GameEngine::play() {
     while (*state_ != GameState::gameOver) {
         command = readCommand();
         if (command == nullptr) continue;
-        *state_ = command->execute();
+        transition(command->execute());
         delete command;
     }
 }
@@ -163,6 +164,15 @@ Command *GameEngine::readCommand() {
 
 std::string GameEngine::stringToLog() const {
     return {};
+}
+
+/**
+ * Transitions the Game Engine state to the new state
+ * @param gameState
+ */
+void GameEngine::transition(const GameState newState) {
+    *state_ = newState;
+    Notify(*this);
 }
 
 Command::Command(GameEngine &gameEngine) {

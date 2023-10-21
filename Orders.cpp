@@ -28,6 +28,7 @@ Order::Order(const Player &player, const std::string &description) {
  * @param other
  */
 Order::Order(const Order& other) :
+    Subject(other),
     description_(new std::string(*(other.description_))),
     effect_(new std::string(*(other.effect_))) {
     player_ = other.player_;
@@ -39,6 +40,10 @@ Order::Order(const Order& other) :
 Order::~Order() {
     delete description_;
     delete effect_;
+}
+
+void Order::execute() {
+    Notify(*this);
 }
 
 /**
@@ -134,6 +139,7 @@ void DeployOrder::execute() {
     if (validate()) {
         *effect_ = "Deployed " + std::to_string(*armies_) + " armies.";
     }
+    Order::execute();
 }
 
 /**
@@ -224,6 +230,7 @@ void AdvanceOrder::execute() {
         *effect_ = "Advanced " + std::to_string(*armies_) + " armies from territory "
                    + source_->name() + " to territory " + target_->name() + ".";
     }
+    Order::execute();
 }
 
 /**
@@ -296,6 +303,7 @@ void BombOrder::execute() {
         // Update the effect string to describe the action
         *effect_ = "Bombed territory " + target_->name() + ".";
     }
+    Order::execute();
 }
 
 /**
@@ -365,6 +373,7 @@ void BlockadeOrder::execute() {
         // Update the effect string to describe the action
         *effect_ = "Blocked territory " + target_->name() + ".";
     }
+    Order::execute();
 }
 
 /**
@@ -454,6 +463,7 @@ void AirliftOrder::execute() {
         *effect_ = "Airlifted " + std::to_string(*armies_) + " armies from territory "
                    + source_->name() + " to territory " + target_->name() + ".";
     }
+    Order::execute();
 }
 
 /**
@@ -531,6 +541,7 @@ void NegotiateOrder::execute() {
         // Update the effect string to describe the action
         *effect_ = "Initiated negotiation with player " + otherPlayer_->getName() + ".";
     }
+    Order::execute();
 }
 
 /**
@@ -564,7 +575,7 @@ OrdersList::OrdersList() : orders_{new std::vector<Order*>{}} { }
  * Copy constructor
  * @param ordersList
  */
-OrdersList::OrdersList(const OrdersList &ordersList) {
+OrdersList::OrdersList(const OrdersList &ordersList) : Subject(ordersList) {
     orders_ = new std::vector<Order*>{};
     // create a deep copy
     for (auto & order : *ordersList.orders_)
@@ -591,6 +602,7 @@ OrdersList::~OrdersList() {
  */
 OrdersList& OrdersList::addOrder(const Order& order) {
     orders_->push_back(order.clone()); // Store the pointer to the Order
+    Notify(*this);
     return *this;
 }
 
