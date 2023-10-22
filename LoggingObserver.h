@@ -10,8 +10,6 @@
 #include <string>
 #include <list>
 
-class Observer;
-
 /**
  * ILoggable is an interface that creates a string to log
  */
@@ -22,6 +20,28 @@ public:
      * @return the string
      */
     [[nodiscard]] virtual std::string stringToLog() const = 0;
+};
+
+/**
+ * Abstract class Observer for Observer Pattern
+ */
+class Observer {
+public:
+    virtual void Update(const ILoggable &loggable) const = 0;
+private:
+
+};
+
+/**
+ * LogObserver class write notifications to a Log file
+ */
+class LogObserver : public Observer {
+public:
+    explicit LogObserver(const std::string &filename);
+    ~LogObserver();
+    void Update(const ILoggable &loggable) const override;
+private:
+    std::ofstream *out_;
 };
 
 /**

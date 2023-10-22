@@ -10,15 +10,17 @@
 int main() {
     std::cout << "COMP 345" << std::endl;
 
-    testLoadMaps();
+//    testLoadMaps();
+//
+//    testPlayer();
+//
+//    testOrderList();
+//
+//    testCards();
+//
+//    testGameStates();
 
-    testPlayer();
-
-    testOrderList();
-
-    testCards();
-
-    testGameStates();
+    testLoggingObserver();
 
     return 0;
 }
