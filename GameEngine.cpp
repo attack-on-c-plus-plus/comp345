@@ -13,7 +13,9 @@
  * Main constructor for the GameEngine object
  * @param gameStates
  */
-GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {}
+GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {
+    players = new std::vector<Player*>();
+}
 
 /**
  * Copy constructor
@@ -21,7 +23,7 @@ GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {}
  */
 GameEngine::GameEngine(const GameEngine &gameEngine) :
     Subject(gameEngine),
-    state_{new GameState(*gameEngine.state_)} {}
+    state_{new GameState(*gameEngine.state_)} {players = new std::vector<Player*>(*gameEngine.players);}
 
 /**
  * Destructor
@@ -51,7 +53,14 @@ GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
         // This is used in case we are re-assigning to ourselves i.e. f = f;
         // We need to clean up the current pointers because destructor won't be called.
         delete state_;
+        for (auto p : *players)
+        {
+            delete p;
+        }
+        players->clear();
+        delete players;
         state_ = new GameState(*gameEngine.state_);
+        players = new std::vector<Player*>(*gameEngine.players);
     }
     return *this;
 }
@@ -82,11 +91,9 @@ void GameEngine::setMap(Map &newMap)
 /**
  * Gets the vector containing the players
  */
-std::vector<Player *> GameEngine::getPlayers() const
+std::vector<Player *>& GameEngine::getPlayers()
 {
-    std::vector<Player *> *pointer = this->players;
-    std::vector<Player *> result = *pointer;
-    return result;
+    return *players;
 }
 /**
  * Determines if the game is over
@@ -151,7 +158,7 @@ Command *GameEngine::readCommand() {
     if (s == "loadmap") { return new LoadMapCommand(*this); }
     else if (s == "validatemap") { return new ValidateMapCommand(*this); }
     else if (s == "addplayer") { return new AddPlayerCommand(*this); }
-    else if (s == "assigncountries") {return new AssignTerritoriesCommand(*this);}
+    else if (s == "assignterritories") {return new AssignTerritoriesCommand(*this);}
     else if (s == "issueorder") {return new IssueOrdersCommand(*this);}
     else if (s == "endissueorders") {return new EndIssueOrdersCommand(*this);}
     else if (s == "execorder") {return new ExecuteOrdersCommand(*this);}
@@ -229,12 +236,12 @@ GameState LoadMapCommand::execute() {
     {
         std::cout << "Enter the file path for the map you want" << std::endl;
         std::string file;
-        std::cin >> file;
-        Map board;
-        if (MapLoader::load(file, board))
+        std::cin.ignore();
+        std::getline(std::cin, file);
+        Map* board = new Map();
+        if (MapLoader::load(file, *board))
         {
-            Map *ptr = &board;
-            gameEngine_->setMap(*ptr);
+            gameEngine_->setMap(*board);
             std::cout << "Map loaded." << std::endl;
             return GameState::mapLoaded;
         }
@@ -348,9 +355,11 @@ AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerrit
 }
 
 bool AssignTerritoriesCommand::valid() {
-    if (gameEngine_->state() == GameState::playersAdded)
+    if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size()>=2)
         return true;
-
+    if(gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size()<2){
+        std::cout <<"You still need at least 2 players to assign territories" << std::endl;
+    }
     std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
     return false;
 }

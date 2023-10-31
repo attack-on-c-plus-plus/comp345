@@ -54,7 +54,7 @@ public:
     [[nodiscard]] GameState state() const;
     [[nodiscard]] bool gameOver() const;
     [[nodiscard]] Map getMap() const;
-    [[nodiscard]] std::vector<Player *> getPlayers() const;
+    [[nodiscard]] std::vector<Player *>& getPlayers();
     void setMap(Map &newMap);
 
     void startup();
