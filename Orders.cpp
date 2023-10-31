@@ -288,6 +288,14 @@ BombOrder::~BombOrder() = default;
  */
 bool BombOrder::validate() const {
     // Check if the targetTerritory is within a valid range:
+    // If the player they target is themselves, invalid
+    if (player_ == &target_->owner())
+        return false;
+
+    // TO DO
+    // Get the player's adjacent territories
+    // If target territory is not adjacent to
+    // the territory owned by the player issuing the order, then false
     return true;
 }
 

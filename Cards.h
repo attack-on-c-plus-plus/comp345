@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "Player.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -37,7 +38,7 @@ public:
     Card(const Card&);
     ~Card();
     [[nodiscard]] const CardType &type() const;
-    [[nodiscard]] const Card &play() const;
+    [[nodiscard]] const Card &play(Player& player, Territory& territory) const;
     bool operator==(const Card& card) const;
     Card &operator=(const Card&);
     friend std::ostream &operator<<(std::ostream &os, const Card &card);
