@@ -320,7 +320,7 @@ bool BombOrder::validate(const Map& map) const {
 void BombOrder::execute() {
     if (validate()) {
         // Remove armies from the target territory:
-        int armies_in_target_territory = /* Get the number of armies in the target territory */ 0;
+        unsigned armies_in_target_territory = target_->armyCount();
         armies_in_target_territory /= 2;
 
         // Update the effect string to describe the action
