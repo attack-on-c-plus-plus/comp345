@@ -33,4 +33,6 @@ void testCards();
 
 void testOrderList();
 
+void testLoggingObserver();
+
 #endif //COMP345_DRIVERS_H

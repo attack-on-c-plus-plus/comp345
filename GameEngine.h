@@ -41,7 +41,7 @@ enum class GameState
  * the string representing the state and the boolean being used as a
  * check as to whether the game has ended.
  */
-class GameEngine : public ILoggable, Subject {
+class GameEngine : public ILoggable, public Subject {
 public:
     explicit GameEngine(const GameState &gameStates);
     // Copy constructor
@@ -61,28 +61,31 @@ public:
     void play();
     Command *readCommand();
     [[nodiscard]] std::string stringToLog() const override;
-private:
     void transition(GameState gameState);
+private:
     GameState *state_;
+    friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
     Map *map_;
     std::vector<Player *> *players;
-    friend std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
 };
 
-std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine);
-
-class Command : public ILoggable, Subject {
+class Command : public ILoggable, public Subject {
 public:
-    explicit Command(GameEngine &gameEngine);
+    explicit Command(GameEngine &gameEngine, const std::string &description);
     Command(const Command &command);
     virtual ~Command();
     virtual bool valid() = 0;
     virtual GameState execute() = 0;
     [[nodiscard]] virtual Command* clone() const = 0;
+    void saveEffect(const std::string &effect);
     [[nodiscard]] std::string stringToLog() const override;
     Command &operator=(const Command& command);
 protected:
     GameEngine *gameEngine_;
+    std::string *description_;
+    std::string *effect_;
+private:
+    friend std::ostream &operator<<(std::ostream &os, const Command &command);
 };
 
 class LoadMapCommand : public Command {

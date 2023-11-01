@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cctype>
 #include <algorithm>
+#include <sstream>
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -133,8 +134,7 @@ void GameEngine::play() {
     }
 }
 
-std::ostream &operator<<(std::ostream &os, GameEngine &gameEngine) {
-    os << "GameEngine state: ";
+std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine) {
     switch (*gameEngine.state_) {
         case GameState::start: os << "start"; break;
         case GameState::mapLoaded: os << "map loaded"; break;
@@ -170,7 +170,9 @@ Command *GameEngine::readCommand() {
 }
 
 std::string GameEngine::stringToLog() const {
-    return {};
+    std::stringstream s;
+    s << "| Game Engine new state: " << *this;
+    return s.str();
 }
 
 /**
@@ -182,33 +184,53 @@ void GameEngine::transition(const GameState newState) {
     Notify(*this);
 }
 
-Command::Command(GameEngine &gameEngine) {
-        gameEngine_ = &gameEngine;
+Command::Command(GameEngine &gameEngine, const std::string &description) {
+    gameEngine_ = &gameEngine;
+    description_ = new std::string(description);
+    effect_ = new std::string();
 }
 
 Command::~Command() {
-    gameEngine_ = nullptr;
+    delete description_;
+    delete effect_;
 }
 
-Command::Command(const Command &command) {
+Command::Command(const Command &command) : Subject(command) {
     gameEngine_ = command.gameEngine_;
+    description_ = new std::string (*command.description_);
+    effect_ = new std::string(*command.effect_);
 }
 
 Command &Command::operator=(const Command &command) {
     if (this != &command)
     {
-        gameEngine_ = nullptr;
+        delete description_;
+        delete effect_;
         gameEngine_ = command.gameEngine_;
+        description_ = new std::string (*command.description_);
+        effect_ = new std::string(*command.effect_);
     }
     return *this;
 }
 
 std::string Command::stringToLog() const {
-    return {};
+    std::stringstream s;
+    s << "| Command's effect: " << *this;
+    return s.str();
+}
+
+std::ostream &operator<<(std::ostream &os, const Command &command) {
+    os << *command.effect_;
+    return os;
+}
+
+void Command::saveEffect(const std::string &effect) {
+    *effect_ = effect;
+    Notify(*this);
 }
 
 LoadMapCommand::LoadMapCommand(GameEngine &gameEngine) :
-    Command(gameEngine) {}
+    Command(gameEngine, "LoadMap") {}
 
 LoadMapCommand::LoadMapCommand(const LoadMapCommand &loadMap) = default;
 
@@ -253,7 +275,7 @@ LoadMapCommand *LoadMapCommand::clone() const {
 }
 
 ValidateMapCommand::ValidateMapCommand(GameEngine &gameEngine) :
-    Command(gameEngine) {}
+    Command(gameEngine, "ValidateMap") {}
 
 ValidateMapCommand::ValidateMapCommand(const ValidateMapCommand &validateMap) = default;
 
@@ -293,7 +315,7 @@ ValidateMapCommand *ValidateMapCommand::clone() const {
     return new ValidateMapCommand(*this);
 }
 
-AddPlayerCommand::AddPlayerCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+AddPlayerCommand::AddPlayerCommand(GameEngine &gameEngine) : Command(gameEngine, "AddPlayer") {}
 
 AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand &addPlayer) = default;
 
@@ -340,7 +362,7 @@ AddPlayerCommand *AddPlayerCommand::clone() const {
 }
 
 AssignTerritoriesCommand::AssignTerritoriesCommand(GameEngine &gameEngine) :
-    Command(gameEngine) {}
+    Command(gameEngine, "AssignTerritories") {}
 
 AssignTerritoriesCommand::AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories) = default;
 
@@ -374,7 +396,7 @@ AssignTerritoriesCommand *AssignTerritoriesCommand::clone() const {
     return new AssignTerritoriesCommand(*this);
 }
 
-IssueOrdersCommand::IssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+IssueOrdersCommand::IssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "IssueOrders") {}
 
 IssueOrdersCommand::IssueOrdersCommand(const IssueOrdersCommand &issueOrders) = default;
 
@@ -406,7 +428,7 @@ IssueOrdersCommand *IssueOrdersCommand::clone() const {
     return new IssueOrdersCommand(*this);
 }
 
-EndIssueOrdersCommand::EndIssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+EndIssueOrdersCommand::EndIssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "EndIssueOrders") {}
 
 EndIssueOrdersCommand::EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders) = default;
 
@@ -438,7 +460,7 @@ EndIssueOrdersCommand *EndIssueOrdersCommand::clone() const {
     return new EndIssueOrdersCommand(*this);
 }
 
-ExecuteOrdersCommand::ExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+ExecuteOrdersCommand::ExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "ExecuteOrders") {}
 
 ExecuteOrdersCommand::ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders) = default;
 
@@ -471,7 +493,7 @@ ExecuteOrdersCommand *ExecuteOrdersCommand::clone() const {
 }
 
 EndExecuteOrdersCommand::EndExecuteOrdersCommand(GameEngine &gameEngine) :
-    Command(gameEngine) {}
+    Command(gameEngine, "EndExecuteOrders") {}
 
 EndExecuteOrdersCommand::EndExecuteOrdersCommand(const EndExecuteOrdersCommand &endExecuteOrders) = default;
 
@@ -495,7 +517,7 @@ bool EndExecuteOrdersCommand::valid() {
 
 GameState EndExecuteOrdersCommand::execute() {
     if (!valid()) return gameEngine_->state();
-    std::cout << "Ended Issue Orders." << std::endl;
+    std::cout << "Ended Execute Orders." << std::endl;
     return GameState::assignReinforcements;
 }
 
@@ -503,7 +525,7 @@ EndExecuteOrdersCommand *EndExecuteOrdersCommand::clone() const {
     return new EndExecuteOrdersCommand(*this);
 }
 
-WinCommand::WinCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+WinCommand::WinCommand(GameEngine &gameEngine) : Command(gameEngine, "Win") {}
 
 WinCommand::WinCommand(const WinCommand &win) = default;
 
@@ -535,7 +557,7 @@ WinCommand *WinCommand::clone() const {
     return new WinCommand(*this);
 }
 
-PlayCommand::PlayCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+PlayCommand::PlayCommand(GameEngine &gameEngine) : Command(gameEngine, "Play") {}
 
 PlayCommand::PlayCommand(const PlayCommand &play) = default;
 
@@ -567,7 +589,7 @@ PlayCommand *PlayCommand::clone() const {
     return new PlayCommand(*this);
 }
 
-QuitCommand::QuitCommand(GameEngine &gameEngine) : Command(gameEngine) {}
+QuitCommand::QuitCommand(GameEngine &gameEngine) : Command(gameEngine, "Quit") {}
 
 QuitCommand::QuitCommand(const QuitCommand &quit) = default;
 

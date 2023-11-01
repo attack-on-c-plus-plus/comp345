@@ -4,6 +4,7 @@
 // Henri Stephane Carbon
 // Haris Mahmood
 
+#include <fstream>
 #include "LoggingObserver.h"
 
 /**
@@ -49,7 +50,25 @@ void Subject::detach(const Observer &observer) {
  * @param loggable
  */
 void Subject::Notify(const ILoggable &loggable) {
-    for (auto it = observers_->begin(); it != observers_->end(); ++it) {
-        // TODO: call Observer update method
+    for (auto & observer : *observers_) {
+        observer->Update(loggable);
+    }
+}
+
+LogObserver::LogObserver(const std::string &filename) {
+    out_ = new std::ofstream(filename);
+}
+
+LogObserver::~LogObserver() {
+    if (out_->is_open()) {
+        (*out_) << std::string(70, '=') << std::endl;
+    }
+    delete out_;
+}
+
+void LogObserver::Update(const ILoggable &loggable) const {
+    if (out_->is_open()) {
+        (*out_) << std::string(70, '=') << std::endl;
+        (*out_) << loggable.stringToLog() << std::endl;
     }
 }

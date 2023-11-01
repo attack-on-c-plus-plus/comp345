@@ -18,6 +18,8 @@ int main() {
 
     testCards();
 
+    testLoggingObserver();
+
     testGameStates();
 
     return 0;
