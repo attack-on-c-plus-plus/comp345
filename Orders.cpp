@@ -375,7 +375,11 @@ BlockadeOrder::~BlockadeOrder() = default;
  * @return
  */
 bool BlockadeOrder::validate() const {
-    return true; //
+    if (player_ == &target_->owner()) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -384,9 +388,9 @@ bool BlockadeOrder::validate() const {
 void BlockadeOrder::execute() {
     if (validate()) {
 
-        // Triple armies from the target territory:
-        unsigned armies_in_target_territory = /* Get the number of armies  : Order()in the target territory */ 0;
-        armies_in_target_territory *= 3;
+        // Double armies from the target territory:
+        unsigned armies_in_target_territory = target_->armyCount();
+        armies_in_target_territory *= 2;
 
         // Update the effect string to describe the action
         *effect_ = "Blocked territory " + target_->name() + ".";

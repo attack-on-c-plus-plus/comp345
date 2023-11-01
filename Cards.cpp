@@ -39,10 +39,28 @@ const CardType &Card::type() const {
 /**
  * Creates a special order
  */
-const Card &Card::play() const {
-    // Special orders logic here
-    std::cout << "Played card " << *this << std::endl;
-    return *this;
+const Card &Card::play(Player& player, Territory& territory) const {
+    // Check the card type. For each case, play an order
+    switch(*this->type_) {
+        case CardType::bomb: {
+            auto *order = new BombOrder(player, territory);
+            order->execute();
+            delete order;
+        }
+            break;
+        case CardType::reinforcement: {}
+            break;
+        case CardType::blockade: {
+            auto *order = new BlockadeOrder(player, territory);
+            order->execute();
+            delete order;
+        }
+            break;
+        case CardType::airlift: {}
+            break;
+        case CardType::diplomacy: {}
+            break;
+    }
 }
 
 /**
