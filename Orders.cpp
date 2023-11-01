@@ -284,19 +284,34 @@ BombOrder::~BombOrder() = default;
 
 /**
  * Validates the BombOrder
- * @return
+ * @param map
+ * @return boolean
  */
-bool BombOrder::validate() const {
-    // Check if the targetTerritory is within a valid range:
-    // If the player they target is themselves, invalid
-    if (player_ == &target_->owner())
-        return false;
+bool BombOrder::validate(const Map& map) const {
+    bool isValid = false;
+    // Pre-Condition Checks
 
-    // TO DO
+    // If the player they target is themselves, order is invalid
+    if (player_ == &target_->owner())
+        return isValid;
+
     // Get the player's adjacent territories
-    // If target territory is not adjacent to
-    // the territory owned by the player issuing the order, then false
-    return true;
+    auto * playerTerritories = new std::vector<Territory*>(player_->getTerritories());
+
+    // If target territory is not adjacent to the territory owned by the player
+    // issuing the order, order is invalid
+    for (Territory *territory : *playerTerritories) {
+        auto * adjacentTerritories = new std::vector<const Territory*> (map.adjacencies(*territory));
+        if(std::find(adjacentTerritories->begin(), adjacentTerritories->end(), target_) != adjacentTerritories->end()) {
+            isValid = true;
+            delete adjacentTerritories;
+            break;
+        }
+        delete adjacentTerritories;
+    }
+
+    delete playerTerritories;
+    return isValid;
 }
 
 /**

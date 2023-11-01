@@ -93,6 +93,7 @@ public:
     ~BombOrder() override;
     [[nodiscard]] BombOrder* clone() const override;
     [[nodiscard]] bool validate() const override;
+    [[nodiscard]] bool validate(const Map& map) const;
     void execute() override;
     BombOrder &operator=(const BombOrder&);
 private:
