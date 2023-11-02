@@ -116,6 +116,7 @@ public:
     [[nodiscard]] BlockadeOrder* clone() const override;
     [[nodiscard]] bool validate() const override;
     void execute() override;
+    void execute(Player* neutralPlayer);
     BlockadeOrder &operator=(const BlockadeOrder&);
     std::ostream& printTo(std::ostream& os) const override;
 private:

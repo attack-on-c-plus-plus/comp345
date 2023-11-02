@@ -385,7 +385,7 @@ bool BlockadeOrder::validate() const {
 /**
  * Executes the BlockadeOrder
  */
-void BlockadeOrder::execute() {
+void BlockadeOrder::execute(Player* otherPlayer) {
     if (validate()) {
 
         // Double armies from the target territory:
@@ -394,6 +394,13 @@ void BlockadeOrder::execute() {
 
         // Update the effect string to describe the action
         *effect_ = "Blocked territory " + target_->name() + ".";
+
+        // If the Neutral player does not exist, create a new one
+        if (otherPlayer == nullptr || otherPlayer->getName() != "Neutral") {
+            otherPlayer = new Player("Neutral");
+        }
+        // Set ownership of territory to the Neutral player
+        target_->owner(*otherPlayer);
     }
     Order::execute();
 }
