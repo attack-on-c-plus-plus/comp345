@@ -53,10 +53,9 @@ public:
     void gameLoop();
     [[nodiscard]] GameState state() const;
     [[nodiscard]] bool gameOver() const;
-    [[nodiscard]] Map getMap() const;
+    [[nodiscard]] Map &map() const;
     [[nodiscard]] std::vector<Player *>& getPlayers();
-    void setMap(Map &newMap);
-
+    void map(Map &map);
     void startup();
     void play();
     Command *readCommand();
@@ -66,7 +65,7 @@ private:
     GameState *state_;
     friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
     Map *map_;
-    std::vector<Player *> *players;
+    std::vector<Player *> *players_;
 };
 
 class Command : public ILoggable, public Subject {

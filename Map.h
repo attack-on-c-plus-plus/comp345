@@ -38,7 +38,7 @@ public:
     // Destructor
     ~Map();
     bool validate();
-    [[nodiscard]] std::string name() const;
+    [[nodiscard]] std::string &name() const;
     [[nodiscard]] Territory &territory(const std::string &name) const;
     Map &add(const Territory &t);
     Map &addEdge(const Continent &continent, const Territory &adjacent);
@@ -79,7 +79,7 @@ public:
     // Destructor
     ~Territory();
     [[nodiscard]] std::optional<size_t> id() const;
-    [[nodiscard]] std::string name() const;
+    [[nodiscard]] std::string &name() const;
     Territory &owner(const Player &player);
     [[nodiscard]] Player &owner() const;
     [[nodiscard]] bool isOwned() const;
@@ -107,7 +107,7 @@ public:
     // Destructor
     ~Continent();
     [[nodiscard]] std::optional<size_t> id() const;
-    [[nodiscard]] std::string name() const;
+    [[nodiscard]] std::string &name() const;
     [[nodiscard]] unsigned bonusArmies() const;
     Continent &operator=(const Continent &);
 private:
