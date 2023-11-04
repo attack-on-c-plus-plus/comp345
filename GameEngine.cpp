@@ -92,7 +92,7 @@ void GameEngine::map(Map &map)
     map_ = &map;
 }
 /**
- * Gets the vector containing the players_
+ * Gets the vector containing the players
  */
 std::vector<Player *>& GameEngine::getPlayers()
 {
