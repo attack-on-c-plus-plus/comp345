@@ -58,7 +58,7 @@ GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {
 GameEngine::GameEngine(const GameEngine &gameEngine) : Subject(gameEngine),
                                                        state_{new GameState(*gameEngine.state_)}
 {
-    players_ = new std::vector<Player *>(*gameEngine.players);
+    players_ = new std::vector<Player *>(*gameEngine.players_);
     deck_ = new Deck(*gameEngine.deck_);
 }
 
@@ -153,7 +153,7 @@ void GameEngine::setTurnOrder(int &turn)
 void GameEngine::nextTurn()
 {
     turnID++;
-    if (*turnID >= players->size())
+    if (*turnID >= players_->size())
     {
         turnID = 0;
     }
@@ -456,7 +456,7 @@ bool AssignTerritoriesCommand::valid() {
 GameState AssignTerritoriesCommand::execute() {
     if (!valid()) return gameEngine_->state();
     int playerIterator = 0;
-    Map ourMap = gameEngine_->getMap();
+    Map ourMap = gameEngine_->map();
     std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
     int *arr = new int[ourMap.territoryCount()];
     // This part shuffles

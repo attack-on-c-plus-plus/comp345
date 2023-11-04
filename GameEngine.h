@@ -153,8 +153,7 @@ public:
     ~EndIssueOrdersCommand() override;
     bool valid() override;
     GameState execute() override;
-    [[nodiscard]] EndIssueOrdersCommandator<<(std::ostream &os, const GameEngine &gameEngine);
-    Map *map_;* clone() const override;
+    [[nodiscard]] EndIssueOrdersCommand* clone() const override;
     EndIssueOrdersCommand &operator=(const EndIssueOrdersCommand& command);
 };
 class ExecuteOrdersCommand : public Command {
@@ -175,8 +174,7 @@ public:
     ~EndExecuteOrdersCommand() override;
     bool valid() override;
     GameState execute() override;
-    [[nodiscard]] EndExecuteOrdersCommaator<<(std::ostream &os, const GameEngine &gameEngine);
-    Map *map_;nd* clone() const override;
+    [[nodiscard]] EndExecuteOrdersCommand* clone() const override;
     EndExecuteOrdersCommand &operator=(const EndExecuteOrdersCommand& command);
 };
 
