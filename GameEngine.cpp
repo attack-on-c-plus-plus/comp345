@@ -16,8 +16,9 @@
  * Main constructor for the GameEngine object
  * @param gameStates
  */
-GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {
+GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)}, map_{new Map} {
     players_ = new std::vector<Player*>();
+    turnID = new int(0);
     Card card1{CardType::bomb};
     Card card2{CardType::reinforcement};
     Card card3{CardType::blockade};
@@ -56,10 +57,11 @@ GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {
  * @param gameEngine
  */
 GameEngine::GameEngine(const GameEngine &gameEngine) : Subject(gameEngine),
-                                                       state_{new GameState(*gameEngine.state_)}
+                                                       state_{new GameState(*gameEngine.state_)}, map_{new Map(*gameEngine.map_)}
 {
     players_ = new std::vector<Player *>(*gameEngine.players_);
     deck_ = new Deck(*gameEngine.deck_);
+    turnID = new int(*gameEngine.turnID);
 }
 
 /**
@@ -141,7 +143,7 @@ int GameEngine::getTurnID() const
     return *turnID;
 }
 /**
- * Set the initial turn order by seting the turn ID
+ * Set the initial turn order by setting the turn ID
  */
 void GameEngine::setTurnOrder(int &turn)
 {
@@ -155,7 +157,7 @@ void GameEngine::nextTurn()
     turnID++;
     if (*turnID >= players_->size())
     {
-        turnID = 0;
+        *turnID = 0;
     }
 }
 /**
@@ -414,7 +416,7 @@ GameState AddPlayerCommand::execute() {
     std::cout << "Enter Name of Player" << std::endl;
     std::string name;
     std::cin >> name;
-    Player *newPlayer = new Player(name);
+    auto *newPlayer = new Player(name);
     gameEngine_->getPlayers().push_back(newPlayer);
     std::cout << "Player added." << std::endl;
     if (gameEngine_->getPlayers().size() <= 1)
