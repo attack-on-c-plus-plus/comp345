@@ -141,7 +141,7 @@ std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine) {
         case GameState::start: os << "start"; break;
         case GameState::mapLoaded: os << "map loaded"; break;
         case GameState::mapValidated: os << "map validated"; break;
-        case GameState::playersAdded: os << "players_ added"; break;
+        case GameState::playersAdded: os << "players added"; break;
         case GameState::assignReinforcements: os << "assign reinforcements"; break;
         case GameState::issueOrders: os << "issue orders"; break;
         case GameState::executeOrders: os << "execute orders"; break;
@@ -380,7 +380,7 @@ bool AssignTerritoriesCommand::valid() {
     if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size()>=2)
         return true;
     if(gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size()<2){
-        std::cout <<"You still need at least 2 players_ to assign territories" << std::endl;
+        std::cout <<"You still need at least 2 players to assign territories" << std::endl;
     }
     std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
     return false;
