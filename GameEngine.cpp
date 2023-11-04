@@ -1,5 +1,6 @@
 #include "GameEngine.h"
 #include <iostream>
+#include <filesystem>
 #include <cctype>
 #include <algorithm>
 #include <sstream>
@@ -40,7 +41,8 @@ GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)},
  */
 GameEngine::GameEngine(const GameEngine &gameEngine) :
     Subject(gameEngine), state_{new GameState(*gameEngine.state_)},
-    commandProcessor_{new CommandProcessor}, map_{new Map} {
+    commandProcessor_{new CommandProcessor(*gameEngine.commandProcessor_)},
+    map_{new Map(*gameEngine.map_)} {
     players_ = new std::vector<Player*>(*gameEngine.players_);
 }
 
@@ -51,6 +53,7 @@ GameEngine::~GameEngine()
 {
     delete state_;
     delete map_;
+    delete commandProcessor_;
     // Delete each object in vector
     for (auto p : *players_)
     {
@@ -99,7 +102,7 @@ GameState GameEngine::state() const {
 /*
  * Gets the current map
  */
-Map GameEngine::getMap() const
+Map &GameEngine::map() const
 {
     return *map_;
 }
@@ -211,10 +214,13 @@ Command &Command::operator=(const Command &command) {
     }
     return *this;
 }
+std::string &Command::description() const {
+    return *description_;
+}
 
 std::string Command::stringToLog() const {
     std::stringstream s;
-    s << "| Command's effect: " << *this;
+    s << "| Command's Effect: " << *effect_;
     return s.str();
 }
 
@@ -375,9 +381,9 @@ bool AssignTerritoriesCommand::validate() {
     if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size()>=2)
         return true;
     std::stringstream s;
-    s << "Invalid command, " << *description_ << " not valid in state " << gameEngine_ << ".";
+    s << "Command \"" << *description_ << "\" not valid in state \"" << *gameEngine_ << "\".";
     if(gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size() < 2)
-        s << "\nYou need at least 2 players.";
+        s << " You need at least 2 players.";
     saveEffect(s.str());
     return false;
 }
@@ -440,7 +446,6 @@ EndIssueOrdersCommand &EndIssueOrdersCommand::operator=(const EndIssueOrdersComm
 bool EndIssueOrdersCommand::validate() {
     if (gameEngine_->state() == GameState::issueOrders)
         return true;
-for (auto p : *players_)
 
     return Command::validate();
 }

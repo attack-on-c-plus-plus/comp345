@@ -82,7 +82,7 @@ Order &Order::operator=(const Order &order) {
 
 std::string Order::stringToLog() const {
     std::stringstream s;
-    s << "| Command Executed: ";
+    s << "| Order Executed: ";
     s << *this;
     return s.str();
 }
@@ -710,7 +710,7 @@ std::string OrdersList::stringToLog() const {
     std::stringstream s;
 
     if (!orders_->empty()) {
-        s << "| Command: ";
+        s << "| Order Issued: ";
         orders_->back()->printTo(s);
     }
     return s.str();

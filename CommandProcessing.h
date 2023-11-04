@@ -30,7 +30,7 @@ enum class CommandType {
     end
 };
 
-class CommandProcessor : public ILoggable {
+class CommandProcessor : public ILoggable, public Subject {
 public:
     CommandProcessor();
     CommandProcessor(const CommandProcessor& commandProcessor);

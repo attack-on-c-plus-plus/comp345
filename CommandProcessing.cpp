@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include "CommandProcessing.h"
 
 std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands = std::make_unique<std::map<CommandType, std::string>>(
@@ -27,7 +28,8 @@ CommandProcessor::CommandProcessor() {
     commands_ = new std::vector<Command *>();
 }
 
-CommandProcessor::CommandProcessor(const CommandProcessor &commandProcessor) {
+CommandProcessor::CommandProcessor(const CommandProcessor &commandProcessor) :
+    Subject(commandProcessor) {
     commands_ = new std::vector<Command *>(*commandProcessor.commands_);
 }
 
@@ -122,8 +124,14 @@ bool CommandProcessor::validate(Command &command) const {
 
 void CommandProcessor::saveCommand(Command &command) {
     commands_->push_back(&command);
+    Notify(*this);
 }
 
 std::string CommandProcessor::stringToLog() const {
-    return {};
+    std::stringstream s;
+
+    if (!commands_->empty()) {
+        s << "| Command: " << commands_->back()->description();
+    }
+    return s.str();
 }

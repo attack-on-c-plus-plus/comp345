@@ -38,7 +38,7 @@ enum class GameState
     gameOver
 };
 
-std::ostream &operator<<(std::ostream &os, const GameState state);
+std::ostream &operator<<(std::ostream &os, GameState state);
 
 /**
  * GameEngine is implemented as a container for a string and a boolean,
@@ -82,6 +82,7 @@ public:
     virtual GameState execute() = 0;
     [[nodiscard]] virtual Command* clone() const = 0;
     void saveEffect(const std::string &effect);
+    std::string &description() const;
     [[nodiscard]] std::string stringToLog() const override;
     Command &operator=(const Command& command);
 protected:

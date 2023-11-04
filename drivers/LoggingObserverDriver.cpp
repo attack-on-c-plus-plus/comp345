@@ -56,9 +56,6 @@ void testLoggingObserver() {
     std::cout << "NegotiateOrder subclass of Subject: " << std::is_base_of_v<Subject,NegotiateOrder> << std::endl;
     std::cout << "NegotiateOrder subclass of ILoggable: " << std::is_base_of_v<ILoggable,NegotiateOrder> << std::endl;
 
-    // std::cout << "Command subclass of Subject: " << std::is_base_of_v<Subject,CommandProcessor> << std::endl;
-    // std::cout << "Command subclass of ILoggable: " << std::is_base_of_v<ILoggable,CommandProcessor> << std::endl;
-
     std::cout << "Order subclass of Subject: " << std::is_base_of_v<Subject,Order> << std::endl;
     std::cout << "Order subclass of ILoggable: " << std::is_base_of_v<ILoggable,Order> << std::endl;
 
@@ -72,52 +69,62 @@ void testLoggingObserver() {
 
     ordersList.executeOrders();
 
-    // TODO: Add CommandProcessor tests
+    engine.transition(GameState::mapValidated);
 
     LoadMapCommand loadMapCommand{engine, ""};
     loadMapCommand.attach(logObserver);
-    loadMapCommand.saveEffect("Something");
+    loadMapCommand.validate();
+
+    engine.transition(GameState::start);
 
     ValidateMapCommand validateMapCommand{engine};
     validateMapCommand.attach(logObserver);
-    validateMapCommand.saveEffect("Something");
+    validateMapCommand.validate();
 
     AddPlayerCommand addPlayerCommand{engine, "Bob"};
     addPlayerCommand.attach(logObserver);
-    addPlayerCommand.saveEffect("Something");
+    addPlayerCommand.validate();
 
     AssignTerritoriesCommand assignTerritoriesCommand{engine};
     assignTerritoriesCommand.attach(logObserver);
-    assignTerritoriesCommand.saveEffect("Something");
+    assignTerritoriesCommand.validate();
 
     IssueOrdersCommand issueOrdersCommand{engine};
     issueOrdersCommand.attach(logObserver);
-    issueOrdersCommand.saveEffect("Something");
+    issueOrdersCommand.validate();
 
     EndIssueOrdersCommand endIssueOrdersCommand{engine};
     endIssueOrdersCommand.attach(logObserver);
-    endIssueOrdersCommand.saveEffect("Something");
+    endIssueOrdersCommand.validate();
 
     ExecuteOrdersCommand executeOrdersCommand{engine};
     executeOrdersCommand.attach(logObserver);
-    executeOrdersCommand.saveEffect("Something");
+    executeOrdersCommand.validate();
 
     EndExecuteOrdersCommand endExecuteOrdersCommand{engine};
     endExecuteOrdersCommand.attach(logObserver);
-    endExecuteOrdersCommand.saveEffect("Something");
+    endExecuteOrdersCommand.validate();
 
     WinCommand winCommand{engine};
     winCommand.attach(logObserver);
-    winCommand.saveEffect("Something");
+    winCommand.validate();
 
     PlayCommand playCommand{engine};
     playCommand.attach(logObserver);
-    playCommand.saveEffect("Something");
+    playCommand.validate();
 
     QuitCommand quitCommand{engine};
     quitCommand.attach(logObserver);
-    quitCommand.saveEffect("Something");
+    quitCommand.validate();
 
     engine.transition(GameState::mapLoaded);
 
+    engine.transition(GameState::start);
+
+    CommandProcessor commandProcessor;
+
+    commandProcessor.attach(logObserver);
+    Command *command = &commandProcessor.getCommand(engine);
+    command->attach(logObserver);
+    command->execute();
 }
