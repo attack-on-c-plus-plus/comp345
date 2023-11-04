@@ -3,6 +3,8 @@
 #include <cctype>
 #include <algorithm>
 #include <sstream>
+#include <random>
+#include <cstdlib>
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -14,18 +16,50 @@
  * Main constructor for the GameEngine object
  * @param gameStates
  */
-GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)}, map_{new Map} {
+GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {
     players_ = new std::vector<Player*>();
+    Card card1{CardType::bomb};
+    Card card2{CardType::reinforcement};
+    Card card3{CardType::blockade};
+    Card card4{CardType::airlift};
+    Card card5{CardType::diplomacy};
+
+    deck_ = new Deck(24);
+    deck_->add(card1);
+    deck_->add(card2);
+    deck_->add(card3);
+    deck_->add(card4);
+    deck_->add(card5);
+    deck_->add(card1);
+    deck_->add(card2);
+    deck_->add(card3);
+    deck_->add(card4);
+    deck_->add(card5);
+    deck_->add(card1);
+    deck_->add(card2);
+    deck_->add(card3);
+    deck_->add(card4);
+    deck_->add(card5);
+    deck_->add(card1);
+    deck_->add(card2);
+    deck_->add(card3);
+    deck_->add(card4);
+    deck_->add(card5);
+    deck_->add(card1);
+    deck_->add(card2);
+    deck_->add(card3);
+    deck_->add(card4);
 }
 
 /**
  * Copy constructor
  * @param gameEngine
  */
-GameEngine::GameEngine(const GameEngine &gameEngine) :
-    Subject(gameEngine),
-    state_{new GameState(*gameEngine.state_)}, map_{new Map(*gameEngine.map_)} {
-    players_ = new std::vector<Player*>(*gameEngine.players_);
+GameEngine::GameEngine(const GameEngine &gameEngine) : Subject(gameEngine),
+                                                       state_{new GameState(*gameEngine.state_)}
+{
+    players_ = new std::vector<Player *>(*gameEngine.players);
+    deck_ = new Deck(*gameEngine.deck_);
 }
 
 /**
@@ -42,6 +76,7 @@ GameEngine::~GameEngine()
     }
     players_->clear();
     delete players_;
+    delete deck_;
 }
 
 /**
@@ -70,7 +105,7 @@ GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
     return *this;
 }
 
-/**
+/**GameEngine *gameEngine_;
  * Gets the current game state
  * @return
  */
@@ -97,6 +132,38 @@ void GameEngine::map(Map &map)
 std::vector<Player *>& GameEngine::getPlayers()
 {
     return *players_;
+}
+/**
+ * Gets the id of the player whose turn it is
+ */
+int GameEngine::getTurnID() const
+{
+    return *turnID;
+}
+/**
+ * Set the initial turn order by seting the turn ID
+ */
+void GameEngine::setTurnOrder(int &turn)
+{
+    this->turnID = &turn;
+}
+/**
+ * Moves the turnID so it's the next player's turn
+ */
+void GameEngine::nextTurn()
+{
+    turnID++;
+    if (*turnID >= players->size())
+    {
+        turnID = 0;
+    }
+}
+/**
+ * Gets the Deck
+ */
+Deck GameEngine::getDeck() const
+{
+    return *deck_;
 }
 /**
  * Determines if the game is over
@@ -388,6 +455,55 @@ bool AssignTerritoriesCommand::valid() {
 
 GameState AssignTerritoriesCommand::execute() {
     if (!valid()) return gameEngine_->state();
+    int playerIterator = 0;
+    Map ourMap = gameEngine_->getMap();
+    std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
+    int *arr = new int[ourMap.territoryCount()];
+    // This part shuffles
+    for (int i = 0; i < ourMap.territoryCount(); i++)
+    {
+        arr[i] = i;
+    }
+    for (int i = ourMap.territoryCount() - 1; i != 0; i--)
+    {
+        int j = rand() % ourMap.territoryCount();
+        if (i != j)
+        {
+            std::swap(arr[i], arr[j]);
+        }
+    }
+    // This part assigns
+    std::cout << "Assigning territories" << std::endl;
+    for (int i = 0; i < ourMap.territoryCount(); i++)
+    {
+        ourPlayers[playerIterator]->addTerritory(ourMap.territory(arr[i]));
+        playerIterator++;
+        if (playerIterator >= ourPlayers.size())
+        {
+            playerIterator = 0;
+        }
+    }
+    // This sets the turn order
+    std::cout << "Getting turn order" << std::endl;
+    int size = static_cast<int>(ourPlayers.size());;
+    int turnOrder = rand() % size;
+    std::cout << "called rand" << std::endl;
+    std::cout << turnOrder << std::endl;
+    gameEngine_->setTurnOrder(turnOrder);
+    std::cout << "set the turn" << std::endl;
+    std::cout << "Turn Order set going in order of players added starting with " << ourPlayers[gameEngine_->getTurnID()]->getName() << std::endl;
+    // This gives each player 50 armies to start
+    for (int i = 0; i < size; i++)
+    {
+        ourPlayers[i]->addReinforcements(50);
+    }
+    // This lets each player draw 2 cards
+    Deck ourDeck = gameEngine_->getDeck();
+    for (int i = 0; i < size; i++)
+    {
+        ourPlayers[i]->drawCardFromDeck(ourDeck);
+        ourPlayers[i]->drawCardFromDeck(ourDeck);
+    }
     std::cout << "Territories assigned." << std::endl;
     return GameState::assignReinforcements;
 }

@@ -46,6 +46,20 @@ void Player::changeName(const std::string &newName) {
     name = new std::string(newName);
 }
 
+/**
+ * Gives the number of armies in the reinforcement pool
+ */
+int Player::getReinforcmentNumber() const
+{
+    return reinforcmentPool;
+}
+/**
+ * Adds reinforcements to the pool
+ */
+void Player::addReinforcements(int armies)
+{
+    reinforcmentPool = reinforcmentPool + armies;
+}
 
 // Add a method to add a territory to the player's collection
 void Player::addTerritory(Territory &territory) {

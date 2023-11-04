@@ -54,8 +54,12 @@ public:
     [[nodiscard]] GameState state() const;
     [[nodiscard]] bool gameOver() const;
     [[nodiscard]] Map &map() const;
+    [[nodiscard]] int getTurnID() const;
     [[nodiscard]] std::vector<Player *>& getPlayers();
+    [[nodiscard]] Deck getDeck() const;
     void map(Map &map);
+    void nextTurn();
+    void setTurnOrder(int &turn);
     void startup();
     void play();
     Command *readCommand();
@@ -63,9 +67,11 @@ public:
     void transition(GameState gameState);
 private:
     GameState *state_;
-    friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
     Map *map_;
+    Deck *deck_;
+    int *turnID;
     std::vector<Player *> *players_;
+    friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
 };
 
 class Command : public ILoggable, public Subject {
@@ -147,7 +153,8 @@ public:
     ~EndIssueOrdersCommand() override;
     bool valid() override;
     GameState execute() override;
-    [[nodiscard]] EndIssueOrdersCommand* clone() const override;
+    [[nodiscard]] EndIssueOrdersCommandator<<(std::ostream &os, const GameEngine &gameEngine);
+    Map *map_;* clone() const override;
     EndIssueOrdersCommand &operator=(const EndIssueOrdersCommand& command);
 };
 class ExecuteOrdersCommand : public Command {
@@ -168,7 +175,8 @@ public:
     ~EndExecuteOrdersCommand() override;
     bool valid() override;
     GameState execute() override;
-    [[nodiscard]] EndExecuteOrdersCommand* clone() const override;
+    [[nodiscard]] EndExecuteOrdersCommaator<<(std::ostream &os, const GameEngine &gameEngine);
+    Map *map_;nd* clone() const override;
     EndExecuteOrdersCommand &operator=(const EndExecuteOrdersCommand& command);
 };
 
