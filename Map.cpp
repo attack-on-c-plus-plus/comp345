@@ -634,9 +634,8 @@ std::ostream &operator<<(std::ostream &os, const Continent &continent) {
  * @param map the map
  * @return if it was successful
  */
-bool MapLoader::load(const std::string &filepath, Map &map) {
+void MapLoader::load(const std::string &filepath, Map &map) {
     readFile(filepath, map);
-    return true;
 }
 
 

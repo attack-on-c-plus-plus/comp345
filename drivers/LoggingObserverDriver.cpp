@@ -74,7 +74,7 @@ void testLoggingObserver() {
 
     // TODO: Add CommandProcessor tests
 
-    LoadMapCommand loadMapCommand{engine};
+    LoadMapCommand loadMapCommand{engine, ""};
     loadMapCommand.attach(logObserver);
     loadMapCommand.saveEffect("Something");
 
@@ -82,7 +82,7 @@ void testLoggingObserver() {
     validateMapCommand.attach(logObserver);
     validateMapCommand.saveEffect("Something");
 
-    AddPlayerCommand addPlayerCommand{engine};
+    AddPlayerCommand addPlayerCommand{engine, "Bob"};
     addPlayerCommand.attach(logObserver);
     addPlayerCommand.saveEffect("Something");
 
