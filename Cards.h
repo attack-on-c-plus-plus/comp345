@@ -20,6 +20,9 @@
 class Card;
 class Deck;
 class Hand;
+class Player;
+class Territory;
+class GameEngine;
 
 enum class CardType {
     bomb,

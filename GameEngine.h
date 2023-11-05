@@ -21,6 +21,8 @@
 // Forward declaration.
 class GameEngine;
 class Command;
+class Player;
+class Map;
 
 // This is the enum used to define all possible states the engine can be in.
 enum class GameState

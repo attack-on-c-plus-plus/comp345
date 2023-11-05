@@ -19,6 +19,7 @@
 // Forward declaration
 class Player;
 class Territory;
+class GameEngine;
 
 /**
  *

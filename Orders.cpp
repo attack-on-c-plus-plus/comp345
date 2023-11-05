@@ -315,10 +315,12 @@ bool BombOrder::validate() const {
     // Get the player's adjacent territories
     auto * playerTerritories = new std::vector<Territory*>(player_->getTerritories());
 
+    Map map = gameEngine_->map();
+
     // If target territory is not adjacent to the territory owned by the player
     // issuing the order, order is invalid
     for (Territory *territory : *playerTerritories) {
-        auto * adjacentTerritories = new std::vector<const Territory*> (gameEngine_->map()->adjacencies(*territory));
+        auto * adjacentTerritories = new std::vector<const Territory*> (map.adjacencies(*territory));
         if(std::find(adjacentTerritories->begin(), adjacentTerritories->end(), target_) != adjacentTerritories->end()) {
             isValid = true;
             delete adjacentTerritories;
