@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <random>
+#include "GameEngine.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -39,11 +40,11 @@ const CardType &Card::type() const {
 /**
  * Creates a special order
  */
-const Card &Card::play(Player& player, Territory& territory) const {
+const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEngine) const {
     // Check the card type. For each case, play an order
     switch(*this->type_) {
         case CardType::bomb: {
-            auto *order = new BombOrder(player, territory);
+            BombOrder *order = new BombOrder(player, territory, gameEngine);
             order->execute();
             delete order;
         }

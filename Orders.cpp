@@ -18,10 +18,11 @@
  * Constructor
  * @param description
  */
-Order::Order(const Player &player, const std::string &description) {
+Order::Order(const Player &player, const std::string &description, GameEngine &gameEngine) {
     player_ = &player;
     description_ = new std::string(description);
     effect_ = new std::string();
+    gameEngine_ = &gameEngine;
 }
 
 /**
@@ -33,6 +34,7 @@ Order::Order(const Order& other) :
     description_(new std::string(*(other.description_))),
     effect_(new std::string(*(other.effect_))) {
     player_ = other.player_;
+    gameEngine_ = other.gameEngine_;
 }
 
 /**
@@ -107,8 +109,8 @@ std::ostream &Order::printTo(std::ostream &os) const {
  * Constructor
  * @param armies
  */
-DeployOrder::DeployOrder(const Player &player, Territory &target, unsigned armies) :
-    Order(player, "Deploy"),
+DeployOrder::DeployOrder(const Player &player, Territory &target, unsigned armies, GameEngine &gameEngine) :
+    Order(player, "Deploy", gameEngine),
     armies_{new unsigned (armies)} {
     target_ = &target;
 }
@@ -180,8 +182,9 @@ std::ostream &DeployOrder::printTo(std::ostream &os) const {
  * @param target
  * @param armies
  */
-AdvanceOrder::AdvanceOrder(const Player &player, Territory &source, Territory &target, unsigned armies) :
-    Order(player, "Advance"),
+AdvanceOrder::AdvanceOrder(const Player &player, Territory &source, Territory &target, unsigned armies,
+                           GameEngine &gameEngine) :
+    Order(player, "Advance", gameEngine),
     armies_{new unsigned(armies)} {
     source_ = &source;
     target_ = &target;
@@ -277,8 +280,8 @@ std::ostream &AdvanceOrder::printTo(std::ostream &os) const {
  * Constructor
  * @param targetTerritory
  */
-BombOrder::BombOrder(const Player &player, Territory &target) :
-    Order(player, "Bomb") {
+BombOrder::BombOrder(const Player &player, Territory &target, GameEngine &gameEngine) :
+    Order(player, "Bomb", gameEngine) {
     target_ = &target;
 }
 
@@ -301,7 +304,7 @@ BombOrder::~BombOrder() = default;
  * @param map
  * @return boolean
  */
-bool BombOrder::validate(const Map& map) const {
+bool BombOrder::validate() const {
     bool isValid = false;
     // Pre-Condition Checks
 
@@ -315,7 +318,7 @@ bool BombOrder::validate(const Map& map) const {
     // If target territory is not adjacent to the territory owned by the player
     // issuing the order, order is invalid
     for (Territory *territory : *playerTerritories) {
-        auto * adjacentTerritories = new std::vector<const Territory*> (map.adjacencies(*territory));
+        auto * adjacentTerritories = new std::vector<const Territory*> (gameEngine_->map()->adjacencies(*territory));
         if(std::find(adjacentTerritories->begin(), adjacentTerritories->end(), target_) != adjacentTerritories->end()) {
             isValid = true;
             delete adjacentTerritories;
@@ -375,8 +378,8 @@ std::ostream &BombOrder::printTo(std::ostream &os) const {
  * Constructor
  * @param target
  */
-BlockadeOrder::BlockadeOrder(const Player &player, Territory &target) :
-    Order(player, "Blockade") {
+BlockadeOrder::BlockadeOrder(const Player &player, Territory &target, GameEngine &gameEngine) :
+    Order(player, "Blockade", gameEngine) {
     target_ = &target;
 }
 
@@ -450,8 +453,9 @@ std::ostream &BlockadeOrder::printTo(std::ostream &os) const {
  * @param target
  * @param armies
  */
-AirliftOrder::AirliftOrder(const Player &player, Territory &source, Territory &target, unsigned armies) :
-    Order(player, "Airlift"),
+AirliftOrder::AirliftOrder(const Player &player, Territory &source, Territory &target, unsigned armies,
+                           GameEngine &gameEngine) :
+    Order(player, "Airlift", gameEngine),
     armies_{new unsigned(armies)} {
     source_ = &source;
     target_ = &target;
@@ -547,8 +551,8 @@ std::ostream &AirliftOrder::printTo(std::ostream &os) const {
  * @param player
  * @param otherPlayer
  */
-NegotiateOrder::NegotiateOrder(const Player &player, const Player &otherPlayer) :
-    Order(player,"Negotiation") {
+NegotiateOrder::NegotiateOrder(const Player &player, const Player &otherPlayer, GameEngine &gameEngine) :
+    Order(player,"Negotiation",gameEngine) {
     otherPlayer_ = &otherPlayer;
 }
 
