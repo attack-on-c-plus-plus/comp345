@@ -16,6 +16,9 @@ class Command;
 enum class GameState;
 class GameEngine;
 
+/**
+ * Command types that are available
+ */
 enum class CommandType {
     loadmap,
     validatemap,
@@ -30,6 +33,9 @@ enum class CommandType {
     end
 };
 
+/**
+ * Processes Command from the console
+ */
 class CommandProcessor : public ILoggable, public Subject {
 public:
     CommandProcessor();

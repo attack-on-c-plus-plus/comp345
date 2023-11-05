@@ -9,6 +9,9 @@
 #include <sstream>
 #include "CommandProcessing.h"
 
+/**
+ * Commands available to the command processor
+ */
 std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands = std::make_unique<std::map<CommandType, std::string>>(
     std::map<CommandType, std::string> {
         {CommandType::loadmap, "loadmap"},
@@ -24,15 +27,25 @@ std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands =
         {CommandType::end, "end"}
     });
 
+/**
+ * Constructor
+ */
 CommandProcessor::CommandProcessor() {
     commands_ = new std::vector<Command *>();
 }
 
+/**
+ * Copy constructor
+ * @param commandProcessor
+ */
 CommandProcessor::CommandProcessor(const CommandProcessor &commandProcessor) :
     Subject(commandProcessor) {
     commands_ = new std::vector<Command *>(*commandProcessor.commands_);
 }
 
+/**
+ * Destructor
+ */
 CommandProcessor::~CommandProcessor() {
     for (auto c : *commands_)
     {
@@ -42,6 +55,11 @@ CommandProcessor::~CommandProcessor() {
     delete commands_;
 }
 
+/**
+ * Operator= overload
+ * @param commandProcessor
+ * @return
+ */
 CommandProcessor &CommandProcessor::operator=(const CommandProcessor &commandProcessor) {
     if (this != &commandProcessor)
     {
@@ -59,6 +77,11 @@ CommandProcessor &CommandProcessor::operator=(const CommandProcessor &commandPro
     return *this;
 }
 
+/**
+ * Reads a command from the command line
+ * @param gameEngine
+ * @return the command
+ */
 Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
     Command *c = nullptr;
     // read the first element to determine what the name of the is;
@@ -111,22 +134,39 @@ Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
     return *c;
 }
 
+/**
+ * Gets a command
+ * @param gameEngine
+ * @return
+ */
 Command &CommandProcessor::getCommand(GameEngine &gameEngine) {
     Command *c = &readCommand(gameEngine);
-
     saveCommand(*c);
     return *c;
 }
 
+/**
+ * Validates a command
+ * @param command
+ * @return
+ */
 bool CommandProcessor::validate(Command &command) const {
     return command.validate();
 }
 
+/**
+ * Saves a command to the command list
+ * @param command
+ */
 void CommandProcessor::saveCommand(Command &command) {
     commands_->push_back(&command);
     Notify(*this);
 }
 
+/**
+ * Creates a string to log
+ * @return
+ */
 std::string CommandProcessor::stringToLog() const {
     std::stringstream s;
 
