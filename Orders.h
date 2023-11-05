@@ -23,7 +23,7 @@ class Territory;
 /**
  *
  */
-class Order : public ILoggable, Subject {
+class Order : public ILoggable, public Subject {
 public:
     Order(const Player &player, const std::string &description);
     // Copy constructor
@@ -35,6 +35,7 @@ public:
     [[nodiscard]] const std::string &description() const;
     [[nodiscard]] const std::string &effect() const;
     Order &operator=(const Order&);
+    virtual std::ostream &printTo(std::ostream& os) const;
     [[nodiscard]] std::string stringToLog() const override;
 protected:
     const Player *player_; // weak ptr
@@ -57,6 +58,7 @@ public:
     [[nodiscard]] bool validate() const override;
     void execute() override;
     DeployOrder &operator=(const DeployOrder&);
+    std::ostream& printTo(std::ostream& os) const override;
 private:
     Territory *target_;  // weak ptr
     unsigned *armies_;
@@ -75,6 +77,7 @@ public:
     [[nodiscard]] bool validate() const override;
     void execute() override;
     AdvanceOrder &operator=(const AdvanceOrder&);
+     std::ostream& printTo(std::ostream& os) const override;
 private:
     Territory *source_;  // weak ptr
     Territory *target_;  // weak ptr
@@ -96,6 +99,7 @@ public:
     [[nodiscard]] bool validate(const Map& map) const;
     void execute() override;
     BombOrder &operator=(const BombOrder&);
+    std::ostream& printTo(std::ostream& os) const override;
 private:
     Territory *target_; // weak ptr
 };
@@ -114,6 +118,7 @@ public:
     [[nodiscard]] bool validate() const override;
     void execute() override;
     BlockadeOrder &operator=(const BlockadeOrder&);
+    std::ostream& printTo(std::ostream& os) const override;
 private:
     Territory *target_; // weak ptr
 };
@@ -131,6 +136,7 @@ public:
     [[nodiscard]] bool validate() const override;
     void execute() override;
     AirliftOrder &operator=(const AirliftOrder&);
+    std::ostream& printTo(std::ostream& os) const override;
 private:
     Territory *source_; // weak ptr
     Territory *target_; // weak ptr
@@ -150,6 +156,7 @@ public:
     [[nodiscard]] bool validate() const override;
     void execute() override;
     NegotiateOrder &operator=(const NegotiateOrder&);
+    std::ostream& printTo(std::ostream& os) const override;
 private:
     const Player *otherPlayer_; // weak ptr
 };
@@ -157,7 +164,7 @@ private:
 /**
  * OrdersList class contains a list of Order objects
  */
-class OrdersList : public ILoggable, Subject {
+class OrdersList : public ILoggable, public Subject {
 public:
     OrdersList();
     OrdersList(const OrdersList&);

@@ -112,7 +112,7 @@ Continent &Map::continent(const std::string &name) const {
  * Gets the name of the Map
  * @return
  */
-std::string Map::name() const {
+std::string &Map::name() const {
     return *name_;
 }
 
@@ -433,7 +433,7 @@ Territory::~Territory() {
  * Gets the name of a Territory
  * @return
  */
-std::string Territory::name() const {
+std::string &Territory::name() const {
     return *name_;
 }
 
@@ -564,7 +564,7 @@ Continent::~Continent() {
  * Get the name of the Continent
  * @return the name
  */
-std::string Continent::name() const {
+std::string &Continent::name() const {
     return *name_;
 }
 

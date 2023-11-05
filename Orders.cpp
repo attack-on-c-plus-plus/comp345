@@ -3,6 +3,7 @@
 #include "Orders.h"
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -79,6 +80,13 @@ Order &Order::operator=(const Order &order) {
     return *this;
 }
 
+std::string Order::stringToLog() const {
+    std::stringstream s;
+    s << "| Command Executed: ";
+    s << *this;
+    return s.str();
+}
+
 /**
  * Operator<< overload
  * @param os
@@ -86,15 +94,12 @@ Order &Order::operator=(const Order &order) {
  * @return
  */
 std::ostream& operator<<(std::ostream& os, const Order& order) {
-    os << order.description();
-    if (!order.effect().empty()) {
-        os << " (" << order.effect() << ")";
-    }
-    return os;
+    return order.printTo(os);
 }
 
-std::string Order::stringToLog() const {
-    return {};
+std::ostream &Order::printTo(std::ostream &os) const {
+    os << *description_ << " (" << player_->getName() << ") - ";
+    return os;
 }
 
 // Implementation DeployOrder class
@@ -162,6 +167,10 @@ DeployOrder &DeployOrder::operator=(const DeployOrder &order) {
  */
 DeployOrder *DeployOrder::clone() const {
     return new DeployOrder(*this);
+}
+
+std::ostream &DeployOrder::printTo(std::ostream &os) const {
+    return Order::printTo(os) << std::to_string(*armies_) << " armies to " << target_->name();
 }
 
 // Implementation AdvanceOrder class
@@ -258,6 +267,11 @@ AdvanceOrder *AdvanceOrder::clone() const {
     return new AdvanceOrder(*this);
 }
 
+std::ostream &AdvanceOrder::printTo(std::ostream &os) const {
+    return Order::printTo(os) << std::to_string(*armies_) << " armies from "
+        << source_->name() << " to " << target_->name();
+}
+
 // Implementation BombOrder class
 /**
  * Constructor
@@ -350,6 +364,10 @@ BombOrder *BombOrder::clone() const {
     return new BombOrder(*this);
 }
 
+std::ostream &BombOrder::printTo(std::ostream &os) const {
+    return Order::printTo(os) << target_->name();
+}
+
 
 // Implementation BlockadeOrder class
 
@@ -358,7 +376,7 @@ BombOrder *BombOrder::clone() const {
  * @param target
  */
 BlockadeOrder::BlockadeOrder(const Player &player, Territory &target) :
-    Order(player, "Block") {
+    Order(player, "Blockade") {
     target_ = &target;
 }
 
@@ -418,6 +436,10 @@ BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order) {
  */
 BlockadeOrder *BlockadeOrder::clone() const {
     return new BlockadeOrder(*this);
+}
+
+std::ostream &BlockadeOrder::printTo(std::ostream &os) const {
+    return Order::printTo(os) << target_->name();
 }
 
 
@@ -514,6 +536,11 @@ AirliftOrder *AirliftOrder::clone() const {
     return new AirliftOrder(*this);
 }
 
+std::ostream &AirliftOrder::printTo(std::ostream &os) const {
+    return Order::printTo(os) << std::to_string(*armies_) + " armies from "
+        << source_->name() << " to " << target_->name();
+}
+
 // Implementation NegotiateOrder class
 /**
  * Constructor
@@ -586,6 +613,10 @@ NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order) {
  */
 NegotiateOrder *NegotiateOrder::clone() const {
     return new NegotiateOrder(*this);
+}
+
+std::ostream &NegotiateOrder::printTo(std::ostream &os) const {
+    return Order::printTo(os) << "with " << otherPlayer_->getName();
 }
 
 // Implementation OrdersList
@@ -699,5 +730,11 @@ OrdersList &OrdersList::operator=(const OrdersList &ordersList) {
 }
 
 std::string OrdersList::stringToLog() const {
-    return {};
+    std::stringstream s;
+
+    if (!orders_->empty()) {
+        s << "| Command: ";
+        orders_->back()->printTo(s);
+    }
+    return s.str();
 }
