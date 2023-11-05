@@ -11,6 +11,9 @@
 size_t randomInt(size_t min, size_t max);
 
 void testCards() {
+    GameEngine engine{GameState::start};
+    Player player{};
+    Territory territory{};
     std::cout << "Testing the implementation of Cards" << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << "Creating New Cards" << std::endl;
@@ -71,7 +74,7 @@ void testCards() {
 
         auto cardSelected = playerHand.card(random);
         std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
-        gameDeck.discard(cardSelected.play(), playerHand);
+        gameDeck.discard(cardSelected.play(player, territory,engine), playerHand);
         std::cout << std::endl;
     }
 
