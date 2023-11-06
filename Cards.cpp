@@ -2,7 +2,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <random>
-#include "GameEngine.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -51,7 +50,11 @@ const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEng
             break;
         case CardType::reinforcement: {}
             break;
-        case CardType::blockade: {}
+        case CardType::blockade: {
+            auto *order = new BlockadeOrder(player, territory, gameEngine);
+            order->execute();
+            delete order;
+        }
             break;
         case CardType::airlift: {}
             break;
