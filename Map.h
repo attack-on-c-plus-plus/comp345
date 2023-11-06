@@ -50,6 +50,7 @@ public:
     [[nodiscard]] Continent &continent(size_t id) const;
     [[nodiscard]] Territory &territory(size_t id) const;
     [[nodiscard]] std::vector<const Territory*> territories(const Player &p) const;
+    [[nodiscard]] std::vector<Territory *> &territories() const;
     [[nodiscard]] std::vector<const Territory*> adjacencies(const Continent &continent) const;
     [[nodiscard]] std::vector<const Territory*> adjacencies(const Territory &territory) const;
     Map &operator=(const Map&);

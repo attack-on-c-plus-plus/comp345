@@ -64,7 +64,7 @@ private:
     std::string *name;
     std::vector<Territory *> *territories;
     OrdersList *ordersList;
-    int reinforcementPool;
+    int *reinforcementPool;
     Hand *hand;
 
 

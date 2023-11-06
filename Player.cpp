@@ -35,7 +35,8 @@ Player::~Player() {
    delete ordersList;
    delete hand;
    delete territories;
-    std::cout << "Default Destructor is called\n";
+   delete reinforcementPool;
+   std::cout << "Default Destructor is called\n";
 }
 
 std::string &Player::getName() const {
@@ -51,14 +52,14 @@ void Player::changeName(const std::string &newName) {
  */
 int Player::getReinforcmentNumber() const
 {
-    return reinforcmentPool;
+    return *reinforcementPool;
 }
 /**
  * Adds reinforcements to the pool
  */
 void Player::addReinforcements(int armies)
 {
-    reinforcementPool += armies;
+    *reinforcementPool = *reinforcementPool + armies;
 }
 
 // Add a method to add a territory to the player's collection

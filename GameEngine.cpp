@@ -473,24 +473,25 @@ GameState AssignTerritoriesCommand::execute() {
     }
     // This sets the turn order
     std::cout << "Getting turn order" << std::endl;
-    int size = static_cast<int>(ourPlayers.size());;
+    int size = static_cast<int>(gameEngine_->getPlayers().size());
+    ;
     int turnOrder = rand() % size;
     std::cout << "called rand" << std::endl;
     std::cout << turnOrder << std::endl;
     gameEngine_->setTurnOrder(turnOrder);
     std::cout << "set the turn" << std::endl;
-    std::cout << "Turn Order set going in order of players added starting with " << ourPlayers[gameEngine_->getTurnID()]->getName() << std::endl;
+    std::cout << "Turn Order set going in order of players added starting with " << gameEngine_->getPlayers()[gameEngine_->getTurnID()]->getName() << std::endl;
     // This gives each player 50 armies to start
     for (int i = 0; i < size; i++)
     {
-        ourPlayers[i]->addReinforcements(50);
+        gameEngine_->getPlayers()[i]->addReinforcements(50);
     }
     // This lets each player draw 2 cards
     Deck ourDeck = gameEngine_->getDeck();
     for (int i = 0; i < size; i++)
     {
-        ourPlayers[i]->drawCardFromDeck(ourDeck);
-        ourPlayers[i]->drawCardFromDeck(ourDeck);
+        gameEngine_->getPlayers()[i]->drawCardFromDeck(ourDeck);
+        gameEngine_->getPlayers()[i]->drawCardFromDeck(ourDeck);
     }
     std::cout << "Territories assigned." << std::endl;
     return GameState::assignReinforcements;
