@@ -135,26 +135,26 @@ std::vector<const Territory *> Player::toAttack(const Map &map) const
 }
 
 
-void Player::issueOrder(const std::string &orderType, Territory &source, Territory &target, unsigned armies, const Player &otherPlayer)
+void Player::issueOrder(const std::string &orderType, Territory &source, Territory &target, unsigned armies, const Player &otherPlayer, GameEngine &gameEngine)
 {
     if (orderType == "Deploy") {
         // Create a DeployOrder object
-        ordersList->addOrder(DeployOrder{*this, target, armies});
+        ordersList->addOrder(DeployOrder{*this, target, armies, gameEngine});
     } else if (orderType == "Advance") {
         // Create an AdvanceOrder object
-        ordersList->addOrder(AdvanceOrder{*this, source, target, armies});
+        ordersList->addOrder(AdvanceOrder{*this, source, target, armies, gameEngine});
     } else if (orderType == "Bomb") {
         // Create a BombOrder object
-        ordersList->addOrder(BombOrder{*this, target});
+        ordersList->addOrder(BombOrder{*this, target, gameEngine});
     } else if (orderType == "Blockade") {
         // Create a BlockadeOrder object
-        ordersList->addOrder(BlockadeOrder{*this, target});
+        ordersList->addOrder(BlockadeOrder{*this, target, gameEngine});
     } else if (orderType == "Airlift") {
         // Create an AirliftOrder object
-        ordersList->addOrder(AirliftOrder{*this, source, target, armies});
+        ordersList->addOrder(AirliftOrder{*this, source, target, armies, gameEngine});
     } else if (orderType == "Negotiate") {
         // Create a NegotiateOrder object with the target player ID
-        ordersList->addOrder(NegotiateOrder{*this, otherPlayer});
+        ordersList->addOrder(NegotiateOrder{*this, otherPlayer, gameEngine});
     } else {
         return;
     }
@@ -164,17 +164,18 @@ void Player::drawCardFromDeck(Deck &deck) {
     deck.draw(*hand);
 }
 
-void Player::playCardFromHand(const Card &card, Deck &deck) {
+void Player::playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target) {
     // Implement logic to play the card
-    deck.discard(card.play(), *hand);
+    // Right now, I'll create a custom territory class
+    deck.discard(card.play(*this, target, engine), *hand);
 }
 const Hand &Player::getHand() const {
     return *hand;
 }
 
-std::vector<Order*> Player::getOrderList()
+OrdersList &Player::orderList()
 {
-    return ordersList->getOrder();
+    return *ordersList;
 }
 
 

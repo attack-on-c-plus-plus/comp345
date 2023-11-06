@@ -1,5 +1,6 @@
 #include "GameEngine.h"
 #include <iostream>
+#include <filesystem>
 #include <cctype>
 #include <algorithm>
 #include <sstream>
@@ -12,12 +13,48 @@
 // Henri Stephane Carbon
 // Haris Mahmood
 
+std::ostream &operator<<(std::ostream &os, GameState state)
+{
+    switch (state)
+    {
+    case GameState::start:
+        os << "start";
+        break;
+    case GameState::mapLoaded:
+        os << "mapLoaded";
+        break;
+    case GameState::mapValidated:
+        os << "mapValidated";
+        break;
+    case GameState::playersAdded:
+        os << "playersAdded";
+        break;
+    case GameState::assignReinforcements:
+        os << "assignReinforcements";
+        break;
+    case GameState::issueOrders:
+        os << "issueOrders";
+        break;
+    case GameState::executeOrders:
+        os << "executeOrders";
+        break;
+    case GameState::win:
+        os << "win";
+        break;
+    default:
+        os.setstate(std::ios_base::failbit);
+    }
+    return os;
+}
+
 /**
  * Main constructor for the GameEngine object
  * @param gameStates
  */
-GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)}, map_{new Map} {
-    players_ = new std::vector<Player*>();
+GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)},
+                                                 commandProcessor_{new CommandProcessor}, map_{new Map}
+{
+    players_ = new std::vector<Player *>();
     turnID = new int(0);
     deck_ = new Deck(24);
 }
@@ -26,8 +63,9 @@ GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)}, m
  * Copy constructor
  * @param gameEngine
  */
-GameEngine::GameEngine(const GameEngine &gameEngine) : Subject(gameEngine),
-                                                       state_{new GameState(*gameEngine.state_)}, map_{new Map(*gameEngine.map_)}
+GameEngine::GameEngine(const GameEngine &gameEngine) : Subject(gameEngine), state_{new GameState(*gameEngine.state_)},
+                                                       commandProcessor_{new CommandProcessor(*gameEngine.commandProcessor_)},
+                                                       map_{new Map(*gameEngine.map_)}
 {
     players_ = new std::vector<Player *>(*gameEngine.players_);
     deck_ = new Deck(*gameEngine.deck_);
@@ -41,6 +79,7 @@ GameEngine::~GameEngine()
 {
     delete state_;
     delete map_;
+    delete commandProcessor_;
     // Delete each object in vector
     for (auto p : *players_)
     {
@@ -68,11 +107,14 @@ GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
         {
             delete p;
         }
+        delete map_;
+        delete commandProcessor_;
         players_->clear();
         delete players_;
         state_ = new GameState(*gameEngine.state_);
+        players_ = new std::vector<Player *>(*gameEngine.players_);
         map_ = new Map(*gameEngine.map_);
-        players_ = new std::vector<Player*>(*gameEngine.players_);
+        commandProcessor_ = new CommandProcessor(*gameEngine.commandProcessor_);
     }
     return *this;
 }
@@ -81,7 +123,8 @@ GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
  * Gets the current game state
  * @return
  */
-GameState GameEngine::state() const {
+GameState GameEngine::state() const
+{
     return *state_;
 }
 /*
@@ -101,7 +144,7 @@ void GameEngine::map(Map &map)
 /**
  * Gets the vector containing the players
  */
-std::vector<Player *>& GameEngine::getPlayers()
+std::vector<Player *> &GameEngine::getPlayers()
 {
     return *players_;
 }
@@ -146,73 +189,88 @@ bool GameEngine::gameOver() const
     return *state_ == GameState::gameOver;
 }
 
-void GameEngine::gameLoop() {
-    while (*state_ != GameState::gameOver) {
+void GameEngine::gameLoop()
+{
+    while (*state_ != GameState::gameOver)
+    {
         std::cout << "Preparing game" << std::endl;
         startup();
         std::cout << "Playing game" << std::endl;
-        play();
+        mainGameLoop();
     }
 }
 
-void GameEngine::startup() {
+void GameEngine::startup()
+{
     Command *command;
-    while (*state_ != GameState::assignReinforcements) {
-        command = readCommand();
-        if (command == nullptr) continue;
+    while (*state_ != GameState::assignReinforcements)
+    {
+        command = &commandProcessor_->getCommand(*this); // readCommand(*this);
+        if (command == nullptr)
+            continue;
+        transition(command->execute());
+    }
+}
+
+void GameEngine::mainGameLoop()
+{
+    while (*state_ != GameState::win)
+    {
+        reinforcementPhase();
+        issuingOrderPhase();
+        executeOrdersPhase();
+        removeEliminatedPlayers();
+        checkWinningCondition();
+    }
+    Command *command;
+    while (*state_ == GameState::win)
+    {
+        command = &commandProcessor_->getCommand(*this); // readCommand(); //&commandProcessor_->getCommand();
         transition(command->execute());
         delete command;
     }
 }
 
-void GameEngine::play() {
-    Command *command;
-    while (*state_ != GameState::gameOver) {
-        command = readCommand();
-        if (command == nullptr) continue;
-        transition(command->execute());
-        delete command;
-    }
-}
-
-std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine) {
-    switch (*gameEngine.state_) {
-        case GameState::start: os << "start"; break;
-        case GameState::mapLoaded: os << "map loaded"; break;
-        case GameState::mapValidated: os << "map validated"; break;
-        case GameState::playersAdded: os << "players added"; break;
-        case GameState::assignReinforcements: os << "assign reinforcements"; break;
-        case GameState::issueOrders: os << "issue orders"; break;
-        case GameState::executeOrders: os << "execute orders"; break;
-        case GameState::win: os << "win"; break;
-        default: os.setstate(std::ios_base::failbit);
+std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine)
+{
+    switch (*gameEngine.state_)
+    {
+    case GameState::start:
+        os << "start";
+        break;
+    case GameState::mapLoaded:
+        os << "map loaded";
+        break;
+    case GameState::mapValidated:
+        os << "map validated";
+        break;
+    case GameState::playersAdded:
+        os << "players added";
+        break;
+    case GameState::assignReinforcements:
+        os << "assign reinforcements";
+        break;
+    case GameState::issueOrders:
+        os << "issue orders";
+        break;
+    case GameState::executeOrders:
+        os << "execute orders";
+        break;
+    case GameState::win:
+        os << "win";
+        break;
+    default:
+        os.setstate(std::ios_base::failbit);
     }
     return os;
 }
 
-Command *GameEngine::readCommand() {
-    std::string s;
-    std::cout << "Enter your command." << std::endl;
-    std::cin >> s;
-    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-
-    if (s == "loadmap") { return new LoadMapCommand(*this); }
-    else if (s == "validatemap") { return new ValidateMapCommand(*this); }
-    else if (s == "addplayer") { return new AddPlayerCommand(*this); }
-    else if (s == "assignterritories") {return new AssignTerritoriesCommand(*this);}
-    else if (s == "issueorder") {return new IssueOrdersCommand(*this);}
-    else if (s == "endissueorders") {return new EndIssueOrdersCommand(*this);}
-    else if (s == "execorder") {return new ExecuteOrdersCommand(*this);}
-    else if (s == "endexecorders") {return new EndExecuteOrdersCommand(*this);}
-    else if (s == "win") {return new WinCommand(*this);}
-    else if (s == "play") {return new PlayCommand(*this);}
-    else if (s == "end") {return new QuitCommand(*this);}
-    else { std::cout << "Invalid command. " << s << std::endl; return nullptr; }
-}
-
-std::string GameEngine::stringToLog() const {
+std::string GameEngine::stringToLog() const
+{
     std::stringstream s;
     s << "| Game Engine new state: " << *this;
+    if (*state_ == GameState::win)
+        s << " player " << players_->at(0) << " wins!";
     return s.str();
 }
 
@@ -220,107 +278,203 @@ std::string GameEngine::stringToLog() const {
  * Transitions the Game Engine state to the new state
  * @param gameState
  */
-void GameEngine::transition(const GameState newState) {
+void GameEngine::transition(const GameState newState)
+{
     *state_ = newState;
     Notify(*this);
 }
 
-Command::Command(GameEngine &gameEngine, const std::string &description) {
+/**
+ * Executes players orders
+ */
+void GameEngine::executeOrdersPhase()
+{
+    if (*state_ != GameState::executeOrders)
+        return; // Game engine is in the wrong state
+
+    // execute player orders
+    for (auto player : *players_)
+    {
+        if (player->getTerritories().empty()) // if player has no territories skip turn
+            continue;
+        player->orderList().executeOrders();
+    }
+}
+
+/**
+ * Check if game is won
+ */
+void GameEngine::checkWinningCondition()
+{ // Only 1 player left the game is over
+    if (*state_ != GameState::executeOrders)
+        return; // Game engine is in the wrong state
+    if (players_->size() == 1)
+    {
+        transition(GameState::win);
+    }
+    transition(GameState::assignReinforcements);
+}
+
+/**
+ * Removes eliminated players
+ */
+void GameEngine::removeEliminatedPlayers()
+{ // remove players which have no territories
+    for (auto it = players_->begin(); it != players_->end(); ++it)
+    {
+        if ((*it)->getTerritories().empty())
+        {
+            delete *it;
+            players_->erase(it);
+            --it;
+        }
+    }
+}
+
+/**
+ * Executes the reinforcement phase
+ */
+void GameEngine::reinforcementPhase()
+{
+    if (*state_ != GameState::assignReinforcements)
+        return; // Game engine is in the wrong state
+    // TODO: implement issue #110
+    transition(GameState::issueOrders);
+}
+
+/**
+ * Executes the issue orders phase
+ */
+void GameEngine::issuingOrderPhase()
+{
+    if (*state_ != GameState::issueOrders)
+        return; // Game engine is in the wrong state
+    // TODO: implement issue #111
+    transition(GameState::executeOrders);
+}
+
+Command::Command(GameEngine &gameEngine, const std::string &description)
+{
     gameEngine_ = &gameEngine;
     description_ = new std::string(description);
     effect_ = new std::string();
 }
 
-Command::~Command() {
+Command::~Command()
+{
     delete description_;
     delete effect_;
 }
 
-Command::Command(const Command &command) : Subject(command) {
+Command::Command(const Command &command) : Subject(command)
+{
     gameEngine_ = command.gameEngine_;
-    description_ = new std::string (*command.description_);
+    description_ = new std::string(*command.description_);
     effect_ = new std::string(*command.effect_);
 }
 
-Command &Command::operator=(const Command &command) {
+Command &Command::operator=(const Command &command)
+{
     if (this != &command)
     {
         delete description_;
         delete effect_;
         gameEngine_ = command.gameEngine_;
-        description_ = new std::string (*command.description_);
+        description_ = new std::string(*command.description_);
         effect_ = new std::string(*command.effect_);
     }
     return *this;
 }
+std::string &Command::description() const
+{
+    return *description_;
+}
 
-std::string Command::stringToLog() const {
+std::string Command::stringToLog() const
+{
     std::stringstream s;
-    s << "| Command's effect: " << *this;
+    s << "| Command's Effect: " << *effect_;
     return s.str();
 }
 
-std::ostream &operator<<(std::ostream &os, const Command &command) {
+std::ostream &operator<<(std::ostream &os, const Command &command)
+{
     os << *command.effect_;
     return os;
 }
 
-void Command::saveEffect(const std::string &effect) {
+void Command::saveEffect(const std::string &effect)
+{
     *effect_ = effect;
+    std::cout << effect << std::endl;
     Notify(*this);
 }
 
-LoadMapCommand::LoadMapCommand(GameEngine &gameEngine) :
-    Command(gameEngine, "LoadMap") {}
+bool Command::validate()
+{
+    std::stringstream s;
+    s << "Command \"" << *description_ << "\" not valid in state \"" << *gameEngine_ << "\".";
+    saveEffect(s.str());
+    return false;
+}
 
-LoadMapCommand::LoadMapCommand(const LoadMapCommand &loadMap) = default;
+LoadMapCommand::LoadMapCommand(GameEngine &gameEngine, const std::string &filename) : Command(gameEngine, "LoadMap"), filename_{new std::string(filename)} {}
 
-LoadMapCommand::~LoadMapCommand() = default;
+LoadMapCommand::LoadMapCommand(const LoadMapCommand &loadMap) : Command(loadMap)
+{
+    filename_ = new std::string(*loadMap.filename_);
+}
 
-LoadMapCommand &LoadMapCommand::operator=(const LoadMapCommand &command) {
+LoadMapCommand::~LoadMapCommand()
+{
+    delete filename_;
+}
+
+LoadMapCommand &LoadMapCommand::operator=(const LoadMapCommand &command)
+{
     if (this != &command)
     {
         Command::operator=(command);
+        delete filename_;
+        filename_ = new std::string(*command.filename_);
     }
     return *this;
 }
 
-bool LoadMapCommand::valid() {
+bool LoadMapCommand::validate()
+{
+    if (!std::filesystem::exists(*filename_))
+    {
+        saveEffect("Map file \"" + *filename_ + "\" not found!");
+        return false;
+    }
     if (gameEngine_->state() == GameState::start || gameEngine_->state() == GameState::mapLoaded)
         return true;
-
-    std::cout << "Invalid command, please try again, your current state is start." << std::endl;
-    return false;
+    return Command::validate();
 }
 
-GameState LoadMapCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    while (true)
-    {
-        std::cout << "Enter the file path for the map you want" << std::endl;
-        std::string file;
-        std::cin.ignore();
-        std::getline(std::cin, file);
-        if (MapLoader::load(file, gameEngine_->map()))
-        {
-            std::cout << "Map loaded." << std::endl;
-            return GameState::mapLoaded;
-        }
-    }
+GameState LoadMapCommand::execute()
+{
+    if (!validate())
+        return gameEngine_->state();
+    MapLoader::load(*filename_, gameEngine_->map());
+    saveEffect("Map \"" + gameEngine_->map().name() + "\" loaded.");
+    return GameState::mapLoaded;
 }
 
-LoadMapCommand *LoadMapCommand::clone() const {
+LoadMapCommand *LoadMapCommand::clone() const
+{
     return new LoadMapCommand(*this);
 }
 
-ValidateMapCommand::ValidateMapCommand(GameEngine &gameEngine) :
-    Command(gameEngine, "ValidateMap") {}
+ValidateMapCommand::ValidateMapCommand(GameEngine &gameEngine) : Command(gameEngine, "ValidateMap") {}
 
 ValidateMapCommand::ValidateMapCommand(const ValidateMapCommand &validateMap) = default;
 
 ValidateMapCommand::~ValidateMapCommand() = default;
 
-ValidateMapCommand &ValidateMapCommand::operator=(const ValidateMapCommand &command) {
+ValidateMapCommand &ValidateMapCommand::operator=(const ValidateMapCommand &command)
+{
     if (this != &command)
     {
         Command::operator=(command);
@@ -328,86 +482,94 @@ ValidateMapCommand &ValidateMapCommand::operator=(const ValidateMapCommand &comm
     return *this;
 }
 
-bool ValidateMapCommand::valid() {
+bool ValidateMapCommand::validate()
+{
     if (gameEngine_->state() == GameState::mapLoaded)
         return true;
 
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
+    return Command::validate();
 }
 
-GameState ValidateMapCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    if (gameEngine_->map().validate())
+GameState ValidateMapCommand::execute()
+{
+    if (!validate() || !gameEngine_->map().validate())
     {
-        std::cout << "Map validated." << std::endl;
-        return GameState::mapValidated;
-    }
-    else
-    {
-        std::cout << "Map not valid, enter a new map please." << std::endl;
+        saveEffect("Map not valid, enter a new map please.");
         return gameEngine_->state();
     }
+    saveEffect("Map \"" + gameEngine_->map().name() + "\" validated.");
+    return GameState::mapValidated;
 }
 
-ValidateMapCommand *ValidateMapCommand::clone() const {
+ValidateMapCommand *ValidateMapCommand::clone() const
+{
     return new ValidateMapCommand(*this);
 }
 
-AddPlayerCommand::AddPlayerCommand(GameEngine &gameEngine) : Command(gameEngine, "AddPlayer") {}
+AddPlayerCommand::AddPlayerCommand(GameEngine &gameEngine, const std::string &playerName) : Command(gameEngine, "AddPlayer"), playerName_{new std::string(playerName)} {}
 
 AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand &addPlayer) = default;
 
-AddPlayerCommand::~AddPlayerCommand() = default;
+AddPlayerCommand::~AddPlayerCommand()
+{
+    delete playerName_;
+}
 
-AddPlayerCommand &AddPlayerCommand::operator=(const AddPlayerCommand &command) {
+AddPlayerCommand &AddPlayerCommand::operator=(const AddPlayerCommand &command)
+{
     if (this != &command)
     {
         Command::operator=(command);
+        delete playerName_;
+        playerName_ = new std::string(*command.playerName_);
     }
     return *this;
 }
 
-bool AddPlayerCommand::valid() {
-   if (gameEngine_->state() == GameState::mapValidated || gameEngine_->state() == GameState::playersAdded)
-       return true;
+bool AddPlayerCommand::validate()
+{
+    if (gameEngine_->state() == GameState::mapValidated || gameEngine_->state() == GameState::playersAdded)
+        return true;
 
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
+    return Command::validate();
 }
 
-GameState AddPlayerCommand::execute() {
-    if (!valid()) return gameEngine_->state();
+GameState AddPlayerCommand::execute()
+{
+    if (!validate())
+        return gameEngine_->state();
     if (gameEngine_->getPlayers().size() >= 6)
     {
-       std::cout << "Already reached maximum player count of 6." << std::endl;
-       return gameEngine_->state();
+        std::cout << "Already reached maximum player count of 6." << std::endl;
+        return gameEngine_->state();
     }
     std::cout << "Enter Name of Player" << std::endl;
     std::string name;
     std::cin >> name;
     auto *newPlayer = new Player(name);
     gameEngine_->getPlayers().push_back(newPlayer);
-    std::cout << "Player added." << std::endl;
+    saveEffect("Player \"" + *playerName_ + "\" added.");
     if (gameEngine_->getPlayers().size() <= 1)
     {
-       std::cout << "You still need another player." << std::endl;
+        std::cout << "You still need another player." << std::endl;
     }
     return GameState::playersAdded;
 }
 
-AddPlayerCommand *AddPlayerCommand::clone() const {
+AddPlayerCommand *AddPlayerCommand::clone() const
+{
     return new AddPlayerCommand(*this);
 }
 
-AssignTerritoriesCommand::AssignTerritoriesCommand(GameEngine &gameEngine) :
-    Command(gameEngine, "AssignTerritories") {}
+AssignTerritoriesCommand::AssignTerritoriesCommand(GameEngine &gameEngine)
+    : Command(gameEngine, "AssignTerritories") {}
 
 AssignTerritoriesCommand::AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories) = default;
 
 AssignTerritoriesCommand::~AssignTerritoriesCommand() = default;
 
-AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerritoriesCommand &command) {
+AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerritoriesCommand &command)
+{
     if (this != &command)
     {
         Command::operator=(command);
@@ -415,30 +577,37 @@ AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerrit
     return *this;
 }
 
-bool AssignTerritoriesCommand::valid() {
-    if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size()>=2)
+bool AssignTerritoriesCommand::validate()
+{
+    if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size() >= 2)
         return true;
-    if(gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size()<2){
-        std::cout <<"You still need at least 2 players to assign territories" << std::endl;
-    }
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
+    std::stringstream s;
+    s << "Command \"" << *description_ << "\" not valid in state \"" << *gameEngine_ << "\".";
+    if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size() < 2)
+        s << " You need at least 2 players.";
+    saveEffect(s.str());
     return false;
 }
 
-GameState AssignTerritoriesCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    auto territories= gameEngine_->map().territories();
+GameState AssignTerritoriesCommand::execute()
+{
+    if (!validate())
+        return gameEngine_->state();
+    auto territories = gameEngine_->map().territories();
     std::random_device r;
     std::default_random_engine e(r());
-            
-    while (!territories.empty()) {
-        for (auto & it : gameEngine_->getPlayers()) {
+
+    while (!territories.empty())
+    {
+        for (auto &it : gameEngine_->getPlayers())
+        {
             std::uniform_int_distribution<size_t> u(0, territories.size() - 1);
             auto random = u(e);
             territories[random]->owner(*it);
             (*it).addTerritory(*territories[random]);
             territories.erase(territories.begin() + random);
-            if (territories.empty()) break;
+            if (territories.empty())
+                break;
         }
     }
     // This sets the turn order
@@ -458,17 +627,19 @@ GameState AssignTerritoriesCommand::execute() {
     return GameState::assignReinforcements;
 }
 
-AssignTerritoriesCommand *AssignTerritoriesCommand::clone() const {
+AssignTerritoriesCommand *AssignTerritoriesCommand::clone() const
+{
     return new AssignTerritoriesCommand(*this);
 }
 
-IssueOrdersCommand::IssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "IssueOrders") {}
+ReplayCommand::ReplayCommand(GameEngine &gameEngine) : Command(gameEngine, "Play") {}
 
-IssueOrdersCommand::IssueOrdersCommand(const IssueOrdersCommand &issueOrders) = default;
+ReplayCommand::ReplayCommand(const ReplayCommand &play) = default;
 
-IssueOrdersCommand::~IssueOrdersCommand() = default;
+ReplayCommand::~ReplayCommand() = default;
 
-IssueOrdersCommand &IssueOrdersCommand::operator=(const IssueOrdersCommand &command) {
+ReplayCommand &ReplayCommand::operator=(const ReplayCommand &command)
+{
     if (this != &command)
     {
         Command::operator=(command);
@@ -476,183 +647,25 @@ IssueOrdersCommand &IssueOrdersCommand::operator=(const IssueOrdersCommand &comm
     return *this;
 }
 
-bool IssueOrdersCommand::valid() {
-    if (gameEngine_->state() == GameState::assignReinforcements || gameEngine_->state() == GameState::issueOrders)
-        return true;
-
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
-}
-
-GameState IssueOrdersCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    std::cout << "Issue Order." << std::endl;
-    return GameState::issueOrders;
-}
-
-IssueOrdersCommand *IssueOrdersCommand::clone() const {
-    return new IssueOrdersCommand(*this);
-}
-
-EndIssueOrdersCommand::EndIssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "EndIssueOrders") {}
-
-EndIssueOrdersCommand::EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders) = default;
-
-EndIssueOrdersCommand::~EndIssueOrdersCommand() = default;
-
-EndIssueOrdersCommand &EndIssueOrdersCommand::operator=(const EndIssueOrdersCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool EndIssueOrdersCommand::valid() {
-    if (gameEngine_->state() == GameState::issueOrders)
-        return true;
-
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
-}
-
-GameState EndIssueOrdersCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    std::cout << "Ended Issue Orders." << std::endl;
-    return GameState::executeOrders;
-}
-
-EndIssueOrdersCommand *EndIssueOrdersCommand::clone() const {
-    return new EndIssueOrdersCommand(*this);
-}
-
-ExecuteOrdersCommand::ExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "ExecuteOrders") {}
-
-ExecuteOrdersCommand::ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders) = default;
-
-ExecuteOrdersCommand::~ExecuteOrdersCommand() = default;
-
-ExecuteOrdersCommand &ExecuteOrdersCommand::operator=(const ExecuteOrdersCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool ExecuteOrdersCommand::valid() {
-    if (gameEngine_->state() == GameState::executeOrders)
-        return true;
-
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
-}
-
-GameState ExecuteOrdersCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    std::cout << "Execute Order." << std::endl;
-    return GameState::executeOrders;
-}
-
-ExecuteOrdersCommand *ExecuteOrdersCommand::clone() const {
-    return new ExecuteOrdersCommand(*this);
-}
-
-EndExecuteOrdersCommand::EndExecuteOrdersCommand(GameEngine &gameEngine) :
-    Command(gameEngine, "EndExecuteOrders") {}
-
-EndExecuteOrdersCommand::EndExecuteOrdersCommand(const EndExecuteOrdersCommand &endExecuteOrders) = default;
-
-EndExecuteOrdersCommand::~EndExecuteOrdersCommand() = default;
-
-EndExecuteOrdersCommand &EndExecuteOrdersCommand::operator=(const EndExecuteOrdersCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool EndExecuteOrdersCommand::valid() {
-    if (gameEngine_->state() == GameState::executeOrders)
-        return true;
-
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
-}
-
-GameState EndExecuteOrdersCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    std::cout << "Ended Execute Orders." << std::endl;
-    return GameState::assignReinforcements;
-}
-
-EndExecuteOrdersCommand *EndExecuteOrdersCommand::clone() const {
-    return new EndExecuteOrdersCommand(*this);
-}
-
-WinCommand::WinCommand(GameEngine &gameEngine) : Command(gameEngine, "Win") {}
-
-WinCommand::WinCommand(const WinCommand &win) = default;
-
-WinCommand::~WinCommand() = default;
-
-WinCommand &WinCommand::operator=(const WinCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool WinCommand::valid() {
-    if (gameEngine_->state() == GameState::executeOrders)
-        return true;
-
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
-}
-
-GameState WinCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    std::cout << "WinCommand." << std::endl;
-    return GameState::win;
-}
-
-WinCommand *WinCommand::clone() const {
-    return new WinCommand(*this);
-}
-
-PlayCommand::PlayCommand(GameEngine &gameEngine) : Command(gameEngine, "Play") {}
-
-PlayCommand::PlayCommand(const PlayCommand &play) = default;
-
-PlayCommand::~PlayCommand() = default;
-
-PlayCommand &PlayCommand::operator=(const PlayCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool PlayCommand::valid() {
+bool ReplayCommand::validate()
+{
     if (gameEngine_->state() == GameState::win)
         return true;
 
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
+    return Command::validate();
 }
 
-GameState PlayCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    std::cout << "Replaying." << std::endl;
+GameState ReplayCommand::execute()
+{
+    if (!validate())
+        return gameEngine_->state();
+    saveEffect("Replaying the Conquest game.");
     return GameState::start;
 }
 
-PlayCommand *PlayCommand::clone() const {
-    return new PlayCommand(*this);
+ReplayCommand *ReplayCommand::clone() const
+{
+    return new ReplayCommand(*this);
 }
 
 QuitCommand::QuitCommand(GameEngine &gameEngine) : Command(gameEngine, "Quit") {}
@@ -661,7 +674,8 @@ QuitCommand::QuitCommand(const QuitCommand &quit) = default;
 
 QuitCommand::~QuitCommand() = default;
 
-QuitCommand &QuitCommand::operator=(const QuitCommand &command) {
+QuitCommand &QuitCommand::operator=(const QuitCommand &command)
+{
     if (this != &command)
     {
         Command::operator=(command);
@@ -669,20 +683,23 @@ QuitCommand &QuitCommand::operator=(const QuitCommand &command) {
     return *this;
 }
 
-bool QuitCommand::valid() {
+bool QuitCommand::validate()
+{
     if (gameEngine_->state() == GameState::win)
         return true;
 
-    std::cout << "Invalid command, please try again." << *gameEngine_ << std::endl;
-    return false;
+    return Command::validate();
 }
 
-GameState QuitCommand::execute() {
-    if (!valid()) return gameEngine_->state();
-    std::cout << "Quitting" << std::endl;
+GameState QuitCommand::execute()
+{
+    if (!validate())
+        return gameEngine_->state();
+    saveEffect("Quitting the Conquest game. Thank you for playing!");
     return GameState::gameOver;
 }
 
-QuitCommand *QuitCommand::clone() const {
+QuitCommand *QuitCommand::clone() const
+{
     return new QuitCommand(*this);
 }

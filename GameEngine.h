@@ -5,6 +5,7 @@
 
 #include "LoggingObserver.h"
 #include "Map.h"
+#include "CommandProcessing.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -16,11 +17,14 @@
  * GameEngine.cpp/GameEngine.h implement the system that tracks the current
  * state of the game and which methods are supposed to be run in each state.
  * The states form the structure of the setup and the game itself.
-*/
+ */
 
 // Forward declaration.
 class GameEngine;
 class Command;
+class CommandProcessor;
+class Player;
+class Map;
 
 // This is the enum used to define all possible states the engine can be in.
 enum class GameState
@@ -36,12 +40,15 @@ enum class GameState
     gameOver
 };
 
+std::ostream &operator<<(std::ostream &os, GameState state);
+
 /**
  * GameEngine is implemented as a container for a string and a boolean,
  * the string representing the state and the boolean being used as a
  * check as to whether the game has ended.
  */
-class GameEngine : public ILoggable, public Subject {
+class GameEngine : public ILoggable, public Subject
+{
 public:
     explicit GameEngine(const GameState &gameStates);
     // Copy constructor
@@ -55,158 +62,127 @@ public:
     [[nodiscard]] bool gameOver() const;
     [[nodiscard]] Map &map() const;
     [[nodiscard]] int getTurnID() const;
-    [[nodiscard]] std::vector<Player *>& getPlayers();
+    [[nodiscard]] std::vector<Player *> &getPlayers();
     [[nodiscard]] Deck getDeck() const;
     void map(Map &map);
     void nextTurn();
     void setTurnOrder(int &turn);
     void startup();
-    void play();
-    Command *readCommand();
+    void mainGameLoop();
+    void reinforcementPhase();
+    void issuingOrderPhase();
+    void executeOrdersPhase();
     [[nodiscard]] std::string stringToLog() const override;
     void transition(GameState gameState);
+
 private:
     GameState *state_;
     Map *map_;
     Deck *deck_;
     int *turnID;
     std::vector<Player *> *players_;
+    void removeEliminatedPlayers();
+    void checkWinningCondition();
+    CommandProcessor *commandProcessor_;
     friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
 };
 
-class Command : public ILoggable, public Subject {
+class Command : public ILoggable, public Subject
+{
 public:
     explicit Command(GameEngine &gameEngine, const std::string &description);
     Command(const Command &command);
     virtual ~Command();
-    virtual bool valid() = 0;
+    virtual bool validate();
     virtual GameState execute() = 0;
-    [[nodiscard]] virtual Command* clone() const = 0;
+    [[nodiscard]] virtual Command *clone() const = 0;
     void saveEffect(const std::string &effect);
+    [[nodiscard]] std::string &description() const;
     [[nodiscard]] std::string stringToLog() const override;
-    Command &operator=(const Command& command);
+    Command &operator=(const Command &command);
+
 protected:
     GameEngine *gameEngine_;
     std::string *description_;
     std::string *effect_;
+
 private:
     friend std::ostream &operator<<(std::ostream &os, const Command &command);
 };
 
-class LoadMapCommand : public Command {
+class LoadMapCommand : public Command
+{
 public:
-    explicit LoadMapCommand(GameEngine &gameEngine);
-    LoadMapCommand(const LoadMapCommand& loadMap);
+    explicit LoadMapCommand(GameEngine &gameEngine, const std::string &filename);
+    LoadMapCommand(const LoadMapCommand &loadMap);
     ~LoadMapCommand() override;
-    bool valid() override;
+    bool validate() override;
     GameState execute() override;
-    [[nodiscard]] LoadMapCommand* clone() const override;
-    LoadMapCommand &operator=(const LoadMapCommand& command);
+    [[nodiscard]] LoadMapCommand *clone() const override;
+    LoadMapCommand &operator=(const LoadMapCommand &command);
+
+private:
+    std::string *filename_;
 };
 
-class ValidateMapCommand : public Command {
+class ValidateMapCommand : public Command
+{
 public:
     explicit ValidateMapCommand(GameEngine &gameEngine);
     ValidateMapCommand(const ValidateMapCommand &validateMap);
     ~ValidateMapCommand() override;
-    bool valid() override;
+    bool validate() override;
     GameState execute() override;
-    [[nodiscard]] ValidateMapCommand* clone() const override;
-    ValidateMapCommand &operator=(const ValidateMapCommand& command);
+    [[nodiscard]] ValidateMapCommand *clone() const override;
+    ValidateMapCommand &operator=(const ValidateMapCommand &command);
 };
 
-class AddPlayerCommand : public Command {
+class AddPlayerCommand : public Command
+{
 public:
-    explicit AddPlayerCommand(GameEngine &gameEngine);
+    explicit AddPlayerCommand(GameEngine &gameEngine, const std::string &playerName);
     AddPlayerCommand(const AddPlayerCommand &addPlayer);
     ~AddPlayerCommand() override;
-    bool valid() override;
+    bool validate() override;
     GameState execute() override;
-    [[nodiscard]] AddPlayerCommand* clone() const override;
-    AddPlayerCommand &operator=(const AddPlayerCommand& command);
+    [[nodiscard]] AddPlayerCommand *clone() const override;
+    AddPlayerCommand &operator=(const AddPlayerCommand &command);
+
+private:
+    std::string *playerName_;
 };
 
-class AssignTerritoriesCommand : public Command {
+class AssignTerritoriesCommand : public Command
+{
 public:
     explicit AssignTerritoriesCommand(GameEngine &gameEngine);
     AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories);
     ~AssignTerritoriesCommand() override;
-    bool valid() override;
+    bool validate() override;
     GameState execute() override;
-    [[nodiscard]] AssignTerritoriesCommand* clone() const override;
-    AssignTerritoriesCommand &operator=(const AssignTerritoriesCommand& command);
+    [[nodiscard]] AssignTerritoriesCommand *clone() const override;
+    AssignTerritoriesCommand &operator=(const AssignTerritoriesCommand &command);
 };
-class IssueOrdersCommand : public Command {
+class ReplayCommand : public Command
+{
 public:
-    explicit IssueOrdersCommand(GameEngine &gameEngine);
-    IssueOrdersCommand(const IssueOrdersCommand &issueOrders);
-    ~IssueOrdersCommand() override;
-    bool valid() override;
+    explicit ReplayCommand(GameEngine &gameEngine);
+    ReplayCommand(const ReplayCommand &play);
+    ~ReplayCommand() override;
+    bool validate() override;
     GameState execute() override;
-    [[nodiscard]] IssueOrdersCommand* clone() const override;
-    IssueOrdersCommand &operator=(const IssueOrdersCommand& command);
+    [[nodiscard]] ReplayCommand *clone() const override;
+    ReplayCommand &operator=(const ReplayCommand &command);
 };
-class EndIssueOrdersCommand : public Command {
-public:
-    explicit EndIssueOrdersCommand(GameEngine &gameEngine);
-    EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders);
-    ~EndIssueOrdersCommand() override;
-    bool valid() override;
-    GameState execute() override;
-    [[nodiscard]] EndIssueOrdersCommand* clone() const override;
-    EndIssueOrdersCommand &operator=(const EndIssueOrdersCommand& command);
-};
-class ExecuteOrdersCommand : public Command {
-public:
-    explicit ExecuteOrdersCommand(GameEngine &gameEngine);
-    ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders);
-    ~ExecuteOrdersCommand() override;
-    bool valid() override;
-    GameState execute() override;
-    [[nodiscard]] ExecuteOrdersCommand* clone() const override;
-    ExecuteOrdersCommand &operator=(const ExecuteOrdersCommand& command);
-};
-
-class EndExecuteOrdersCommand : public Command {
-public:
-    explicit EndExecuteOrdersCommand(GameEngine &gameEngine);
-    EndExecuteOrdersCommand(const EndExecuteOrdersCommand & endExecuteOrders);
-    ~EndExecuteOrdersCommand() override;
-    bool valid() override;
-    GameState execute() override;
-    [[nodiscard]] EndExecuteOrdersCommand* clone() const override;
-    EndExecuteOrdersCommand &operator=(const EndExecuteOrdersCommand& command);
-};
-
-class WinCommand : public Command {
-public:
-    explicit WinCommand(GameEngine &gameEngine);
-    WinCommand(const WinCommand &win);
-    ~WinCommand() override;
-    bool valid() override;
-    GameState execute() override;
-    [[nodiscard]] WinCommand* clone() const override;
-    WinCommand &operator=(const WinCommand& command);
-};
-
-class PlayCommand : public Command {
-public:
-    explicit PlayCommand(GameEngine &gameEngine);
-    PlayCommand(const PlayCommand &play);
-    ~PlayCommand() override;
-    bool valid() override;
-    GameState execute() override;
-    [[nodiscard]] PlayCommand* clone() const override;
-    PlayCommand &operator=(const PlayCommand& command);
-};
-class QuitCommand : public Command {
+class QuitCommand : public Command
+{
 public:
     explicit QuitCommand(GameEngine &gameEngine);
     QuitCommand(const QuitCommand &quit);
     ~QuitCommand() override;
-    bool valid() override;
+    bool validate() override;
     GameState execute() override;
-    [[nodiscard]] QuitCommand* clone() const override;
-    QuitCommand &operator=(const QuitCommand& command);
+    [[nodiscard]] QuitCommand *clone() const override;
+    QuitCommand &operator=(const QuitCommand &command);
 };
 #endif // COMP345_GAMEENGINE_H

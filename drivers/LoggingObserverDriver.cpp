@@ -25,39 +25,36 @@ void testLoggingObserver() {
     std::cout << std::boolalpha;
     std::cout << "Command subclass of Subject: " << std::is_base_of_v<Subject,Command> << std::endl;
     std::cout << "Command subclass of ILoggable: " << std::is_base_of_v<ILoggable,Command> << std::endl;
-    AdvanceOrder advanceOrder{player1, territory1, territory2, 5};
+    AdvanceOrder advanceOrder{player1, territory1, territory2, 5, engine};
     advanceOrder.attach(logObserver);
     ordersList.addOrder(advanceOrder);
     std::cout << "AdvanceOrder subclass of Subject: " << std::is_base_of_v<Subject,AdvanceOrder> << std::endl;
     std::cout << "AdvanceOrder subclass of ILoggable: " << std::is_base_of_v<ILoggable,AdvanceOrder> << std::endl;
-    AirliftOrder airliftOrder{player1, territory1, territory2, 4};
+    AirliftOrder airliftOrder{player1, territory1, territory2, 4, engine};
     airliftOrder.attach(logObserver);
     ordersList.addOrder(airliftOrder);
     std::cout << "AirliftOrder subclass of Subject: " << std::is_base_of_v<Subject,AirliftOrder> << std::endl;
     std::cout << "AirliftOrder subclass of ILoggable: " << std::is_base_of_v<ILoggable,AirliftOrder> << std::endl;
-    BlockadeOrder blockadeOrder{player1, territory2};
+    BlockadeOrder blockadeOrder{player1, territory2, engine};
     blockadeOrder.attach(logObserver);
     ordersList.addOrder(blockadeOrder);
     std::cout << "BlockadeOrder subclass of Subject: " << std::is_base_of_v<Subject,BlockadeOrder> << std::endl;
     std::cout << "BlockadeOrder subclass of ILoggable: " << std::is_base_of_v<ILoggable,BlockadeOrder> << std::endl;
-    BombOrder bombOrder{player1, territory3};
+    BombOrder bombOrder{player1, territory3, engine};
     bombOrder.attach(logObserver);
     ordersList.addOrder(bombOrder);
     std::cout << "BombOrder subclass of Subject: " << std::is_base_of_v<Subject,BombOrder> << std::endl;
     std::cout << "BombOrder subclass of ILoggable: " << std::is_base_of_v<ILoggable,BombOrder> << std::endl;
-    DeployOrder deployOrder{player1, territory1, 4};
+    DeployOrder deployOrder{player1, territory1, 4, engine};
     deployOrder.attach(logObserver);
     ordersList.addOrder(deployOrder);
     std::cout << "DeployOrder subclass of Subject: " << std::is_base_of_v<Subject,DeployOrder> << std::endl;
     std::cout << "DeployOrder subclass of ILoggable: " << std::is_base_of_v<ILoggable,DeployOrder> << std::endl;
-    NegotiateOrder negotiateOrder{player1, player2};
+    NegotiateOrder negotiateOrder{player1, player2, engine};
     negotiateOrder.attach(logObserver);
     ordersList.addOrder(negotiateOrder);
     std::cout << "NegotiateOrder subclass of Subject: " << std::is_base_of_v<Subject,NegotiateOrder> << std::endl;
     std::cout << "NegotiateOrder subclass of ILoggable: " << std::is_base_of_v<ILoggable,NegotiateOrder> << std::endl;
-
-    // std::cout << "Command subclass of Subject: " << std::is_base_of_v<Subject,CommandProcessor> << std::endl;
-    // std::cout << "Command subclass of ILoggable: " << std::is_base_of_v<ILoggable,CommandProcessor> << std::endl;
 
     std::cout << "Order subclass of Subject: " << std::is_base_of_v<Subject,Order> << std::endl;
     std::cout << "Order subclass of ILoggable: " << std::is_base_of_v<ILoggable,Order> << std::endl;
@@ -72,52 +69,46 @@ void testLoggingObserver() {
 
     ordersList.executeOrders();
 
-    // TODO: Add CommandProcessor tests
+    // Set state to an invalid state to test save effect for invalid commands
+    engine.transition(GameState::mapValidated);
 
-    LoadMapCommand loadMapCommand{engine};
+    LoadMapCommand loadMapCommand{engine, ""};
     loadMapCommand.attach(logObserver);
-    loadMapCommand.saveEffect("Something");
+    loadMapCommand.validate();
+
+    // Set state to an invalid state to test save effect for invalid commands
+    engine.transition(GameState::start);
 
     ValidateMapCommand validateMapCommand{engine};
     validateMapCommand.attach(logObserver);
-    validateMapCommand.saveEffect("Something");
+    validateMapCommand.validate();
 
-    AddPlayerCommand addPlayerCommand{engine};
+    AddPlayerCommand addPlayerCommand{engine, "Bob"};
     addPlayerCommand.attach(logObserver);
-    addPlayerCommand.saveEffect("Something");
+    addPlayerCommand.validate();
 
     AssignTerritoriesCommand assignTerritoriesCommand{engine};
     assignTerritoriesCommand.attach(logObserver);
-    assignTerritoriesCommand.saveEffect("Something");
+    assignTerritoriesCommand.validate();
 
-    IssueOrdersCommand issueOrdersCommand{engine};
-    issueOrdersCommand.attach(logObserver);
-    issueOrdersCommand.saveEffect("Something");
-
-    EndIssueOrdersCommand endIssueOrdersCommand{engine};
-    endIssueOrdersCommand.attach(logObserver);
-    endIssueOrdersCommand.saveEffect("Something");
-
-    ExecuteOrdersCommand executeOrdersCommand{engine};
-    executeOrdersCommand.attach(logObserver);
-    executeOrdersCommand.saveEffect("Something");
-
-    EndExecuteOrdersCommand endExecuteOrdersCommand{engine};
-    endExecuteOrdersCommand.attach(logObserver);
-    endExecuteOrdersCommand.saveEffect("Something");
-
-    WinCommand winCommand{engine};
-    winCommand.attach(logObserver);
-    winCommand.saveEffect("Something");
-
-    PlayCommand playCommand{engine};
+    ReplayCommand playCommand{engine};
     playCommand.attach(logObserver);
-    playCommand.saveEffect("Something");
+    playCommand.validate();
 
     QuitCommand quitCommand{engine};
     quitCommand.attach(logObserver);
-    quitCommand.saveEffect("Something");
+    quitCommand.validate();
 
+    // test transition change logging
     engine.transition(GameState::mapLoaded);
 
+    // reset state to start to try using a command from the command line
+    engine.transition(GameState::start);
+
+    CommandProcessor commandProcessor;
+
+    commandProcessor.attach(logObserver);
+    Command *command = &commandProcessor.getCommand(engine);
+    command->attach(logObserver);
+    command->execute();
 }

@@ -138,7 +138,7 @@ enum mapReadState {
  */
 class MapLoader {
 public:
-    static bool load(const std::string &, Map &);
+    static void load(const std::string &, Map &);
     static void readLine(std::istream &in, std::string &line);
     static void parseTokenValuePair(const std::string &line, std::string &token, std::string &value);
 private:
@@ -153,8 +153,6 @@ private:
     static mapReadState readHeader(std::ifstream &in, std::string &msg, const mapReadState &success,
                             const std::string &header);
     static void parseMapFile(Map &map, std::string &msg, mapReadState &state, std::ifstream &in);
-
-
 };
 
 
