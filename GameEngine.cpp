@@ -19,37 +19,7 @@
 GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)}, map_{new Map} {
     players_ = new std::vector<Player*>();
     turnID = new int(0);
-    Card card1{CardType::bomb};
-    Card card2{CardType::reinforcement};
-    Card card3{CardType::blockade};
-    Card card4{CardType::airlift};
-    Card card5{CardType::diplomacy};
-
     deck_ = new Deck(24);
-    deck_->add(card1);
-    deck_->add(card2);
-    deck_->add(card3);
-    deck_->add(card4);
-    deck_->add(card5);
-    deck_->add(card1);
-    deck_->add(card2);
-    deck_->add(card3);
-    deck_->add(card4);
-    deck_->add(card5);
-    deck_->add(card1);
-    deck_->add(card2);
-    deck_->add(card3);
-    deck_->add(card4);
-    deck_->add(card5);
-    deck_->add(card1);
-    deck_->add(card2);
-    deck_->add(card3);
-    deck_->add(card4);
-    deck_->add(card5);
-    deck_->add(card1);
-    deck_->add(card2);
-    deck_->add(card3);
-    deck_->add(card4);
 }
 
 /**
@@ -472,14 +442,10 @@ GameState AssignTerritoriesCommand::execute() {
         }
     }
     // This sets the turn order
-    std::cout << "Getting turn order" << std::endl;
     int size = static_cast<int>(gameEngine_->getPlayers().size());
     ;
     int turnOrder = rand() % size;
-    std::cout << "called rand" << std::endl;
-    std::cout << turnOrder << std::endl;
     gameEngine_->setTurnOrder(turnOrder);
-    std::cout << "set the turn" << std::endl;
     std::cout << "Turn Order set going in order of players added starting with " << gameEngine_->getPlayers()[gameEngine_->getTurnID()]->getName() << std::endl;
     // This lets each player draw 2 cards
     Deck ourDeck = gameEngine_->getDeck();
