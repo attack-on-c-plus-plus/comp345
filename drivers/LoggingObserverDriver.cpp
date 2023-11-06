@@ -69,12 +69,14 @@ void testLoggingObserver() {
 
     ordersList.executeOrders();
 
+    // Set state to an invalid state to test save effect for invalid commands
     engine.transition(GameState::mapValidated);
 
     LoadMapCommand loadMapCommand{engine, ""};
     loadMapCommand.attach(logObserver);
     loadMapCommand.validate();
 
+    // Set state to an invalid state to test save effect for invalid commands
     engine.transition(GameState::start);
 
     ValidateMapCommand validateMapCommand{engine};
@@ -117,8 +119,10 @@ void testLoggingObserver() {
     quitCommand.attach(logObserver);
     quitCommand.validate();
 
+    // test transition change logging
     engine.transition(GameState::mapLoaded);
 
+    // reset state to start to try using a command from the command line
     engine.transition(GameState::start);
 
     CommandProcessor commandProcessor;
