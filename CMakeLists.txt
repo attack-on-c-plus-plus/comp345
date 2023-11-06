@@ -14,14 +14,16 @@ add_executable(comp345 main.cpp
         Cards.h
         GameEngine.cpp
         GameEngine.h
+        LoggingObserver.cpp
+        LoggingObserver.h
+        CommandProcessing.cpp
+        CommandProcessing.h
         drivers/MapDriver.cpp
         drivers/Drivers.h
         drivers/GameEngineDriver.cpp
         drivers/CardsDriver.cpp
         drivers/OrdersDriver.cpp
         drivers/PlayerDriver.cpp
-        LoggingObserver.cpp
-        LoggingObserver.h
         drivers/LoggingObserverDriver.cpp)
 file(REMOVE_RECURSE "${CMAKE_CURRENT_BINARY_DIR}/maps")
 file(COPY maps/invalid DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/maps")
