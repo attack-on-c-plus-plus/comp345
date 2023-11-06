@@ -144,68 +144,15 @@ public:
     [[nodiscard]] AssignTerritoriesCommand* clone() const override;
     AssignTerritoriesCommand &operator=(const AssignTerritoriesCommand& command);
 };
-class IssueOrdersCommand : public Command {
+class ReplayCommand : public Command {
 public:
-    explicit IssueOrdersCommand(GameEngine &gameEngine);
-    IssueOrdersCommand(const IssueOrdersCommand &issueOrders);
-    ~IssueOrdersCommand() override;
+    explicit ReplayCommand(GameEngine &gameEngine);
+    ReplayCommand(const ReplayCommand &play);
+    ~ReplayCommand() override;
     bool validate() override;
     GameState execute() override;
-    [[nodiscard]] IssueOrdersCommand* clone() const override;
-    IssueOrdersCommand &operator=(const IssueOrdersCommand& command);
-};
-class EndIssueOrdersCommand : public Command {
-public:
-    explicit EndIssueOrdersCommand(GameEngine &gameEngine);
-    EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders);
-    ~EndIssueOrdersCommand() override;
-    bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] EndIssueOrdersCommand* clone() const override;
-    EndIssueOrdersCommand &operator=(const EndIssueOrdersCommand& command);
-};
-class ExecuteOrdersCommand : public Command {
-public:
-    explicit ExecuteOrdersCommand(GameEngine &gameEngine);
-    ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders);
-    ~ExecuteOrdersCommand() override;
-    bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] ExecuteOrdersCommand* clone() const override;
-    ExecuteOrdersCommand &operator=(const ExecuteOrdersCommand& command);
-};
-
-class EndExecuteOrdersCommand : public Command {
-public:
-    explicit EndExecuteOrdersCommand(GameEngine &gameEngine);
-    EndExecuteOrdersCommand(const EndExecuteOrdersCommand & endExecuteOrders);
-    ~EndExecuteOrdersCommand() override;
-    bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] EndExecuteOrdersCommand* clone() const override;
-    EndExecuteOrdersCommand &operator=(const EndExecuteOrdersCommand& command);
-};
-
-class WinCommand : public Command {
-public:
-    explicit WinCommand(GameEngine &gameEngine);
-    WinCommand(const WinCommand &win);
-    ~WinCommand() override;
-    bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] WinCommand* clone() const override;
-    WinCommand &operator=(const WinCommand& command);
-};
-
-class PlayCommand : public Command {
-public:
-    explicit PlayCommand(GameEngine &gameEngine);
-    PlayCommand(const PlayCommand &play);
-    ~PlayCommand() override;
-    bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] PlayCommand* clone() const override;
-    PlayCommand &operator=(const PlayCommand& command);
+    [[nodiscard]] ReplayCommand* clone() const override;
+    ReplayCommand &operator=(const ReplayCommand& command);
 };
 class QuitCommand : public Command {
 public:

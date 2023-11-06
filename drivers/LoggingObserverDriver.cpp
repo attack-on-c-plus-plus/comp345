@@ -91,27 +91,7 @@ void testLoggingObserver() {
     assignTerritoriesCommand.attach(logObserver);
     assignTerritoriesCommand.validate();
 
-    IssueOrdersCommand issueOrdersCommand{engine};
-    issueOrdersCommand.attach(logObserver);
-    issueOrdersCommand.validate();
-
-    EndIssueOrdersCommand endIssueOrdersCommand{engine};
-    endIssueOrdersCommand.attach(logObserver);
-    endIssueOrdersCommand.validate();
-
-    ExecuteOrdersCommand executeOrdersCommand{engine};
-    executeOrdersCommand.attach(logObserver);
-    executeOrdersCommand.validate();
-
-    EndExecuteOrdersCommand endExecuteOrdersCommand{engine};
-    endExecuteOrdersCommand.attach(logObserver);
-    endExecuteOrdersCommand.validate();
-
-    WinCommand winCommand{engine};
-    winCommand.attach(logObserver);
-    winCommand.validate();
-
-    PlayCommand playCommand{engine};
+    ReplayCommand playCommand{engine};
     playCommand.attach(logObserver);
     playCommand.validate();
 

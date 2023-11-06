@@ -18,13 +18,8 @@ std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands =
         {CommandType::validatemap, "validatemap"},
         {CommandType::addplayer, "addplayer"},
         {CommandType::assignterritories, "assignterritories"},
-        {CommandType::issueorder, "issueorder"},
-        {CommandType::endissueorders, "endissueorders"},
-        {CommandType::execorder, "execorder"},
-        {CommandType::endexecorders, "endexecorders"},
-        {CommandType::win, "win"},
-        {CommandType::play, "play"},
-        {CommandType::end, "end"}
+        {CommandType::replay, "replay"},
+        {CommandType::quit, "quit"}
     });
 
 /**
@@ -108,25 +103,10 @@ Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
         else if (commandStr == CommandProcessor::commands->at(CommandType::assignterritories)) {
             c = new AssignTerritoriesCommand{gameEngine};
         }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::issueorder)) {
-            c = new IssueOrdersCommand{gameEngine};
+        else if (commandStr == CommandProcessor::commands->at(CommandType::replay)) {
+            c = new ReplayCommand{gameEngine};
         }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::endissueorders)) {
-            c = new EndIssueOrdersCommand{gameEngine};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::execorder)) {
-            c = new ExecuteOrdersCommand{gameEngine};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::endexecorders)) {
-            c = new EndExecuteOrdersCommand{gameEngine};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::win)) {
-            c = new WinCommand{gameEngine};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::play)) {
-            c = new PlayCommand{gameEngine};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::end)) {
+        else if (commandStr == CommandProcessor::commands->at(CommandType::quit)) {
             c = new QuitCommand{gameEngine};
         }
         else { std::cout << "Invalid command. " << commandStr << std::endl; }
