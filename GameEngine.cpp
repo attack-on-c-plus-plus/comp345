@@ -481,11 +481,6 @@ GameState AssignTerritoriesCommand::execute() {
     gameEngine_->setTurnOrder(turnOrder);
     std::cout << "set the turn" << std::endl;
     std::cout << "Turn Order set going in order of players added starting with " << gameEngine_->getPlayers()[gameEngine_->getTurnID()]->getName() << std::endl;
-    // This gives each player 50 armies to start
-    for (int i = 0; i < size; i++)
-    {
-        gameEngine_->getPlayers()[i]->addReinforcements(50);
-    }
     // This lets each player draw 2 cards
     Deck ourDeck = gameEngine_->getDeck();
     for (int i = 0; i < size; i++)
