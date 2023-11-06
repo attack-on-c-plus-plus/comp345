@@ -48,7 +48,17 @@ const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEng
             delete order;
         }
             break;
-        case CardType::reinforcement: {}
+        case CardType::deploy: {
+            DeployOrder *order = new DeployOrder(player, territory, gameEngine);
+            order->execute();
+            delete order;
+        }
+            break;
+        case CardType::advance: {
+            Advance *order = new AdvanceOrder(player, territory, gameEngine);
+            order->execute();
+            delete order;
+        }
             break;
         case CardType::blockade: {
             auto *order = new BlockadeOrder(player, territory, gameEngine);
@@ -102,8 +112,11 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
         case CardType::bomb:
             os << "bomb";
             break;
-        case CardType::reinforcement:
-            os << "reinforcement";
+        case CardType::advance:
+            os << "advance";
+            break;
+        case CardType::deploy:
+            os << "deploy";
             break;
         case CardType::blockade:
             os << "blockade";
