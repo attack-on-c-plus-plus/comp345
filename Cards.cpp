@@ -77,6 +77,7 @@ const Card &Card::play(Player& player, Territory& territory, Territory &source, 
     return *this;
 }
 
+
 /**
  * An equals operator that compares the cardType
  * Required to find the card from a vector of cards
