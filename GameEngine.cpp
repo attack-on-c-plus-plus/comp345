@@ -466,13 +466,13 @@ AssignTerritoriesCommand *AssignTerritoriesCommand::clone() const {
     return new AssignTerritoriesCommand(*this);
 }
 
-IssueOrdersCommand::IssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "IssueOrders") {}
+ReplayCommand::ReplayCommand(GameEngine &gameEngine) : Command(gameEngine, "Play") {}
 
-IssueOrdersCommand::IssueOrdersCommand(const IssueOrdersCommand &issueOrders) = default;
+ReplayCommand::ReplayCommand(const ReplayCommand &play) = default;
 
-IssueOrdersCommand::~IssueOrdersCommand() = default;
+ReplayCommand::~ReplayCommand() = default;
 
-IssueOrdersCommand &IssueOrdersCommand::operator=(const IssueOrdersCommand &command) {
+ReplayCommand &ReplayCommand::operator=(const ReplayCommand &command) {
     if (this != &command)
     {
         Command::operator=(command);
@@ -480,176 +480,21 @@ IssueOrdersCommand &IssueOrdersCommand::operator=(const IssueOrdersCommand &comm
     return *this;
 }
 
-bool IssueOrdersCommand::validate() {
-    if (gameEngine_->state() == GameState::assignReinforcements || gameEngine_->state() == GameState::issueOrders)
-        return true;
-
-    return Command::validate();
-}
-
-GameState IssueOrdersCommand::execute() {
-    if (!validate()) return gameEngine_->state();
-    std::cout << "Issue Order." << std::endl;
-    return GameState::issueOrders;
-}
-
-IssueOrdersCommand *IssueOrdersCommand::clone() const {
-    return new IssueOrdersCommand(*this);
-}
-
-EndIssueOrdersCommand::EndIssueOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "EndIssueOrders") {}
-
-EndIssueOrdersCommand::EndIssueOrdersCommand(const EndIssueOrdersCommand &endIssueOrders) = default;
-
-EndIssueOrdersCommand::~EndIssueOrdersCommand() = default;
-
-EndIssueOrdersCommand &EndIssueOrdersCommand::operator=(const EndIssueOrdersCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool EndIssueOrdersCommand::validate() {
-    if (gameEngine_->state() == GameState::issueOrders)
-        return true;
-
-    return Command::validate();
-}
-
-GameState EndIssueOrdersCommand::execute() {
-    if (!validate()) return gameEngine_->state();
-    std::cout << "Ended Issue Orders." << std::endl;
-    return GameState::executeOrders;
-}
-
-EndIssueOrdersCommand *EndIssueOrdersCommand::clone() const {
-    return new EndIssueOrdersCommand(*this);
-}
-
-ExecuteOrdersCommand::ExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine, "ExecuteOrders") {}
-
-ExecuteOrdersCommand::ExecuteOrdersCommand(const ExecuteOrdersCommand &executeOrders) = default;
-
-ExecuteOrdersCommand::~ExecuteOrdersCommand() = default;
-
-ExecuteOrdersCommand &ExecuteOrdersCommand::operator=(const ExecuteOrdersCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool ExecuteOrdersCommand::validate() {
-    if (gameEngine_->state() == GameState::executeOrders)
-        return true;
-
-    return Command::validate();
-}
-
-GameState ExecuteOrdersCommand::execute() {
-    if (!validate()) return gameEngine_->state();
-    saveEffect("Execute Order.");
-    return GameState::executeOrders;
-}
-
-ExecuteOrdersCommand *ExecuteOrdersCommand::clone() const {
-    return new ExecuteOrdersCommand(*this);
-}
-
-EndExecuteOrdersCommand::EndExecuteOrdersCommand(GameEngine &gameEngine) : Command(gameEngine,"EndExecuteOrders") {}
-
-EndExecuteOrdersCommand::EndExecuteOrdersCommand(const EndExecuteOrdersCommand &endExecuteOrders) = default;
-
-EndExecuteOrdersCommand::~EndExecuteOrdersCommand() = default;
-
-EndExecuteOrdersCommand &EndExecuteOrdersCommand::operator=(const EndExecuteOrdersCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool EndExecuteOrdersCommand::validate() {
-    if (gameEngine_->state() == GameState::executeOrders)
-        return true;
-
-    return Command::validate();
-}
-
-GameState EndExecuteOrdersCommand::execute() {
-    if (!validate()) return gameEngine_->state();
-    std::cout << "Ended Execute Orders." << std::endl;
-    return GameState::assignReinforcements;
-}
-
-EndExecuteOrdersCommand *EndExecuteOrdersCommand::clone() const {
-    return new EndExecuteOrdersCommand(*this);
-}
-
-WinCommand::WinCommand(GameEngine &gameEngine) : Command(gameEngine, "Win") {}
-
-WinCommand::WinCommand(const WinCommand &win) = default;
-
-WinCommand::~WinCommand() = default;
-
-WinCommand &WinCommand::operator=(const WinCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool WinCommand::validate() {
-    if (gameEngine_->state() == GameState::executeOrders)
-        return true;
-
-    return Command::validate();
-}
-
-GameState WinCommand::execute() {
-    if (!validate()) return gameEngine_->state();
-    std::cout << "WinCommand." << std::endl;
-    return GameState::win;
-}
-
-WinCommand *WinCommand::clone() const {
-    return new WinCommand(*this);
-}
-
-PlayCommand::PlayCommand(GameEngine &gameEngine) : Command(gameEngine, "Play") {}
-
-PlayCommand::PlayCommand(const PlayCommand &play) = default;
-
-PlayCommand::~PlayCommand() = default;
-
-PlayCommand &PlayCommand::operator=(const PlayCommand &command) {
-    if (this != &command)
-    {
-        Command::operator=(command);
-    }
-    return *this;
-}
-
-bool PlayCommand::validate() {
+bool ReplayCommand::validate() {
     if (gameEngine_->state() == GameState::win)
         return true;
 
     return Command::validate();
 }
 
-GameState PlayCommand::execute() {
+GameState ReplayCommand::execute() {
     if (!validate()) return gameEngine_->state();
-    std::cout << "Replaying." << std::endl;
+    saveEffect("Replaying the Conquest game.");
     return GameState::start;
 }
 
-PlayCommand *PlayCommand::clone() const {
-    return new PlayCommand(*this);
+ReplayCommand *ReplayCommand::clone() const {
+    return new ReplayCommand(*this);
 }
 
 QuitCommand::QuitCommand(GameEngine &gameEngine) : Command(gameEngine, "Quit") {}
@@ -675,7 +520,7 @@ bool QuitCommand::validate() {
 
 GameState QuitCommand::execute() {
     if (!validate()) return gameEngine_->state();
-    std::cout << "Quitting" << std::endl;
+    saveEffect("Quitting the Conquest game. Thank you for playing!");
     return GameState::gameOver;
 }
 

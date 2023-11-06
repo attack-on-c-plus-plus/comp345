@@ -24,13 +24,8 @@ enum class CommandType {
     validatemap,
     addplayer,
     assignterritories,
-    issueorder,
-    endissueorders,
-    execorder,
-    endexecorders,
-    win,
-    play,
-    end
+    replay,
+    quit
 };
 
 /**
