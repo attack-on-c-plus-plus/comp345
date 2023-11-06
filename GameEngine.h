@@ -63,7 +63,9 @@ public:
     [[nodiscard]] std::vector<Player *>& getPlayers();
     void map(Map &map);
     void startup();
-    void play();
+    void mainGameLoop();
+    void reinforcementPhase();
+    void issuingOrderPhase();
     void executeOrdersPhase();
     [[nodiscard]] std::string stringToLog() const override;
     void transition(GameState gameState);
@@ -86,7 +88,7 @@ public:
     virtual GameState execute() = 0;
     [[nodiscard]] virtual Command* clone() const = 0;
     void saveEffect(const std::string &effect);
-    std::string &description() const;
+    [[nodiscard]] std::string &description() const;
     [[nodiscard]] std::string stringToLog() const override;
     Command &operator=(const Command& command);
 protected:

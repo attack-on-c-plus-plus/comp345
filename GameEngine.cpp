@@ -134,7 +134,7 @@ void GameEngine::gameLoop() {
         std::cout << "Preparing game" << std::endl;
         startup();
         std::cout << "Playing game" << std::endl;
-        play();
+        mainGameLoop();
     }
 }
 
@@ -147,10 +147,10 @@ void GameEngine::startup() {
     }
 }
 
-void GameEngine::play() {
+void GameEngine::mainGameLoop() {
     while (*state_ != GameState::win) {
-        // reinforcementPhase();
-        // issueOrdersPhase();
+        reinforcementPhase();
+        issuingOrderPhase();
         executeOrdersPhase();
         removeEliminatedPlayers();
         checkWinningCondition();
@@ -203,7 +203,7 @@ void GameEngine::executeOrdersPhase() {
 
     // execute player orders
     for (auto player: *players_) {
-        if (player->getTerritories().size() == 0) // if player has no territories skip turn
+        if (player->getTerritories().empty()) // if player has no territories skip turn
             continue;
         player->orderList().executeOrders();
     }
@@ -213,9 +213,12 @@ void GameEngine::executeOrdersPhase() {
  * Check if game is won
  */
 void GameEngine::checkWinningCondition() {// Only 1 player left the game is over
+    if (*state_ != GameState::executeOrders)
+        return; // Game engine is in the wrong state
     if (players_->size() == 1) {
         transition(GameState::win);
     }
+    transition(GameState::assignReinforcements);
 }
 
 /**
@@ -223,12 +226,26 @@ void GameEngine::checkWinningCondition() {// Only 1 player left the game is over
  */
 void GameEngine::removeEliminatedPlayers() {// remove players which have no territories
     for (auto it = players_->begin(); it != players_->end(); ++it) {
-        if ((*it)->getTerritories().size() == 0) {
+        if ((*it)->getTerritories().empty()) {
             delete *it;
             players_->erase(it);
             --it;
         }
     }
+}
+
+void GameEngine::reinforcementPhase() {
+    if (*state_ != GameState::assignReinforcements)
+        return; // Game engine is in the wrong state
+    // TODO: implement issue #110
+    transition(GameState::issueOrders);
+}
+
+void GameEngine::issuingOrderPhase() {
+    if (*state_ != GameState::issueOrders)
+        return; // Game engine is in the wrong state
+    // TODO: implement issue #111
+    transition(GameState::executeOrders);
 }
 
 Command::Command(GameEngine &gameEngine, const std::string &description) {
