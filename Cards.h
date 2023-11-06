@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include "Player.h"
+#include "GameEngine.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -19,6 +20,9 @@
 class Card;
 class Deck;
 class Hand;
+class Player;
+class Territory;
+class GameEngine;
 
 enum class CardType {
     bomb,
@@ -38,7 +42,7 @@ public:
     Card(const Card&);
     ~Card();
     [[nodiscard]] const CardType &type() const;
-    [[nodiscard]] const Card &play(Player& player, Territory& territory) const;
+    [[nodiscard]] const Card &play(Player& player, Territory& territory, GameEngine &gameEngine) const;
     bool operator==(const Card& card) const;
     Card &operator=(const Card&);
     friend std::ostream &operator<<(std::ostream &os, const Card &card);

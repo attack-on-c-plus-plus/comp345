@@ -20,6 +20,9 @@ class Map;
 class Territory;
 class OrdersList;
 class Order;
+class Deck;
+class Card;
+class Hand;
 
 class Player {
 public:
@@ -40,7 +43,7 @@ public:
     [[nodiscard]] std::vector<const Territory *> toAttack(const Map &) const;
     [[nodiscard]] std::vector<const Territory *> toDefend(const Map &) const;
 
-    void issueOrder(const std::string &orderType, Territory &source, Territory &target, unsigned armies, const Player &otherPlayer);
+    void issueOrder(const std::string &orderType, Territory &source, Territory &target, unsigned armies, const Player &otherPlayer, GameEngine &gameEngine);
 
     //method that views the order list of the player
     std::vector<Order*> getOrderList();
@@ -53,7 +56,7 @@ public:
     // Add methods to manage the player's hand of cards
     void drawCardFromDeck(Deck &deck);
 
-    void playCardFromHand(const Card &card, Deck &deck);
+    void playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target);
 
     [[nodiscard]] const Hand &getHand() const;
 

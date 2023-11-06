@@ -26,6 +26,7 @@ void testPlayer() {
 
     Map map;
     createMap(map);
+    GameEngine gameEngine{GameState::start};
 
     player1.addTerritory(map.territory(0));
     player1.addTerritory(map.territory(1));
@@ -110,12 +111,12 @@ void testPlayer() {
     std::cout << "**************************************\n";
 
     // Issue some orders
-    player1.issueOrder("Deploy", *player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2);
-    player1.issueOrder("Advance", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2);
-    player1.issueOrder("Bomb", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2);
-    player1.issueOrder("Blockade", *player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2);
-    player1.issueOrder("Airlift",*player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2);
-    player1.issueOrder("Negotiate", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2);
+    player1.issueOrder("Deploy", *player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2, gameEngine);
+    player1.issueOrder("Advance", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2, gameEngine);
+    player1.issueOrder("Bomb", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2, gameEngine);
+    player1.issueOrder("Blockade", *player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2, gameEngine);
+    player1.issueOrder("Airlift",*player1.getTerritories()[0], *player1.getTerritories()[1], 3, player2, gameEngine);
+    player1.issueOrder("Negotiate", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2, gameEngine);
 
     // Check the orders that were given
     std::cout << "\n\tOrders executed: Player Name is " << player1.getName() << "\n";

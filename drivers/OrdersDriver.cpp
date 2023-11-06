@@ -9,6 +9,8 @@
 // Haris Mahmood
 
 void testOrderList() {
+    GameEngine engine{GameState::start};
+
     Player p1{"p1"};
     Player p2{"p2"};
 
@@ -21,12 +23,12 @@ void testOrderList() {
     t3.owner(p2);
 
     // Create some sample orders
-    DeployOrder deployOrder{p1, t1, 10};
-    AdvanceOrder advanceOrder{p1, t1, t2, 5};
-    BombOrder bombOrder{p1, t3};
-    BlockadeOrder blockadeOrder{p1, t2};
-    AirliftOrder airliftOrder{p1, t2, t1, 2};
-    NegotiateOrder negotiateOrder{p2, p1};
+    DeployOrder deployOrder{p1, t1, 10, engine};
+    AdvanceOrder advanceOrder{p1, t1, t2, 5, engine};
+    BombOrder bombOrder{p1, t3, engine};
+    BlockadeOrder blockadeOrder{p1, t2, engine};
+    AirliftOrder airliftOrder{p1, t2, t1, 2, engine};
+    NegotiateOrder negotiateOrder{p2, p1, engine};
 
     // Create an OrdersList and add orders to it
     OrdersList ordersList;

@@ -14,8 +14,8 @@
  * Main constructor for the GameEngine object
  * @param gameStates
  */
-GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {
-    players = new std::vector<Player*>();
+GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)}, map_{new Map} {
+    players_ = new std::vector<Player*>();
 }
 
 /**
@@ -24,7 +24,9 @@ GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)} {
  */
 GameEngine::GameEngine(const GameEngine &gameEngine) :
     Subject(gameEngine),
-    state_{new GameState(*gameEngine.state_)} {players = new std::vector<Player*>(*gameEngine.players);}
+    state_{new GameState(*gameEngine.state_)}, map_{new Map(*gameEngine.map_)} {
+    players_ = new std::vector<Player*>(*gameEngine.players_);
+}
 
 /**
  * Destructor
@@ -34,12 +36,12 @@ GameEngine::~GameEngine()
     delete state_;
     delete map_;
     // Delete each object in vector
-    for (auto p : *players)
+    for (auto p : *players_)
     {
         delete p;
     }
-    players->clear();
-    delete players;
+    players_->clear();
+    delete players_;
 }
 
 /**
@@ -54,14 +56,16 @@ GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
         // This is used in case we are re-assigning to ourselves i.e. f = f;
         // We need to clean up the current pointers because destructor won't be called.
         delete state_;
-        for (auto p : *players)
+        delete map_;
+        for (auto p : *players_)
         {
             delete p;
         }
-        players->clear();
-        delete players;
+        players_->clear();
+        delete players_;
         state_ = new GameState(*gameEngine.state_);
-        players = new std::vector<Player*>(*gameEngine.players);
+        map_ = new Map(*gameEngine.map_);
+        players_ = new std::vector<Player*>(*gameEngine.players_);
     }
     return *this;
 }
@@ -76,25 +80,23 @@ GameState GameEngine::state() const {
 /*
  * Gets the current map
  */
-Map GameEngine::getMap() const
+Map &GameEngine::map() const
 {
-    Map *pointer = this->map_;
-    Map result = *pointer;
-    return result;
+    return *map_;
 }
 /*
  * Sets the map to the gameEngine
  */
-void GameEngine::setMap(Map &newMap)
+void GameEngine::map(Map &map)
 {
-    this->map_ = &newMap;
+    map_ = &map;
 }
 /**
  * Gets the vector containing the players
  */
 std::vector<Player *>& GameEngine::getPlayers()
 {
-    return *players;
+    return *players_;
 }
 /**
  * Determines if the game is over
@@ -260,10 +262,8 @@ GameState LoadMapCommand::execute() {
         std::string file;
         std::cin.ignore();
         std::getline(std::cin, file);
-        Map* board = new Map();
-        if (MapLoader::load(file, *board))
+        if (MapLoader::load(file, gameEngine_->map()))
         {
-            gameEngine_->setMap(*board);
             std::cout << "Map loaded." << std::endl;
             return GameState::mapLoaded;
         }
@@ -299,7 +299,7 @@ bool ValidateMapCommand::valid() {
 
 GameState ValidateMapCommand::execute() {
     if (!valid()) return gameEngine_->state();
-    if (gameEngine_->getMap().validate())
+    if (gameEngine_->map().validate())
     {
         std::cout << "Map validated." << std::endl;
         return GameState::mapValidated;

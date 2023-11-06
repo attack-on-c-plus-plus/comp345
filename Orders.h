@@ -19,13 +19,14 @@
 // Forward declaration
 class Player;
 class Territory;
+class GameEngine;
 
 /**
  *
  */
 class Order : public ILoggable, public Subject {
 public:
-    Order(const Player &player, const std::string &description);
+    Order(const Player &player, const std::string &description, GameEngine &gameEngine);
     // Copy constructor
     Order(const Order &order);
     virtual ~Order();
@@ -41,6 +42,7 @@ protected:
     const Player *player_; // weak ptr
     std::string *description_;
     std::string *effect_;
+    GameEngine *gameEngine_;
 private:
     friend std::ostream& operator<<(std::ostream& os, const Order& order);
 };
@@ -51,7 +53,7 @@ private:
  */
 class DeployOrder : public Order {
 public:
-    explicit DeployOrder(const Player &player, Territory &target, unsigned armies);
+    explicit DeployOrder(const Player &player, Territory &target, unsigned , GameEngine &gameEngine);
     DeployOrder(const DeployOrder &order);
     ~DeployOrder() override;
     [[nodiscard]] DeployOrder* clone() const override;
@@ -70,7 +72,8 @@ private:
  */
 class AdvanceOrder : public Order {
 public:
-    explicit AdvanceOrder(const Player &player, Territory &source, Territory &target, unsigned armies);
+    explicit AdvanceOrder(const Player &player, Territory &source, Territory &target, unsigned armies,
+                          GameEngine &gameEngine);
     AdvanceOrder(const AdvanceOrder &order);
     ~AdvanceOrder() override;
     [[nodiscard]] AdvanceOrder* clone() const override;
@@ -91,7 +94,7 @@ private:
  */
 class BombOrder : public Order {
 public:
-    explicit BombOrder(const Player &player, Territory &target);
+    explicit BombOrder(const Player &player, Territory &target, GameEngine &gameEngine);
     BombOrder(const BombOrder &order);
     ~BombOrder() override;
     [[nodiscard]] BombOrder* clone() const override;
@@ -110,7 +113,7 @@ private:
  */
 class BlockadeOrder : public Order {
 public:
-    explicit BlockadeOrder(const Player &player, Territory &target);
+    explicit BlockadeOrder(const Player &player, Territory &target, GameEngine &gameEngine);
     BlockadeOrder(const BlockadeOrder &order);
     ~BlockadeOrder() override;
     [[nodiscard]] BlockadeOrder* clone() const override;
@@ -129,7 +132,8 @@ private:
  */
 class AirliftOrder : public Order {
 public:
-    explicit AirliftOrder(const Player &player, Territory &source, Territory &target, unsigned armies);
+    explicit AirliftOrder(const Player &player, Territory &source, Territory &target, unsigned armies,
+                          GameEngine &gameEngine);
     AirliftOrder(const AirliftOrder &order);
     ~AirliftOrder() override;
     [[nodiscard]] AirliftOrder* clone() const override;
@@ -149,7 +153,7 @@ private:
  */
 class NegotiateOrder : public Order {
 public:
-    explicit NegotiateOrder(const Player &player, const Player &otherPlayer);
+    explicit NegotiateOrder(const Player &player, const Player &otherPlayer, GameEngine &gameEngine);
     NegotiateOrder(const NegotiateOrder &order);
     ~NegotiateOrder() override;
     [[nodiscard]] NegotiateOrder* clone() const override;
