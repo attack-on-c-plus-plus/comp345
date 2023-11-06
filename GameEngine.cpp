@@ -457,32 +457,18 @@ bool AssignTerritoriesCommand::valid() {
 
 GameState AssignTerritoriesCommand::execute() {
     if (!valid()) return gameEngine_->state();
-    int playerIterator = 0;
-    Map ourMap = gameEngine_->map();
-    std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
-    int *arr = new int[ourMap.territoryCount()];
-    // This part shuffles
-    for (int i = 0; i < ourMap.territoryCount(); i++)
-    {
-        arr[i] = i;
-    }
-    for (int i = ourMap.territoryCount() - 1; i != 0; i--)
-    {
-        int j = rand() % ourMap.territoryCount();
-        if (i != j)
-        {
-            std::swap(arr[i], arr[j]);
-        }
-    }
-    // This part assigns
-    std::cout << "Assigning territories" << std::endl;
-    for (int i = 0; i < ourMap.territoryCount(); i++)
-    {
-        ourPlayers[playerIterator]->addTerritory(ourMap.territory(arr[i]));
-        playerIterator++;
-        if (playerIterator >= ourPlayers.size())
-        {
-            playerIterator = 0;
+    auto territories= gameEngine_->map().territories();
+    std::random_device r;
+    std::default_random_engine e(r());
+            
+    while (!territories.empty()) {
+        for (auto & it : gameEngine_->getPlayers()) {
+            std::uniform_int_distribution<size_t> u(0, territories.size() - 1);
+            auto random = u(e);
+            territories[random]->owner(*it);
+            (*it).addTerritory(*territories[random]);
+            territories.erase(territories.begin() + random);
+            if (territories.empty()) break;
         }
     }
     // This sets the turn order
