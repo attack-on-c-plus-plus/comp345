@@ -136,7 +136,21 @@ DeployOrder::~DeployOrder() {
  * @return true if valid; false otherwise
  */
 bool DeployOrder::validate() const {
-    return *armies_ > 0;
+    if (*armies_ > 0) {
+        //I am comparing the names of each player in order for the comparison to work since 
+        //target_->owner() is a Player object whereas player_ is a const Player object i.e not comparable.
+        if (target_->owner().getName() == player_->getName()) {
+            *effect_ = "Succesfully deployed armies to target territory!";
+            return true;
+        } 
+        else {
+            *effect_ = "Failed to execute DeployOrder: Target territory is not owned by the player.";
+        }
+    } 
+    else {
+        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";
+    }
+    return false;
 }
 
 /**
