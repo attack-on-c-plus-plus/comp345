@@ -751,4 +751,5 @@ std::ostream &operator<<(std::ostream &os, const OrdersList &ordersList) {
         os << "\t" << *order << std::endl;
     }
     os << "]";
+    return os;
 }

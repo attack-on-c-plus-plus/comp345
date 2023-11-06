@@ -127,8 +127,15 @@ void GameEngine::startup() {
 }
 
 void GameEngine::play() {
+    while (*state_ != GameState::win) {
+        // reinforcementPhase();
+        // issueOrdersPhase();
+        executeOrdersPhase();
+        removeEliminatedPlayers();
+        checkWinningCondition();
+    }
     Command *command;
-    while (*state_ != GameState::gameOver) {
+    while (*state_ == GameState::win) {
         command = readCommand();
         if (command == nullptr) continue;
         transition(command->execute());
@@ -187,6 +194,9 @@ void GameEngine::transition(const GameState newState) {
     Notify(*this);
 }
 
+/**
+ * Executes players orders
+ */
 void GameEngine::executeOrdersPhase() {
     if (*state_ != GameState::executeOrders)
         return; // Game engine is in the wrong state
@@ -197,8 +207,21 @@ void GameEngine::executeOrdersPhase() {
             continue;
         player->orderList().executeOrders();
     }
+}
 
-    // remove players which have no territories
+/**
+ * Check if game is won
+ */
+void GameEngine::checkWinningCondition() {// Only 1 player left the game is over
+    if (players_->size() == 1) {
+        transition(GameState::win);
+    }
+}
+
+/**
+ * Removes eliminated players
+ */
+void GameEngine::removeEliminatedPlayers() {// remove players which have no territories
     for (auto it = players_->begin(); it != players_->end(); ++it) {
         if ((*it)->getTerritories().size() == 0) {
             delete *it;
@@ -206,12 +229,6 @@ void GameEngine::executeOrdersPhase() {
             --it;
         }
     }
-
-    // Only 1 player left the game is over
-    if (players_->size() == 1) {
-        transition(GameState::win);
-    }
-
 }
 
 Command::Command(GameEngine &gameEngine, const std::string &description) {

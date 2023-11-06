@@ -69,6 +69,10 @@ private:
     friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
     Map *map_;
     std::vector<Player *> *players_;
+
+    void removeEliminatedPlayers();
+
+    void checkWinningCondition();
 };
 
 class Command : public ILoggable, public Subject {
