@@ -156,9 +156,9 @@ const Hand &Player::getHand() const {
     return *hand;
 }
 
-std::vector<Order*> Player::getOrderList()
+OrdersList &Player::orderList()
 {
-    return ordersList->getOrder();
+    return *ordersList;
 }
 
 

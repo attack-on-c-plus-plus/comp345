@@ -60,6 +60,7 @@ public:
     void map(Map &map);
     void startup();
     void play();
+    void executeOrdersPhase();
     Command *readCommand();
     [[nodiscard]] std::string stringToLog() const override;
     void transition(GameState gameState);
