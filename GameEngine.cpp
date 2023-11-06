@@ -234,6 +234,9 @@ void GameEngine::removeEliminatedPlayers() {// remove players which have no terr
     }
 }
 
+/**
+ * Executes the reinforcement phase
+ */
 void GameEngine::reinforcementPhase() {
     if (*state_ != GameState::assignReinforcements)
         return; // Game engine is in the wrong state
@@ -241,6 +244,9 @@ void GameEngine::reinforcementPhase() {
     transition(GameState::issueOrders);
 }
 
+/**
+ * Executes the issue orders phase
+ */
 void GameEngine::issuingOrderPhase() {
     if (*state_ != GameState::issueOrders)
         return; // Game engine is in the wrong state
