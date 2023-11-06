@@ -58,7 +58,7 @@ int Player::getReinforcmentNumber() const
  */
 void Player::addReinforcements(int armies)
 {
-    reinforcmentPool = reinforcmentPool + armies;
+    reinforcementPool += armies;
 }
 
 // Add a method to add a territory to the player's collection
