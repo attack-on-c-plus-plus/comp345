@@ -152,8 +152,7 @@ bool DeployOrder::validate() const {
         }
     } 
     else {
-        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
-        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
+        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";    
     }
     return false;
     
