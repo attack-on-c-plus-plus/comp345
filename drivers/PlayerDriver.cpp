@@ -119,12 +119,10 @@ void testPlayer() {
     player1.issueOrder("Negotiate", *player1.getTerritories()[0], *player2.getTerritories()[0], 3, player2, gameEngine);
 
     // Check the orders that were given
-    std::cout << "\n\tOrders executed: Player Name is " << player1.getName() << "\n";
-    std::cout << "\t****************\n";
+    std::cout << "\n\tOrders executed: Player Name is " << player1.getName() << std::endl;
+    std::cout << "****************" << std::endl;
 
-    for (const Order *order: player1.getOrderList()) {
-        std::cout << "\t" << *order << std::endl;
-    }
+    std::cout << player1.orderList() << std::endl;
 
 //-----------------------------------------------------------------------------------------------------------
 };

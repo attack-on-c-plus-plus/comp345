@@ -744,3 +744,12 @@ std::string OrdersList::stringToLog() const {
     }
     return s.str();
 }
+
+std::ostream &operator<<(std::ostream &os, const OrdersList &ordersList) {
+    os << "Orders [" << std::endl;
+    for (auto order : *ordersList.orders_) {
+        os << "\t" << *order << std::endl;
+    }
+    os << "]";
+    return os;
+}

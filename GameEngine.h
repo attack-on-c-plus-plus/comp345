@@ -64,7 +64,7 @@ public:
     void map(Map &map);
     void startup();
     void play();
-//    Command *readCommand();
+    void executeOrdersPhase();
     [[nodiscard]] std::string stringToLog() const override;
     void transition(GameState gameState);
 private:
@@ -72,6 +72,8 @@ private:
     friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
     Map *map_;
     std::vector<Player *> *players_;
+    void removeEliminatedPlayers();
+    void checkWinningCondition();
     CommandProcessor *commandProcessor_;
 };
 

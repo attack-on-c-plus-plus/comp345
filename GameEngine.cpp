@@ -148,8 +148,15 @@ void GameEngine::startup() {
 }
 
 void GameEngine::play() {
+    while (*state_ != GameState::win) {
+        // reinforcementPhase();
+        // issueOrdersPhase();
+        executeOrdersPhase();
+        removeEliminatedPlayers();
+        checkWinningCondition();
+    }
     Command *command;
-    while (*state_ != GameState::gameOver) {
+    while (*state_ == GameState::win) {
         command = &commandProcessor_->getCommand(*this); // readCommand(); //&commandProcessor_->getCommand();
         transition(command->execute());
         delete command;
@@ -174,6 +181,7 @@ std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine) {
 std::string GameEngine::stringToLog() const {
     std::stringstream s;
     s << "| Game Engine new state: " << *this;
+    if (*state_ == GameState::win) s << " player " << players_->at(0) << " wins!";
     return s.str();
 }
 
@@ -184,6 +192,43 @@ std::string GameEngine::stringToLog() const {
 void GameEngine::transition(const GameState newState) {
     *state_ = newState;
     Notify(*this);
+}
+
+/**
+ * Executes players orders
+ */
+void GameEngine::executeOrdersPhase() {
+    if (*state_ != GameState::executeOrders)
+        return; // Game engine is in the wrong state
+
+    // execute player orders
+    for (auto player: *players_) {
+        if (player->getTerritories().size() == 0) // if player has no territories skip turn
+            continue;
+        player->orderList().executeOrders();
+    }
+}
+
+/**
+ * Check if game is won
+ */
+void GameEngine::checkWinningCondition() {// Only 1 player left the game is over
+    if (players_->size() == 1) {
+        transition(GameState::win);
+    }
+}
+
+/**
+ * Removes eliminated players
+ */
+void GameEngine::removeEliminatedPlayers() {// remove players which have no territories
+    for (auto it = players_->begin(); it != players_->end(); ++it) {
+        if ((*it)->getTerritories().size() == 0) {
+            delete *it;
+            players_->erase(it);
+            --it;
+        }
+    }
 }
 
 Command::Command(GameEngine &gameEngine, const std::string &description) {

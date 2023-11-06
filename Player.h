@@ -45,8 +45,7 @@ public:
 
     void issueOrder(const std::string &orderType, Territory &source, Territory &target, unsigned armies, const Player &otherPlayer, GameEngine &gameEngine);
 
-    //method that views the order list of the player
-    std::vector<Order*> getOrderList();
+    OrdersList &orderList();
 
     // Add methods to manage the player's territory
     void addTerritory(Territory &territory);

@@ -180,6 +180,7 @@ public:
     [[nodiscard]]const std::vector<Order*> &getOrder() const;
     [[nodiscard]] std::string stringToLog() const override;
     OrdersList &operator=(const OrdersList&);
+    friend std::ostream& operator<<(std::ostream& os, const OrdersList& ordersList);
 private:
     std::vector<Order*> *orders_; // Store pointers to Order objects
 };
