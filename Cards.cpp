@@ -39,7 +39,7 @@ const CardType &Card::type() const {
 /**
  * Creates a special order
  */
-const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEngine) const {
+const Card &Card::play(Player& player, Territory& territory, Territory &source, Territory &target, unsigned armies, GameEngine &gameEngine) const {
     // Check the card type. For each case, play an order
     switch(*this->type_) {
         case CardType::bomb: {
@@ -49,13 +49,13 @@ const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEng
         }
             break;
         case CardType::deploy: {
-            DeployOrder *order = new DeployOrder(player, territory, gameEngine);
+            DeployOrder *order = new DeployOrder(player, territory, armies, gameEngine);
             order->execute();
             delete order;
         }
             break;
         case CardType::advance: {
-            Advance *order = new AdvanceOrder(player, territory, gameEngine);
+            AdvanceOrder *order = new AdvanceOrder(player, source, target, armies, gameEngine);
             order->execute();
             delete order;
         }
@@ -74,6 +74,7 @@ const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEng
     std::cout << "Played card " << *this << std::endl;
     return *this;
 }
+
 
 /**
  * An equals operator that compares the cardType
