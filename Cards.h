@@ -43,7 +43,7 @@ public:
     Card(const Card&);
     ~Card();
     [[nodiscard]] const CardType &type() const;
-    [[nodiscard]] const Card &play(Player& player, Territory& territory, GameEngine &gameEngine) const;
+    [[nodiscard]] const Card &play(Player& player, Territory& territory, Territory &source, Territory &target, unsigned armies, GameEngine &gameEngine) const;
     bool operator==(const Card& card) const;
     Card &operator=(const Card&);
     friend std::ostream &operator<<(std::ostream &os, const Card &card);
