@@ -127,6 +127,50 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
 Deck::Deck(unsigned int size) {
     cards_ = new std::vector<const Card *>();
     cards_->reserve(size);
+    Card card1{CardType::bomb};
+    Card card2{CardType::reinforcement};
+    Card card3{CardType::blockade};
+    Card card4{CardType::airlift};
+    Card card5{CardType::diplomacy};
+    int cardType = 1;
+    for (int i; i < size;)
+    {
+            if (cardType == 5)
+            {
+                this->add(card5);
+                cardType = 1;
+                i++;
+                continue;
+            }
+            if (cardType == 4)
+            {
+                this->add(card4);
+                cardType++;
+                i++;
+                continue;
+            }
+            if (cardType == 3)
+            {
+                this->add(card3);
+                cardType++;
+                i++;
+                continue;
+            }
+            if (cardType == 2)
+            {
+                this->add(card2);
+                cardType++;
+                i++;
+                continue;
+            }
+            if (cardType == 1)
+            {
+                this->add(card1);
+                cardType++;
+                i++;
+                continue;
+            }
+    }
 }
 
 /**
