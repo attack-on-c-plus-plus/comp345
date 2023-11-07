@@ -623,7 +623,6 @@ AirliftOrder::~AirliftOrder() {
 bool AirliftOrder::validate() const {
     // Check if the player has enough armies in the source territory to airlift
     if (source_->armyCount() < *armies_) {
-        
         *effect_ = "Failed to play AirliftOrder: not enough armies in the source territory to airlift...";
         return false;
     }
