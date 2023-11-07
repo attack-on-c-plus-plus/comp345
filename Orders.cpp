@@ -136,9 +136,9 @@ DeployOrder::~DeployOrder() {
  * @return true if valid; false otherwise
  */
 bool DeployOrder::validate() const {
+    
     if (*armies_ > 0) {
-        //I am comparing the names of each player in order for the comparison to work since 
-        //target_->owner() is a Player object whereas player_ is a const Player object i.e not comparable.
+
         if (target_->owner().getName() == player_->getName()) {
             *effect_ = "Succesfully deployed armies to target territory!";
             return true;
@@ -148,9 +148,10 @@ bool DeployOrder::validate() const {
         }
     } 
     else {
-        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";
+        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
     }
     return false;
+    
 }
 
 /**
@@ -227,16 +228,37 @@ AdvanceOrder::~AdvanceOrder() {
  * @return true if valid; false otherwise
  */
 bool AdvanceOrder::validate() const {
+
     // Check if the number of armies to advance is non-negative
+    if(*armies_ < 0){
+        return false;
+    }
+    // Pre-Condition Checks
 
-    // Check if the source and target territories exist
-//    if (source_->getOwner() == *player_ || target_->getOwner() == *player_) {
-//        *effect_ = "Failed to execute AdvanceOrder: Invalid territories.";
-//        return false;
-//    }
+    // If the player they target is themselves, order is invalid
+    if (player_ == &target_->owner())
+        return false;
 
+    // Get the player's adjacent territories
+    auto * playerTerritories = new std::vector<Territory*>(player_->getTerritories());
 
-    return true;
+    Map map = gameEngine_->map();
+
+    // If target territory is not adjacent to the territory owned by the player
+    // issuing the order, order is invalid
+    bool isValid = false;
+    for (Territory *territory : *playerTerritories) {
+        auto * adjacentTerritories = new std::vector<const Territory*> (map.adjacencies(*territory));
+        if(std::find(adjacentTerritories->begin(), adjacentTerritories->end(), target_) != adjacentTerritories->end()) {
+            isValid = true;
+            delete adjacentTerritories;
+            break;
+        }
+        delete adjacentTerritories;
+    }
+
+    delete playerTerritories;
+    return isValid;
 }
 
 /**
@@ -353,8 +375,10 @@ bool BombOrder::validate() const {
 void BombOrder::execute() {
     if (validate()) {
         // Remove armies from the target territory:
-        unsigned armies_in_target_territory = target_->armyCount();
-        armies_in_target_territory /= 2;
+        int armies_in_target = target_->armyCount();
+        int updated_armies_in_target = armies_in_target/2;
+        //So now we want to reduce the number of armies in target territory by half i.e armies-armies/2 = armies/2
+        target_->removeArmies(updated_armies_in_target);
 
         // Update the effect string to describe the action
         *effect_ = "Bombed territory " + target_->name() + ".";
@@ -430,9 +454,9 @@ bool BlockadeOrder::validate() const {
 void BlockadeOrder::execute() {
     if (validate()) {
 
-        // Double armies from the target territory:
+        // Double armies from the target territory i.e x + x = x * 2:
         unsigned armies_in_target_territory = target_->armyCount();
-        armies_in_target_territory *= 2;
+        target_->addArmies(armies_in_target_territory);
 
         // Update the effect string to describe the action
         *effect_ = "Blocked territory " + target_->name() + ".";
