@@ -25,6 +25,7 @@ class Command;
 class CommandProcessor;
 class Player;
 class Map;
+class Deck;
 
 // This is the enum used to define all possible states the engine can be in.
 enum class GameState

@@ -593,16 +593,37 @@ NegotiateOrder::~NegotiateOrder() = default;
  * @return
  */
 bool NegotiateOrder::validate() const {
-
-    // check if the target player exists:
-    bool playerExists = /*!game_state.playerExists(target_player)*/ false;
-    if (playerExists) {
+    if (player_ == otherPlayer_)
+    {
         return false;
     }
 
-    // check if player has a negotiate card ?
+    std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
+    // check if the target player exists:
+    bool playerExists = /*!game_state.playerExists(target_player)*/ false;
+    for (Player *i : ourPlayers)
+    {
+        if (i == otherPlayer_)
+        {
+            playerExists = true;
+        }
+    }
 
-    return true; // Replace with actual validation logic
+    // check if player has a negotiate card ?
+    if (playerExists) {
+        std::vector<const Card *> ourHand = player_->getHand().cards();
+        Card const card5{CardType::diplomacy};
+        for(Card const *card : ourHand)
+        {
+            if (*card == card5)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return false;
 }
 
 /**
@@ -610,7 +631,8 @@ bool NegotiateOrder::validate() const {
  */
 void NegotiateOrder::execute() {
     if (validate()) {
-
+        player_->addNegotiator(*otherPlayer_);
+        otherPlayer_->addNegotiator(*player_);
         // Update the effect string to describe the action
         *effect_ = "Initiated negotiation with player " + otherPlayer_->getName() + ".";
     }

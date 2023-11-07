@@ -309,6 +309,7 @@ void GameEngine::executeOrdersPhase()
         if (player->getTerritories().empty()) // if player has no territories skip turn
             continue;
         player->orderList().executeOrders();
+        player->removeNegotiators();
     }
 }
 
@@ -323,7 +324,9 @@ void GameEngine::checkWinningCondition()
     {
         transition(GameState::win);
     }
-    transition(GameState::assignReinforcements);
+
+        transition(GameState::assignReinforcements);
+
 }
 
 /**
@@ -350,6 +353,17 @@ void GameEngine::reinforcementPhase()
     if (*state_ != GameState::assignReinforcements)
         return; // Game engine is in the wrong state
     // TODO: implement issue #110
+    std::cout << "begin reinforcements" << std::endl;
+    for (auto player : *players_){
+        int territorySize = static_cast<int>(player->getTerritories().size());
+        int reinforcements = territorySize/3;
+
+        //TODO: Insert Country Specific Reinforcements here
+
+        if(reinforcements < 3){ reinforcements = 3;}
+        player->addReinforcements(reinforcements);
+        std::cout << "added " << reinforcements << " armies for player " << player->getName() << std::endl;
+    }
     transition(GameState::issueOrders);
 }
 
@@ -361,6 +375,7 @@ void GameEngine::issuingOrderPhase()
     if (*state_ != GameState::issueOrders)
         return; // Game engine is in the wrong state
     // TODO: implement issue #111
+    std::cout << "begin issuing orders" << std::endl;
     transition(GameState::executeOrders);
 }
 
@@ -559,7 +574,7 @@ GameState AddPlayerCommand::execute()
     std::cin >> name;
     auto *newPlayer = new Player(name);
     gameEngine_->getPlayers().push_back(newPlayer);
-    saveEffect("Player \"" + *playerName_ + "\" added.");
+    saveEffect("Player \"" + name + "\" added.");
     if (gameEngine_->getPlayers().size() <= 1)
     {
         std::cout << "You still need another player." << std::endl;
