@@ -15,6 +15,7 @@
 class Command;
 enum class GameState;
 class GameEngine;
+class FileLineReader;
 
 /**
  * Command types that are available
@@ -23,7 +24,7 @@ enum class CommandType {
     loadmap,
     validatemap,
     addplayer,
-    assignterritories,
+    gamestart,
     replay,
     quit
 };
@@ -44,8 +45,34 @@ public:
     static std::unique_ptr<std::map<CommandType, std::string>> commands;
 protected:
     [[nodiscard]] virtual Command &readCommand(GameEngine &gameEngine);
+    static Command *createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter);
 private:
     void saveCommand(Command &command);
     std::vector<Command *> *commands_;
 };
+
+class FileCommandProcessorAdapter : public CommandProcessor {
+public:
+    FileCommandProcessorAdapter(const std::string &filename);
+    // don't allow copying or assignment due to file manipulation
+    FileCommandProcessorAdapter(const FileCommandProcessorAdapter &fileCommandProcessorAdapter) = delete;
+    FileCommandProcessorAdapter &operator=(const FileCommandProcessorAdapter &fileCommandProcessorAdapter) = delete;
+    ~FileCommandProcessorAdapter();
+private:
+    Command &readCommand(GameEngine &gameEngine) override;
+    FileLineReader *fileLineReader_;
+};
+
+class FileLineReader {
+public:
+    explicit FileLineReader(const std::string &filename);
+    // don't allow copying or assignment due to file manipulation
+    FileLineReader(const FileLineReader &fileLineReader) = delete;
+    FileLineReader &operator=(const FileLineReader &fileLineReader) = delete;
+    ~FileLineReader();
+    bool readLineFromFile(std::string &line);
+private:
+    std::ifstream *in_;
+};
+
 #endif //COMP345_COMMANDPROCESSING_H

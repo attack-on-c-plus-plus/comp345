@@ -30,9 +30,11 @@ std::ostream &operator<<(std::ostream &os, GameState state) {
  * Main constructor for the GameEngine object
  * @param gameStates
  */
-GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)},
-    commandProcessor_{new CommandProcessor}, map_{new Map} {
+GameEngine::GameEngine(const GameState &state, CommandProcessor &commandProcessor) :
+    state_{new GameState(state)},
+    map_{new Map} {
     players_ = new std::vector<Player*>();
+    commandProcessor_ = &commandProcessor;
 }
 
 /**
@@ -41,9 +43,9 @@ GameEngine::GameEngine(const GameState &state) : state_{new GameState(state)},
  */
 GameEngine::GameEngine(const GameEngine &gameEngine) :
     Subject(gameEngine), state_{new GameState(*gameEngine.state_)},
-    commandProcessor_{new CommandProcessor(*gameEngine.commandProcessor_)},
     map_{new Map(*gameEngine.map_)} {
     players_ = new std::vector<Player*>(*gameEngine.players_);
+    commandProcessor_ = gameEngine.commandProcessor_;
 }
 
 /**
@@ -53,7 +55,6 @@ GameEngine::~GameEngine()
 {
     delete state_;
     delete map_;
-    delete commandProcessor_;
     // Delete each object in vector
     for (auto p : *players_)
     {
@@ -80,14 +81,12 @@ GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
         {
             delete p;
         }
-        delete map_;
-        delete commandProcessor_;
         players_->clear();
         delete players_;
         state_ = new GameState(*gameEngine.state_);
         players_ = new std::vector<Player*>(*gameEngine.players_);
         map_ = new Map(*gameEngine.map_);
-        commandProcessor_ = new CommandProcessor(*gameEngine.commandProcessor_);
+        commandProcessor_ = gameEngine.commandProcessor_;
     }
     return *this;
 }
@@ -140,11 +139,25 @@ void GameEngine::gameLoop() {
 
 void GameEngine::startup() {
     Command *command;
+
+    resetGameElements();
     while (*state_ != GameState::assignReinforcements) {
         command = &commandProcessor_->getCommand(*this); //readCommand(*this);
         if (command == nullptr) continue;
         transition(command->execute());
     }
+}
+
+void GameEngine::resetGameElements() {
+    delete map_;
+    for (auto p : *players_)
+    {
+        delete p;
+    }
+    players_->clear();
+    delete players_;
+    map_ = new Map();
+    players_ = new std::vector<Player *>();
 }
 
 void GameEngine::mainGameLoop() {
@@ -155,6 +168,10 @@ void GameEngine::mainGameLoop() {
         removeEliminatedPlayers();
         checkWinningCondition();
     }
+    gameOverPhase();
+}
+
+void GameEngine::gameOverPhase() {
     Command *command;
     while (*state_ == GameState::win) {
         command = &commandProcessor_->getCommand(*this); // readCommand(); //&commandProcessor_->getCommand();

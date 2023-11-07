@@ -49,7 +49,7 @@ std::ostream &operator<<(std::ostream &os, GameState state);
  */
 class GameEngine : public ILoggable, public Subject {
 public:
-    explicit GameEngine(const GameState &gameStates);
+    explicit GameEngine(const GameState &gameStates, CommandProcessor &commandProcessor);
     // Copy constructor
     GameEngine(const GameEngine &gameEngine);
     GameEngine &operator=(const GameEngine &gameEngine);
@@ -67,6 +67,7 @@ public:
     void reinforcementPhase();
     void issuingOrderPhase();
     void executeOrdersPhase();
+    void gameOverPhase();
     [[nodiscard]] std::string stringToLog() const override;
     void transition(GameState gameState);
 private:
@@ -77,6 +78,8 @@ private:
     void removeEliminatedPlayers();
     void checkWinningCondition();
     CommandProcessor *commandProcessor_;
+
+    void resetGameElements();
 };
 
 class Command : public ILoggable, public Subject {
