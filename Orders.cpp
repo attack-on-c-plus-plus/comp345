@@ -338,6 +338,7 @@ void AdvanceOrder::execute() {
                 //A player receives a card at the end of his turn if they successfully conquered at least one territory during their turn
                  //////////////////////////////////////////////////////////////////////////add code////////////////////////////////////////////////////////////////////////
                 //player_->drawCardFromDeck(Deck(5));
+                std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
 
              }
 
@@ -345,6 +346,7 @@ void AdvanceOrder::execute() {
              else{
                 //remove armies sent from source territory
                 source_->removeArmies(*armies_);
+                std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
              }
 
         }
