@@ -51,8 +51,11 @@ public:
     void addTerritory(Territory &territory);
 
     [[nodiscard]] const std::vector<Territory *> &getTerritories() const;
+    [[nodiscard]] const std::vector<Player *> &getCantAttack() const;
     [[nodiscard]] int getReinforcmentNumber() const;
     void addReinforcements(int armies);
+    void addNegotiator(Player negotiator) const;
+    void removeNegotiators();
 
     // Add methods to manage the player's hand of cards
     void drawCardFromDeck(Deck &deck);
@@ -66,6 +69,7 @@ private:
     std::string *name;
     std::vector<Territory *> *territories;
     OrdersList *ordersList;
+    std::vector<Player *> *cantTarget;
     int *reinforcementPool;
     Hand *hand;
 

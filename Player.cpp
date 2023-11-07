@@ -11,14 +11,14 @@
 
 //Default Constructor
 Player::Player() //: Player("Player Default")
-    : name{new std::string("Test")}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}, reinforcementPool{new int(50)}
+    : name{new std::string("Test")}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>}
 {
     std::cout << "* In the default constructor of player class * \n";
 }
 
 //Parameterized Constructor
 Player::Player(const std::string &name)
-    : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}, reinforcementPool{new int(50)}
+    : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>}
 {
     std::cout << "* In the Parameterized constructor of player class *\n";
 }
@@ -26,7 +26,7 @@ Player::Player(const std::string &name)
 //Copy Constructor
 Player::Player(const Player &other)
     : name{new std::string(*(other.name))},
-      ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)}, reinforcementPool{new int(*other.reinforcementPool)}
+      ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)}, reinforcementPool{new int(*other.reinforcementPool)}, cantTarget{new std::vector<Player *>(*other.cantTarget)}
 {
     std::cout << "* In the copy constructor of player class *\n";
 }
@@ -38,6 +38,7 @@ Player::~Player() {
    delete hand;
    delete territories;
    delete reinforcementPool;
+   delete cantTarget;
    std::cout << "Default Destructor is called\n";
 }
 
@@ -74,6 +75,20 @@ const std::vector<Territory *> &Player::getTerritories() const {
     return *territories;
 }
 
+const std::vector<Player *> &Player::getCantAttack() const
+{
+    return *cantTarget;
+}
+
+void Player::removeNegotiators()
+{
+    cantTarget->clear();
+}
+
+void Player::addNegotiator(Player negotiator) const
+{
+    cantTarget->push_back(&negotiator);
+}
 
 std::vector<const Territory *> Player::toDefend(const Map &map) const {
     std::vector<const Territory *> territoriesToDefend;
@@ -115,6 +130,17 @@ std::vector<const Territory *> Player::toAttack(const Map &map) const
         for (auto adjacentTerritory: adjacentTerritories) {
             if (&(adjacentTerritory->owner()) != this) {
 
+                // Check that owner is not on cantAttack list because of negotiate order
+                bool canAttack = true;
+                for (auto player : *cantTarget)
+                {
+                    if (&(adjacentTerritory->owner()) == &(*player))
+                    {
+                        canAttack = false;
+                        break;
+                    }
+                }
+
                 // Check if adjacentTerritory is not already in territoriesToAttack
                 bool isUnique = true;
                 for (auto attackTerritory : territoriesToAttack) {
@@ -124,7 +150,8 @@ std::vector<const Territory *> Player::toAttack(const Map &map) const
                     }
                 }
                 // If it's unique, add it to the list of territories to attack
-                if (isUnique) {
+                if (isUnique && canAttack)
+                {
                     territoriesToAttack.push_back(adjacentTerritory);
                 }
             }

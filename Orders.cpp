@@ -613,7 +613,7 @@ bool NegotiateOrder::validate() const {
     if (playerExists) {
         std::vector<const Card *> ourHand = player_->getHand().cards();
         Card const card5{CardType::diplomacy};
-        for (Card const *card : ourHand)
+        for(Card const *card : ourHand)
         {
             if (*card == card5)
             {
@@ -631,7 +631,8 @@ bool NegotiateOrder::validate() const {
  */
 void NegotiateOrder::execute() {
     if (validate()) {
-
+        player_->addNegotiator(*otherPlayer_);
+        otherPlayer_->addNegotiator(*player_);
         // Update the effect string to describe the action
         *effect_ = "Initiated negotiation with player " + otherPlayer_->getName() + ".";
     }
