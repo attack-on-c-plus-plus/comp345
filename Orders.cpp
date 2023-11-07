@@ -139,7 +139,9 @@ DeployOrder::~DeployOrder() {
  */
 bool DeployOrder::validate() const {
     
+    
     if (*armies_ > 0) {
+
 
         if (target_->owner().getName() == player_->getName()) {
             *effect_ = "Succesfully deployed armies to target territory!";
@@ -151,8 +153,10 @@ bool DeployOrder::validate() const {
     } 
     else {
         *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
+        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
     }
     return false;
+    
     
 }
 
@@ -231,6 +235,7 @@ AdvanceOrder::~AdvanceOrder() {
  * @return true if valid; false otherwise
  */
 bool AdvanceOrder::validate() const {
+
 
     // Check if the number of armies to advance is non-negative
     if(*armies_ < 0){
@@ -620,6 +625,7 @@ AirliftOrder::~AirliftOrder() {
 bool AirliftOrder::validate() const {
     // Check if the player has enough armies in the source territory to airlift
     if (source_->armyCount() < *armies_) {
+        
         *effect_ = "Failed to play AirliftOrder: not enough armies in the source territory to airlift...";
         return false;
     }
@@ -629,6 +635,7 @@ bool AirliftOrder::validate() const {
         *effect_ = "Failed to play AirliftOrder: " + target_->name() + " doesn't own the source and target territories!";
         return false;
     }
+
 
     return true;
 }
