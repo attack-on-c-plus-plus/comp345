@@ -611,11 +611,13 @@ AirliftOrder::~AirliftOrder() {
 bool AirliftOrder::validate() const {
     // Check if the player has enough armies in the source territory to airlift
     if (source_->armyCount() < *armies_) {
+        *effect_ = "Failed to play AirliftOrder: not enough armies in the source territory to airlift...";
         return false;
     }
 
     //If the source or target territory does not belong to the player that issued the order, the order is invalid
     if ((source_->owner().getName() != target_->owner().getName()) && (player_->getName() != source_->owner().getName())) {
+        *effect_ = "Failed to play AirliftOrder: " + target_->name() + " doesn't own the source and target territories!";
         return false;
     }
 
