@@ -262,7 +262,14 @@ bool AdvanceOrder::validate() const {
 }
 
 /**
- * Executes the AdvanceOrder
+ *************************** STILL NEEDS TO BE IMPLEMENTED****************************
+ * Executes the AdvanceOrder:
+   o Each attacking army unit involved has 60% chances of killing one defending army. At the same time,
+   each defending army unit has 70% chances of killing one attacking army unit.
+   o If all the defender's army units are eliminated, the attacker captures the territory. The attacking army
+   units that survived the battle then occupy the conquered territory.
+   o A player receives a card at the end of his turn if they successfully conquered at least one territory
+   during their turn, i.e. a player cannot receive more than one card per turn. 
  */
 void AdvanceOrder::execute() {
     if (validate()) {
