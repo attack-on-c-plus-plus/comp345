@@ -550,10 +550,13 @@ AirliftOrder::~AirliftOrder() {
 bool AirliftOrder::validate() const {
     // Check if the player has enough armies in the source territory to airlift
     unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 10;
-    if (armies_in_source_territory < *armies_) {
-
+    if (source_->armyCount() < *armies_) {
         return false;
+    }
 
+    //If the source or target territory does not belong to the player that issued the order, the order is invalid
+    if ((source_->owner().getName() != target_->owner().getName()) && (player_->getName() != source_->owner().getName())) {
+        return false;
     }
 
     return true;
