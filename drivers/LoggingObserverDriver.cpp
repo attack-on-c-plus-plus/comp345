@@ -16,7 +16,8 @@ void testLoggingObserver() {
     Territory territory1{"t1"};
     Territory territory2{"t2"};
     Territory territory3{"t3"};
-    GameEngine engine{GameState::start};
+    CommandProcessor *processor = new CommandProcessor();
+    GameEngine engine{GameState::start, *processor};
     LogObserver logObserver{"gamelog.txt"};
     engine.attach(logObserver);
 
@@ -111,4 +112,5 @@ void testLoggingObserver() {
     Command *command = &commandProcessor.getCommand(engine);
     command->attach(logObserver);
     command->execute();
+    delete processor;
 }

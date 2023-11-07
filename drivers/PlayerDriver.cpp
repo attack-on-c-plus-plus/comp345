@@ -26,7 +26,8 @@ void testPlayer() {
 
     Map map;
     createMap(map);
-    GameEngine gameEngine{GameState::start};
+    CommandProcessor *commandProcessor = new CommandProcessor();
+    GameEngine gameEngine{GameState::start, *commandProcessor};
 
     player1.addTerritory(map.territory(0));
     player1.addTerritory(map.territory(1));
@@ -123,7 +124,7 @@ void testPlayer() {
     std::cout << "****************" << std::endl;
 
     std::cout << player1.orderList() << std::endl;
-
+    delete commandProcessor;
 //-----------------------------------------------------------------------------------------------------------
 };
 

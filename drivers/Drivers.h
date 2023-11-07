@@ -17,14 +17,18 @@ static const char *const mapsPathInvalid = "maps/invalid";
 void testLoadMaps();
 
 /*
-    Demonstrates the player capabilities, collection of hand, territories and retireving information.
-*/
+ * Demonstrates the player capabilities, collection of hand, territories and retrieving
+ * information.
+ */
 void testPlayer();
 
-/*
-    Demonstrates the game state can properly change on command and follows the flow of the game state.
+/**
+ * Demonstrates the game state can properly change on command and follows the flow of
+ * the game state.
 */
-void testGameStates();
+//void testGameStates();
+void testGameStartup();
+
 
 /*
  * Demonstrates that Decks, Hand, and Card work as expected
