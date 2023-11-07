@@ -23,7 +23,17 @@ void testCards() {
     std::cout << "Creating New Cards" << std::endl;
     std::cout << "===================================" << std::endl;
 
+<<<<<<< HEAD
     Card card6{CardType::bomb};
+=======
+    // Creating cards
+    Card card1{CardType::bomb};
+    Card card2{CardType::advance};
+    Card card3{CardType::deploy};
+    Card card4{CardType::blockade};
+    Card card5{CardType::airlift};
+    Card card6{CardType::diplomacy};
+>>>>>>> 3feb183 (updated play function in Card's driver class to satisfy all card types)
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
@@ -71,7 +81,7 @@ void testCards() {
 
         auto cardSelected = playerHand.card(random);
         std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
-        gameDeck.discard(cardSelected.play(player, territory,engine), playerHand);
+        gameDeck.discard(cardSelected.play(player, territory, source, target, armies, engine), playerHand);
         std::cout << std::endl;
     }
 
