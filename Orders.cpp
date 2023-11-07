@@ -549,7 +549,6 @@ AirliftOrder::~AirliftOrder() {
  */
 bool AirliftOrder::validate() const {
     // Check if the player has enough armies in the source territory to airlift
-    unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 10;
     if (source_->armyCount() < *armies_) {
         return false;
     }
@@ -569,11 +568,10 @@ void AirliftOrder::execute() {
     if (validate()) {
 
         // Reduce armies in source territory
-        unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
-        armies_in_source_territory -= *armies_;
+        source_->removeArmies(*armies_);
+         
         // Increase armies in source territory
-        unsigned armies_in_target_territory = /* Get the number of armies in the source territory */ 0;
-        armies_in_target_territory += *armies_;
+        target_->addArmies(*armies_);
 
         // Update the effect string to describe the action
         *effect_ = "Airlifted " + std::to_string(*armies_) + " armies from territory "
