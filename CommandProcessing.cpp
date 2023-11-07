@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <fstream>
 #include "CommandProcessing.h"
 
 /**
@@ -14,12 +15,12 @@
  */
 std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands = std::make_unique<std::map<CommandType, std::string>>(
     std::map<CommandType, std::string> {
-        {CommandType::loadmap, "loadmap"},
+        {CommandType::loadmap,     "loadmap"},
         {CommandType::validatemap, "validatemap"},
-        {CommandType::addplayer, "addplayer"},
-        {CommandType::assignterritories, "assignterritories"},
-        {CommandType::replay, "replay"},
-        {CommandType::quit, "quit"}
+        {CommandType::addplayer,   "addplayer"},
+        {CommandType::gamestart,   "gamestart"},
+        {CommandType::replay,      "replay"},
+        {CommandType::quit,        "quit"}
     });
 
 /**
@@ -90,28 +91,35 @@ Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
             getline(std::cin, parameter);
         }
 
-        std::transform(commandStr.begin(), commandStr.end(), commandStr.begin(), ::tolower);
-        if (commandStr == CommandProcessor::commands->at(CommandType::loadmap)) {
-            c = new LoadMapCommand{gameEngine, parameter};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::validatemap)) {
-            c = new ValidateMapCommand{gameEngine};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::addplayer)) {
-            c = new AddPlayerCommand{gameEngine, parameter};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::assignterritories)) {
-            c = new AssignTerritoriesCommand{gameEngine};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::replay)) {
-            c = new ReplayCommand{gameEngine};
-        }
-        else if (commandStr == CommandProcessor::commands->at(CommandType::quit)) {
-            c = new QuitCommand{gameEngine};
-        }
-        else { std::cout << "Invalid command. " << commandStr << std::endl; }
+        c = createCommand(gameEngine, commandStr, parameter);
     }
     return *c;
+}
+
+Command *
+CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter) {
+    Command *c;
+    std::transform(commandStr.begin(), commandStr.end(), commandStr.begin(), tolower);
+    if (commandStr == commands->at(CommandType::loadmap)) {
+        c = new LoadMapCommand{gameEngine, parameter};
+    }
+    else if (commandStr == commands->at(CommandType::validatemap)) {
+        c = new ValidateMapCommand{gameEngine};
+    }
+    else if (commandStr == commands->at(CommandType::addplayer)) {
+        c = new AddPlayerCommand{gameEngine, parameter};
+    }
+    else if (commandStr == commands->at(CommandType::gamestart)) {
+        c = new AssignTerritoriesCommand{gameEngine};
+    }
+    else if (commandStr == commands->at(CommandType::replay)) {
+        c = new ReplayCommand{gameEngine};
+    }
+    else if (commandStr == commands->at(CommandType::quit)) {
+        c = new QuitCommand{gameEngine};
+    }
+    else { std::cout << "Invalid command. " << commandStr << std::endl; }
+    return c;
 }
 
 /**
@@ -154,4 +162,43 @@ std::string CommandProcessor::stringToLog() const {
         s << "| Command: " << commands_->back()->description();
     }
     return s.str();
+}
+
+FileCommandProcessorAdapter::FileCommandProcessorAdapter(const std::string &filename) {
+    fileLineReader_ = new FileLineReader(filename);
+}
+
+FileCommandProcessorAdapter::~FileCommandProcessorAdapter() {
+    delete fileLineReader_;
+}
+
+Command &FileCommandProcessorAdapter::readCommand(GameEngine &gameEngine) {
+    Command *c = nullptr;
+
+    std::string line;
+    if (fileLineReader_->readLineFromFile(line)) {
+        std::stringstream s{line};
+
+        std::string commandStr;
+        s >> commandStr;
+        std::string parameter;
+        if (s.peek() == ' ') {
+            s.get();
+            getline(s, parameter);
+        }
+        c = createCommand(gameEngine, commandStr, parameter);
+    }
+    return *c;
+}
+
+FileLineReader::FileLineReader(const std::string &filename) {
+    in_ = new std::ifstream(filename);
+}
+
+FileLineReader::~FileLineReader() {
+    delete in_;
+}
+
+bool FileLineReader::readLineFromFile(std::string &line) {
+    return (bool)getline(*in_, line);
 }

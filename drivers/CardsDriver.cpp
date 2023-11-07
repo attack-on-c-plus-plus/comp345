@@ -11,7 +11,8 @@
 size_t randomInt(size_t min, size_t max);
 
 void testCards() {
-    GameEngine engine{GameState::start};
+    CommandProcessor *processor = new CommandProcessor();
+    GameEngine engine{GameState::start, *processor};
     Player player{};
     Territory territory{};
     std::cout << "Testing the implementation of Cards" << std::endl;
@@ -86,6 +87,7 @@ void testCards() {
     auto cardAmountInDeck{gameDeck.size()};
     std::cout << gameDeck << std::endl;
 
+    delete processor;
 }
 
 size_t randomInt(size_t min, size_t max) {

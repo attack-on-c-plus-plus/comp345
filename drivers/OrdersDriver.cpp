@@ -9,7 +9,8 @@
 // Haris Mahmood
 
 void testOrderList() {
-    GameEngine engine{GameState::start};
+    CommandProcessor *commandProcessor = new CommandProcessor();
+    GameEngine engine{GameState::start, *commandProcessor};
 
     Player p1{"p1"};
     Player p2{"p2"};
@@ -64,4 +65,5 @@ void testOrderList() {
     for (auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
+    delete commandProcessor;
 }

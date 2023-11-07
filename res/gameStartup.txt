@@ -1,0 +1,16 @@
+loadmap maps/valid/3D.map
+validatemap
+addplayer Bob
+addplayer Sue
+addplayer Steve
+addplayer Yasmine
+gamestart
+replay
+loadmap maps/valid/3D.map
+validatemap
+addplayer Bob
+addplayer Sue
+addplayer Steve
+addplayer Yasmine
+gamestart
+quit

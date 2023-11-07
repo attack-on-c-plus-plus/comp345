@@ -20,7 +20,7 @@ int main() {
 
     testLoggingObserver();
 
-    testGameStates();
+    testGameStartup();
 
     return 0;
 }

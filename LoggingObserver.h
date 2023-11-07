@@ -38,6 +38,9 @@ private:
 class LogObserver : public Observer {
 public:
     explicit LogObserver(const std::string &filename);
+    // don't allow copying or assignment due to file manipulation
+    LogObserver(const LogObserver &logObserver) = delete;
+    LogObserver &operator=(const LogObserver &logObserver) = delete;
     ~LogObserver();
     void Update(const ILoggable &loggable) const override;
 private:
