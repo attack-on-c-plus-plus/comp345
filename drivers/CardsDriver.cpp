@@ -14,6 +14,9 @@ void testCards() {
     GameEngine engine{GameState::start};
     Player player{};
     Territory territory{};
+    Territory source{};
+    Territory target{};
+    unsigned int armies;
     std::cout << "Testing the implementation of Cards" << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << "Creating New Cards" << std::endl;
@@ -21,12 +24,11 @@ void testCards() {
 
     // Creating cards
     Card card1{CardType::bomb};
-    Card card2{CardType::reinforcement};
-    Card card3{CardType::blockade};
-    Card card4{CardType::airlift};
-    Card card5{CardType::diplomacy};
-
-    Card card6{CardType::bomb};
+    Card card2{CardType::advance};
+    Card card3{CardType::deploy};
+    Card card4{CardType::blockade};
+    Card card5{CardType::airlift};
+    Card card6{CardType::diplomacy};
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
@@ -74,7 +76,7 @@ void testCards() {
 
         auto cardSelected = playerHand.card(random);
         std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
-        gameDeck.discard(cardSelected.play(player, territory,engine), playerHand);
+        gameDeck.discard(cardSelected.play(player, territory, source, target, armies, engine), playerHand);
         std::cout << std::endl;
     }
 
