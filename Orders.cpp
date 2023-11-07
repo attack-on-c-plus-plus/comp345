@@ -336,6 +336,8 @@ void AdvanceOrder::execute() {
                 //The attacking army units that survived the battle then occupy the conquered territory.
                 target_->addArmies(remainingAttackers);
                 //A player receives a card at the end of his turn if they successfully conquered at least one territory during their turn
+                 //////////////////////////////////////////////////////////////////////////add code////////////////////////////////////////////////////////////////////////
+                //player_->drawCardFromDeck(Deck(5));
 
              }
 
