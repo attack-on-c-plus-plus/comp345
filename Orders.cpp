@@ -280,8 +280,6 @@ bool AdvanceOrder::validate() const {
 }
     
 
-
-
 /**
  *************************** STILL NEEDS TO BE IMPLEMENTED****************************
  * Executes the AdvanceOrder:
