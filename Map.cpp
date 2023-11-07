@@ -208,6 +208,14 @@ std::vector<const Territory*> Map::adjacencies(const Territory &territory) const
 }
 
 /**
+ * Gets the territories
+ */
+std::vector<Territory *> &Map::territories() const
+{
+    return *territories_;
+}
+
+/**
  * Add a Territory to the Map
  * @param t
  * @param continentName

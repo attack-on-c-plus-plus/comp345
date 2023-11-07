@@ -11,21 +11,23 @@
 
 //Default Constructor
 Player::Player() //: Player("Player Default")
-        : name{new std::string("Test")}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}
+    : name{new std::string("Test")}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}, reinforcementPool{new int(50)}
 {
     std::cout << "* In the default constructor of player class * \n";
 }
 
 //Parameterized Constructor
 Player::Player(const std::string &name)
-        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},hand{new Hand()} {
+    : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}, reinforcementPool{new int(50)}
+{
     std::cout << "* In the Parameterized constructor of player class *\n";
 }
 
 //Copy Constructor
 Player::Player(const Player &other)
-        : name{new std::string(*(other.name))},
-          ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)} {
+    : name{new std::string(*(other.name))},
+      ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)}, reinforcementPool{new int(*other.reinforcementPool)}
+{
     std::cout << "* In the copy constructor of player class *\n";
 }
 
@@ -35,7 +37,8 @@ Player::~Player() {
    delete ordersList;
    delete hand;
    delete territories;
-    std::cout << "Default Destructor is called\n";
+   delete reinforcementPool;
+   std::cout << "Default Destructor is called\n";
 }
 
 std::string &Player::getName() const {
@@ -46,6 +49,20 @@ void Player::changeName(const std::string &newName) {
     name = new std::string(newName);
 }
 
+/**
+ * Gives the number of armies in the reinforcement pool
+ */
+int Player::getReinforcmentNumber() const
+{
+    return *reinforcementPool;
+}
+/**
+ * Adds reinforcements to the pool
+ */
+void Player::addReinforcements(int armies)
+{
+    *reinforcementPool = *reinforcementPool + armies;
+}
 
 // Add a method to add a territory to the player's collection
 void Player::addTerritory(Territory &territory) {
