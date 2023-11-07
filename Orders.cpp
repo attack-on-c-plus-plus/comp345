@@ -275,8 +275,6 @@ bool AdvanceOrder::validate() const {
 }
     
 
-
-
 /**
  *************************** STILL NEEDS TO BE IMPLEMENTED****************************
  * Executes the AdvanceOrder:
@@ -285,14 +283,7 @@ bool AdvanceOrder::validate() const {
  */
 void AdvanceOrder::execute() {
 
-
     if (validate()) {
-        
-        //if player issuing order owns target and source territory
-        if(source_->owner().getName() == target_->owner().getName()){
-            //If AdvanceOrder is valid, armies in source territory are reduced and armies in target territory are increased
-            source_->removeArmies(*armies_);
-            target_->addArmies(*armies_);
         
         //if player issuing order owns target and source territory
         if(source_->owner().getName() == target_->owner().getName()){
@@ -363,9 +354,7 @@ void AdvanceOrder::execute() {
         }
     Order::execute();
      }
-     }
 }
-
 /**
  * Operator= overload
  * @param order
