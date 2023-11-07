@@ -66,7 +66,9 @@ const Card &Card::play(Player& player, Territory& territory, Territory &source, 
             delete order;
         }
             break;
-        case CardType::airlift: {}
+        case CardType::airlift: {
+            AirliftOrder *order = new AirliftOrder(player, target, source, armies, gameEngine);
+        }
             break;
         case CardType::diplomacy: {}
             break;
