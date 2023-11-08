@@ -57,7 +57,7 @@ private:
  */
 class Deck {
 public:
-    explicit Deck(unsigned size = 5);
+    explicit Deck(unsigned size = 6);
     explicit Deck(const std::vector<Card> &cardDeck);
     Deck(const Deck&);
     ~Deck();
