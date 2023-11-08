@@ -27,7 +27,9 @@ void testCards() {
     Card card6{CardType::bomb};
 =======
     // Creating cards
+    
     Card card1{CardType::bomb};
+<<<<<<< HEAD
 <<<<<<< HEAD
     Card card2{CardType::advance};
     Card card3{CardType::deploy};
@@ -36,14 +38,19 @@ void testCards() {
     Card card6{CardType::diplomacy};
 >>>>>>> 3feb183 (updated play function in Card's driver class to satisfy all card types)
 =======
+=======
+>>>>>>> ebbb955 (Update CardsDriver.cpp)
     Card card2{CardType::reinforcement};
     Card card3{CardType::blockade};
     Card card4{CardType::airlift};
     Card card5{CardType::diplomacy};
 
     Card card6{CardType::bomb};
+<<<<<<< HEAD
 
 >>>>>>> c4649cd (fixed advanced order to properly give attacker a card if he wins battle)
+=======
+>>>>>>> ebbb955 (Update CardsDriver.cpp)
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
