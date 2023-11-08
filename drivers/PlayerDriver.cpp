@@ -50,9 +50,9 @@ void testPlayer() {
 
     // Create a deck and add some cards to it
     Deck deck;
-    deck.add(Card(CardType::bomb));
-    deck.add(Card(CardType::airlift));
-    deck.add(Card(CardType::blockade));
+    deck.add(CardType::bomb);
+    deck.add(CardType::airlift);
+    deck.add(CardType::blockade);
 
     // Draw cards from the deck and add them to the player's hand
     player1.drawCardFromDeck(deck);

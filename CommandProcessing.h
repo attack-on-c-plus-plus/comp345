@@ -38,7 +38,7 @@ public:
     CommandProcessor(const CommandProcessor& commandProcessor);
     CommandProcessor &operator=(const CommandProcessor &gameEngine);
     // Destructor
-    ~CommandProcessor();
+    virtual ~CommandProcessor();
     Command &getCommand(GameEngine &gameEngine);
     [[nodiscard]] bool validate(Command &command) const;
     [[nodiscard]] std::string stringToLog() const override;
@@ -53,11 +53,11 @@ private:
 
 class FileCommandProcessorAdapter : public CommandProcessor {
 public:
-    FileCommandProcessorAdapter(const std::string &filename);
+    explicit FileCommandProcessorAdapter(const std::string &filename);
     // don't allow copying or assignment due to file manipulation
     FileCommandProcessorAdapter(const FileCommandProcessorAdapter &fileCommandProcessorAdapter) = delete;
     FileCommandProcessorAdapter &operator=(const FileCommandProcessorAdapter &fileCommandProcessorAdapter) = delete;
-    ~FileCommandProcessorAdapter();
+    ~FileCommandProcessorAdapter() override;
 private:
     Command &readCommand(GameEngine &gameEngine) override;
     FileLineReader *fileLineReader_;

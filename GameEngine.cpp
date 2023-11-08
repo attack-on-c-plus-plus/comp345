@@ -56,7 +56,6 @@ GameEngine::GameEngine(const GameState &state, CommandProcessor &commandProcesso
     map_{new Map} {
     commandProcessor_ = &commandProcessor;
     players_ = new std::vector<Player *>();
-    turnID = new int(0);
     deck_ = new Deck(24);
 }
 
@@ -70,7 +69,6 @@ GameEngine::GameEngine(const GameEngine &gameEngine) :
     commandProcessor_ = gameEngine.commandProcessor_;
     players_ = new std::vector<Player *>(*gameEngine.players_);
     deck_ = new Deck(*gameEngine.deck_);
-    turnID = new int(*gameEngine.turnID);
 }
 
 /**
@@ -109,10 +107,12 @@ GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
         }
         players_->clear();
         delete players_;
+        delete deck_;
         state_ = new GameState(*gameEngine.state_);
         players_ = new std::vector<Player *>(*gameEngine.players_);
         map_ = new Map(*gameEngine.map_);
         commandProcessor_ = gameEngine.commandProcessor_;
+        deck_ = new Deck(*gameEngine.deck_);
     }
     return *this;
 }
@@ -146,31 +146,7 @@ std::vector<Player *> &GameEngine::getPlayers()
 {
     return *players_;
 }
-/**
- * Gets the id of the player whose turn it is
- */
-int GameEngine::getTurnID() const
-{
-    return *turnID;
-}
-/**
- * Set the initial turn order by setting the turn ID
- */
-void GameEngine::setTurnOrder(int &turn)
-{
-    this->turnID = &turn;
-}
-/**
- * Moves the turnID so it's the next player's turn
- */
-void GameEngine::nextTurn()
-{
-    turnID++;
-    if (*turnID >= players_->size())
-    {
-        *turnID = 0;
-    }
-}
+
 /**
  * Gets the Deck
  */
@@ -238,7 +214,6 @@ void GameEngine::gameOverPhase() {
     {
         command = &commandProcessor_->getCommand(*this); // readCommand(); //&commandProcessor_->getCommand();
         transition(command->execute());
-        delete command;
     }
 }
 
@@ -569,16 +544,8 @@ GameState AddPlayerCommand::execute()
         std::cout << "Already reached maximum player count of 6." << std::endl;
         return gameEngine_->state();
     }
-    std::cout << "Enter Name of Player" << std::endl;
-    std::string name;
-    std::cin >> name;
-    auto *newPlayer = new Player(name);
-    gameEngine_->getPlayers().push_back(newPlayer);
-    saveEffect("Player \"" + name + "\" added.");
-    if (gameEngine_->getPlayers().size() <= 1)
-    {
-        std::cout << "You still need another player." << std::endl;
-    }
+    gameEngine_->getPlayers().push_back(new Player(*playerName_));
+    saveEffect("Player \"" + *playerName_ + "\" added.");
     return GameState::playersAdded;
 }
 
@@ -587,14 +554,14 @@ AddPlayerCommand *AddPlayerCommand::clone() const
     return new AddPlayerCommand(*this);
 }
 
-AssignTerritoriesCommand::AssignTerritoriesCommand(GameEngine &gameEngine)
-    : Command(gameEngine, "AssignTerritories") {}
+GameStartCommand::GameStartCommand(GameEngine &gameEngine)
+    : Command(gameEngine, "GameStart") {}
 
-AssignTerritoriesCommand::AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories) = default;
+GameStartCommand::GameStartCommand(const GameStartCommand &assignTerritories) = default;
 
-AssignTerritoriesCommand::~AssignTerritoriesCommand() = default;
+GameStartCommand::~GameStartCommand() = default;
 
-AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerritoriesCommand &command)
+GameStartCommand &GameStartCommand::operator=(const GameStartCommand &command)
 {
     if (this != &command)
     {
@@ -603,7 +570,7 @@ AssignTerritoriesCommand &AssignTerritoriesCommand::operator=(const AssignTerrit
     return *this;
 }
 
-bool AssignTerritoriesCommand::validate()
+bool GameStartCommand::validate()
 {
     if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size() >= 2)
         return true;
@@ -615,7 +582,7 @@ bool AssignTerritoriesCommand::validate()
     return false;
 }
 
-GameState AssignTerritoriesCommand::execute()
+GameState GameStartCommand::execute()
 {
     if (!validate())
         return gameEngine_->state();
@@ -623,39 +590,53 @@ GameState AssignTerritoriesCommand::execute()
     std::random_device r;
     std::default_random_engine e(r());
 
+    std::stringstream s;
+    assignTerritories(territories, e, s);
+
+    setPlayerTurnOrder(e, s);
+
+    // This lets each player draw 2 cards
+    Deck ourDeck = gameEngine_->getDeck();
+    for (auto i : gameEngine_->getPlayers())
+    {
+        i->drawCardFromDeck(ourDeck);
+        i->drawCardFromDeck(ourDeck);
+        s << "\n" << i->getName() << " drew " << i->getHand();
+    }
+    saveEffect(s.str());
+    return GameState::assignReinforcements;
+}
+
+void GameStartCommand::setPlayerTurnOrder(std::default_random_engine &e, std::ostream &os) {
+    std::shuffle(gameEngine_->getPlayers().begin(), gameEngine_->getPlayers().end(), e);
+    os << "Turn Order: ";
+    for (auto p : gameEngine_->getPlayers()) {
+        os << p->getName() << " ";
+    }
+}
+
+void GameStartCommand::assignTerritories(std::vector<Territory *> &territories, std::default_random_engine &e, std::ostream &os) {
+    os << "Assigned Territories:" << std::endl;
     while (!territories.empty())
     {
         for (auto &it : gameEngine_->getPlayers())
         {
             std::uniform_int_distribution<size_t> u(0, territories.size() - 1);
             auto random = u(e);
-            territories[random]->owner(*it);
-            (*it).addTerritory(*territories[random]);
+            auto territory = territories[random];
+            territory->owner(*it);
+            (*it).addTerritory(*territory);
             territories.erase(territories.begin() + random);
+            os << "\t" <<  territory->name() << " to " << it->getName() << std::endl;
             if (territories.empty())
                 break;
         }
     }
-    // This sets the turn order
-    int size = static_cast<int>(gameEngine_->getPlayers().size());
-    ;
-    int turnOrder = rand() % size;
-    gameEngine_->setTurnOrder(turnOrder);
-    std::cout << "Turn Order set going in order of players added starting with " << gameEngine_->getPlayers()[gameEngine_->getTurnID()]->getName() << std::endl;
-    // This lets each player draw 2 cards
-    Deck ourDeck = gameEngine_->getDeck();
-    for (int i = 0; i < size; i++)
-    {
-        gameEngine_->getPlayers()[i]->drawCardFromDeck(ourDeck);
-        gameEngine_->getPlayers()[i]->drawCardFromDeck(ourDeck);
-    }
-    std::cout << "Territories assigned." << std::endl;
-    return GameState::assignReinforcements;
 }
 
-AssignTerritoriesCommand *AssignTerritoriesCommand::clone() const
+GameStartCommand *GameStartCommand::clone() const
 {
-    return new AssignTerritoriesCommand(*this);
+    return new GameStartCommand(*this);
 }
 
 ReplayCommand::ReplayCommand(GameEngine &gameEngine) : Command(gameEngine, "Play") {}

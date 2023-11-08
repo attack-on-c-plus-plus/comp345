@@ -110,7 +110,7 @@ CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr,
         c = new AddPlayerCommand{gameEngine, parameter};
     }
     else if (commandStr == commands->at(CommandType::gamestart)) {
-        c = new AssignTerritoriesCommand{gameEngine};
+        c = new GameStartCommand{gameEngine};
     }
     else if (commandStr == commands->at(CommandType::replay)) {
         c = new ReplayCommand{gameEngine};

@@ -88,7 +88,7 @@ void testLoggingObserver() {
     addPlayerCommand.attach(logObserver);
     addPlayerCommand.validate();
 
-    AssignTerritoriesCommand assignTerritoriesCommand{engine};
+    GameStartCommand assignTerritoriesCommand{engine};
     assignTerritoriesCommand.attach(logObserver);
     assignTerritoriesCommand.validate();
 
