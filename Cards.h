@@ -26,8 +26,7 @@ class GameEngine;
 
 enum class CardType {
     bomb,
-    advance,
-    deploy,
+    reinforcement,
     blockade,
     airlift,
     diplomacy
