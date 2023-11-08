@@ -274,13 +274,7 @@ bool AdvanceOrder::validate() const {
     
 }
     
-
-/**
- *************************** STILL NEEDS TO BE IMPLEMENTED****************************
- * Executes the AdvanceOrder:
-   o A player receives a card at the end of his turn if they successfully conquered at least one territory
-   during their turn, i.e. a player cannot receive more than one card per turn. 
- */
+    
 void AdvanceOrder::execute() {
 
     if (validate()) {
@@ -326,11 +320,6 @@ void AdvanceOrder::execute() {
                  }
              }
 
-            /*
-           
-            o A player receives a card at the end of his turn if they successfully conquered at least one territory
-            during their turn, i.e. a player cannot receive more than one card per turn. 
-            */
 
              //Attackers won
              if(target_->armyCount() == 0){
@@ -339,9 +328,7 @@ void AdvanceOrder::execute() {
                 //The attacking army units that survived the battle then occupy the conquered territory.
                 target_->addArmies(remainingAttackers);
                 //A player receives a card at the end of his turn if they successfully conquered at least one territory during their turn
-                 //////////////////////////////////////////////////////////////////////////add code////////////////////////////////////////////////////////////////////////
-                //player_->drawCardFromDeck(Deck(5));
-                std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
+                Player(*player_).drawCardFromDeck(gameEngine_->getDeck());
 
                  std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
              }
@@ -349,13 +336,19 @@ void AdvanceOrder::execute() {
              else{
                 //remove armies sent from source territory
                 source_->removeArmies(*armies_);
-                std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
+                 std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
              }
 
         }
+            //Update the effect string to describe the action
+            *effect_ = player_->getName() + "succesfully Advanced " + std::to_string(*armies_) + " armies from territory "
+                    + source_->name() + " to territory " + target_->name() + ".";
+        }
+
     Order::execute();
-     }
+     
 }
+    
 /**
  * Operator= overload
  * @param order

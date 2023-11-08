@@ -48,8 +48,11 @@ const Card &Card::play(Player& player, Territory& territory, Territory &source, 
             delete order;
         }
             break;
+<<<<<<< HEAD
         case CardType::reinforcement: {}
             break;
+=======
+>>>>>>> 4364030 (-m "Added last part of advance order")
         case CardType::blockade: {
             auto *order = new BlockadeOrder(player, territory, gameEngine);
             order->execute();
@@ -106,7 +109,11 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
             os << "bomb";
             break;
         case CardType::reinforcement:
+<<<<<<< HEAD
             os << "reinforcement";
+=======
+            os << "reinforce";
+>>>>>>> 4364030 (-m "Added last part of advance order")
             break;
         case CardType::blockade:
             os << "blockade";
