@@ -191,10 +191,10 @@ void Player::drawCardFromDeck(Deck &deck) {
     deck.draw(*hand);
 }
 
-void Player::playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target) {
+void Player::playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target, Territory &source, Territory &territory, unsigned int armies) {
     // Implement logic to play the card
     // Right now, I'll create a custom territory class
-    deck.discard(card.play(*this, target, engine), *hand);
+    deck.discard(card.play(*this, territory, source, target, armies, engine), *hand);
 }
 const Hand &Player::getHand() const {
     return *hand;

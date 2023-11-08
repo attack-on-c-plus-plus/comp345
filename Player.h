@@ -60,7 +60,7 @@ public:
     // Add methods to manage the player's hand of cards
     void drawCardFromDeck(Deck &deck);
 
-    void playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target);
+    void playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target, Territory &source, Territory &territory, unsigned int armies);
 
     [[nodiscard]] const Hand &getHand() const;
 
