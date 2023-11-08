@@ -85,6 +85,8 @@ public:
     [[nodiscard]] bool isOwned() const;
     [[nodiscard]] unsigned armyCount() const;
     Territory &operator=(const Territory&);
+    unsigned addArmies(int armies);
+    unsigned removeArmies(int armies);
 private:
     std::optional<size_t> *id_;
     std::string *name_;
