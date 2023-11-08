@@ -139,9 +139,7 @@ DeployOrder::~DeployOrder() {
  */
 bool DeployOrder::validate() const {
     
-    
     if (*armies_ > 0) {
-
 
         if (target_->owner().getName() == player_->getName()) {
             *effect_ = "Succesfully deployed armies to target territory!";
@@ -152,10 +150,9 @@ bool DeployOrder::validate() const {
         }
     } 
     else {
-        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";    
+        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
     }
     return false;
-    
     
 }
 
@@ -235,7 +232,6 @@ AdvanceOrder::~AdvanceOrder() {
  */
 bool AdvanceOrder::validate() const {
 
-
     // Check if the number of armies to advance is non-negative
     if(*armies_ < 0){
         *effect_ = "Failed to execute AdvanceOrder: Number of armies to deploy must be greater than 0.";
@@ -279,6 +275,8 @@ bool AdvanceOrder::validate() const {
 }
     
 
+
+
 /**
  *************************** STILL NEEDS TO BE IMPLEMENTED****************************
  * Executes the AdvanceOrder:
@@ -287,7 +285,14 @@ bool AdvanceOrder::validate() const {
  */
 void AdvanceOrder::execute() {
 
+
     if (validate()) {
+        
+        //if player issuing order owns target and source territory
+        if(source_->owner().getName() == target_->owner().getName()){
+            //If AdvanceOrder is valid, armies in source territory are reduced and armies in target territory are increased
+            source_->removeArmies(*armies_);
+            target_->addArmies(*armies_);
         
         //if player issuing order owns target and source territory
         if(source_->owner().getName() == target_->owner().getName()){
@@ -343,9 +348,8 @@ void AdvanceOrder::execute() {
                 //The attacking army units that survived the battle then occupy the conquered territory.
                 target_->addArmies(remainingAttackers);
                 //A player receives a card at the end of his turn if they successfully conquered at least one territory during their turn
-                 //////////////////////////////////////////////////////////////////////////add code////////////////////////////////////////////////////////////////////////
-                //player_->drawCardFromDeck(Deck(5));
-                std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
+                //////////////////////////////////////////////////////////////////////////add code
+                // player_->drawCardFromDeck(gameEngine_->getDeck());
 
                  std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
              }
@@ -353,11 +357,12 @@ void AdvanceOrder::execute() {
              else{
                 //remove armies sent from source territory
                 source_->removeArmies(*armies_);
-                std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
+                 std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
              }
 
         }
     Order::execute();
+     }
      }
 }
 

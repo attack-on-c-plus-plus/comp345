@@ -71,7 +71,7 @@ void testCards() {
 
         auto cardSelected = playerHand.card(random);
         std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
-        gameDeck.discard(cardSelected.play(player, territory, source, target, armies, engine), playerHand);
+        gameDeck.discard(cardSelected.play(player, territory,engine), playerHand);
         std::cout << std::endl;
     }
 
