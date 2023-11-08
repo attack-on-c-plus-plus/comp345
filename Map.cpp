@@ -482,6 +482,22 @@ unsigned Territory::removeArmies(int armies) {
 
 
 /**
+ * Adds armies to a Territory
+ * @return
+ */
+unsigned Territory::addArmies(int armies) {
+    return (*armyCount_ +=  armies);
+}
+
+/**
+ * Removes armies from a Territory
+ * @return
+ */
+unsigned Territory::removeArmies(int armies) {
+    return (*armyCount_ -= armies);
+}
+
+/**
  * Gets the army count for a Territory
  * @return
  */
