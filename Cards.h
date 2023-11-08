@@ -38,10 +38,10 @@ enum class CardType {
  */
 class Card {
 public:
-    explicit Card(const CardType& type);
+    explicit Card(CardType type);
     Card(const Card&);
     ~Card();
-    [[nodiscard]] const CardType &type() const;
+    [[nodiscard]] CardType type() const;
     [[nodiscard]] const Card &play(Player& player, Territory& territory, GameEngine &gameEngine) const;
     bool operator==(const Card& card) const;
     Card &operator=(const Card&);
@@ -60,7 +60,7 @@ public:
     explicit Deck(const std::vector<Card> &cardDeck);
     Deck(const Deck&);
     ~Deck();
-    Deck &add(const Card &card);
+    Deck &add(CardType card);
     Deck &remove(const Card &card);
     Deck &draw(Hand &hand);
     Deck &discard(const Card &card, Hand& fromHand);

@@ -9,27 +9,16 @@
 // Henri Stephane Carbon
 // Haris Mahmood
 
-//Default Constructor
-Player::Player() //: Player("Player Default")
-    : name{new std::string("Test")}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>}
-{
-    std::cout << "* In the default constructor of player class * \n";
-}
-
 //Parameterized Constructor
 Player::Player(const std::string &name)
-    : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>}, hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>}
-{
-    std::cout << "* In the Parameterized constructor of player class *\n";
-}
+    : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},
+    hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>} {}
 
 //Copy Constructor
 Player::Player(const Player &other)
     : name{new std::string(*(other.name))},
-      ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)}, reinforcementPool{new int(*other.reinforcementPool)}, cantTarget{new std::vector<Player *>(*other.cantTarget)}
-{
-    std::cout << "* In the copy constructor of player class *\n";
-}
+      ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)},
+      reinforcementPool{new int(*other.reinforcementPool)}, cantTarget{new std::vector<Player *>(*other.cantTarget)} {}
 
 //Destructor
 Player::~Player() {
@@ -39,7 +28,6 @@ Player::~Player() {
    delete territories;
    delete reinforcementPool;
    delete cantTarget;
-   std::cout << "Default Destructor is called\n";
 }
 
 std::string &Player::getName() const {

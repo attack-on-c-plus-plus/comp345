@@ -11,21 +11,14 @@
 size_t randomInt(size_t min, size_t max);
 
 void testCards() {
-    CommandProcessor *processor = new CommandProcessor();
+    auto *processor = new CommandProcessor();
     GameEngine engine{GameState::start, *processor};
-    Player player{};
+    Player player{"Bob"};
     Territory territory{};
     std::cout << "Testing the implementation of Cards" << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << "Creating New Cards" << std::endl;
     std::cout << "===================================" << std::endl;
-
-    // Creating cards
-    Card card1{CardType::bomb};
-    Card card2{CardType::reinforcement};
-    Card card3{CardType::blockade};
-    Card card4{CardType::airlift};
-    Card card5{CardType::diplomacy};
 
     Card card6{CardType::bomb};
 
@@ -37,11 +30,11 @@ void testCards() {
     // Creates an empty deck of cards
     // And adds the created cards to the deck
     Deck gameDeck{};
-    gameDeck.add(card1);
-    gameDeck.add(card2);
-    gameDeck.add(card3);
-    gameDeck.add(card4);
-    gameDeck.add(card5);
+    gameDeck.add(CardType::bomb);
+    gameDeck.add(CardType::reinforcement);
+    gameDeck.add(CardType::blockade);
+    gameDeck.add(CardType::airlift);
+    gameDeck.add(CardType::diplomacy);
 
     std::cout<<std::endl;
     std::cout << gameDeck << std::endl;

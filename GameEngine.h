@@ -2,6 +2,7 @@
 #define COMP345_GAMEENGINE_H
 
 #include <string>
+#include <random>
 
 #include "LoggingObserver.h"
 #include "Map.h"
@@ -26,6 +27,7 @@ class CommandProcessor;
 class Player;
 class Map;
 class Deck;
+class Territory;
 
 // This is the enum used to define all possible states the engine can be in.
 enum class GameState
@@ -62,12 +64,9 @@ public:
     [[nodiscard]] GameState state() const;
     [[nodiscard]] bool gameOver() const;
     [[nodiscard]] Map &map() const;
-    [[nodiscard]] int getTurnID() const;
     [[nodiscard]] std::vector<Player *> &getPlayers();
     [[nodiscard]] Deck getDeck() const;
     void map(Map &map);
-    void nextTurn();
-    void setTurnOrder(int &turn);
     void startup();
     void mainGameLoop();
     void reinforcementPhase();
@@ -80,7 +79,6 @@ private:
     GameState *state_;
     Map *map_;
     Deck *deck_;
-    int *turnID;
     std::vector<Player *> *players_;
     void removeEliminatedPlayers();
     void checkWinningCondition();
@@ -154,16 +152,18 @@ private:
     std::string *playerName_;
 };
 
-class AssignTerritoriesCommand : public Command
+class GameStartCommand : public Command
 {
 public:
-    explicit AssignTerritoriesCommand(GameEngine &gameEngine);
-    AssignTerritoriesCommand(const AssignTerritoriesCommand &assignTerritories);
-    ~AssignTerritoriesCommand() override;
+    explicit GameStartCommand(GameEngine &gameEngine);
+    GameStartCommand(const GameStartCommand &assignTerritories);
+    ~GameStartCommand() override;
     bool validate() override;
     GameState execute() override;
-    [[nodiscard]] AssignTerritoriesCommand *clone() const override;
-    AssignTerritoriesCommand &operator=(const AssignTerritoriesCommand &command);
+    [[nodiscard]] GameStartCommand *clone() const override;
+    GameStartCommand &operator=(const GameStartCommand &command);
+    void assignTerritories(std::vector<Territory *> &territories, std::default_random_engine &e, std::ostream &os);
+    void setPlayerTurnOrder(std::default_random_engine &e, std::ostream &os);
 };
 class ReplayCommand : public Command
 {

@@ -14,17 +14,17 @@
  */
 void testGameStates() {
     std::cout << "Testing game state setup and transitions..." << std::endl;
-    CommandProcessor *processor = new CommandProcessor();
+    auto *processor = new CommandProcessor();
     GameEngine engine = GameEngine(GameState::start, *processor);
     engine.gameLoop();
     delete processor;
 }
 
 void testGameStartup() {
-//    std::cout << "Testing game startup: console mode" << std::endl;
-    CommandProcessor *processor = new CommandProcessor();
-    GameEngine engine = GameEngine(GameState::start, *processor);
-//    engine.startup();
+    std::cout << "Testing game startup: console mode" << std::endl;
+    auto *processor = new CommandProcessor();
+    GameEngine engine{GameState::start, *processor};
+    engine.startup();
     delete processor;
 
     std::cout << "Testing game startup: file mode" << std::endl;

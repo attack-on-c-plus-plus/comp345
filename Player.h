@@ -26,9 +26,6 @@ class Hand;
 
 class Player {
 public:
-    //Constructor
-    Player();
-
     explicit Player(const std::string &name);
 
     Player(const Player &other);
@@ -72,8 +69,6 @@ private:
     std::vector<Player *> *cantTarget;
     int *reinforcementPool;
     Hand *hand;
-
-
 };
 
 
