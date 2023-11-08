@@ -239,7 +239,6 @@ bool AdvanceOrder::validate() const {
         *effect_ = "Failed to execute AdvanceOrder: Number of armies to deploy must be greater than 0.";
         return false;
     }
-    // Pre-Condition Checks
 
     // If the player doesn't own source territory, order is invalid
     if (player_ != &source_->owner()){
