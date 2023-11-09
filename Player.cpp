@@ -11,26 +11,6 @@
 
 //Parameterized Constructor
 Player::Player(const std::string &name)
-<<<<<<< HEAD
-<<<<<<< HEAD
-    : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},
-    hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>} {}
-
-//Copy Constructor
-Player::Player(const Player &other)
-    : name{new std::string(*(other.name))},
-      ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)},
-      reinforcementPool{new int(*other.reinforcementPool)}, cantTarget{new std::vector<Player *>(*other.cantTarget)} {}
-
-//Destructor
-Player::~Player() {
-   delete name;
-   delete ordersList;
-   delete hand;
-   delete territories;
-   delete reinforcementPool;
-   delete cantTarget;
-=======
         : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},
           hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>} {}
 
@@ -42,29 +22,12 @@ Player::Player(const Player &other)
 
 //Destructor
 Player::~Player() {
-=======
-        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},
-          hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>} {}
-
-//Copy Constructor
-Player::Player(const Player &other)
-        : name{new std::string(*(other.name))},
-          ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)},
-          reinforcementPool{new int(*other.reinforcementPool)}, cantTarget{new std::vector<Player *>(*other.cantTarget)} {}
-
-//Destructor
-Player::~Player() {
->>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
     delete name;
     delete ordersList;
     delete hand;
     delete territories;
     delete reinforcementPool;
     delete cantTarget;
-<<<<<<< HEAD
->>>>>>> 50240d0 (updaing remote branch)
-=======
->>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
 }
 
 std::string &Player::getName() const {
