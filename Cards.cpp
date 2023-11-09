@@ -13,7 +13,7 @@
  * Creates a new card
  * @param type The card type
  */
-Card::Card(const CardType &type) : type_(new CardType(type)) {}
+Card::Card(CardType type) : type_(new CardType(type)) {}
 
 /**
  * Creates a new Card by copying the card type of the card to be copied.
@@ -32,14 +32,14 @@ Card::~Card() {
  * Gets the card type
  * @return A string that represents the card type.
  */
-const CardType &Card::type() const {
+CardType Card::type() const {
     return *type_;
 }
 
 /**
  * Creates a special order
  */
-const Card &Card::play(Player& player, Territory& territory, Territory &source, Territory &target, unsigned armies, GameEngine &gameEngine) const {
+const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEngine) const {
     // Check the card type. For each case, play an order
     switch(*this->type_) {
         case CardType::bomb: {
@@ -48,15 +48,15 @@ const Card &Card::play(Player& player, Territory& territory, Territory &source, 
             delete order;
         }
             break;
+        case CardType::reinforcement: {}
+            break;
         case CardType::blockade: {
             auto *order = new BlockadeOrder(player, territory, gameEngine);
             order->execute();
             delete order;
         }
             break;
-        case CardType::airlift: {
-            AirliftOrder *order = new AirliftOrder(player, target, source, armies, gameEngine);
-        }
+        case CardType::airlift: {}
             break;
         case CardType::diplomacy: {}
             break;
@@ -64,7 +64,6 @@ const Card &Card::play(Player& player, Territory& territory, Territory &source, 
     std::cout << "Played card " << *this << std::endl;
     return *this;
 }
-
 
 /**
  * An equals operator that compares the cardType
@@ -104,7 +103,7 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
             os << "bomb";
             break;
         case CardType::reinforcement:
-            os << "reinforce";
+            os << "reinforcement";
             break;
         case CardType::blockade:
             os << "blockade";
@@ -123,54 +122,30 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
 
 /**
  * Deck constructor that initializes a deck of a specified size.
- * @param size The deck size. By default, the size is set to 6.
+ * @param size The deck size. By default, the size is set to 5.
  */
 Deck::Deck(unsigned int size) {
     cards_ = new std::vector<const Card *>();
     cards_->reserve(size);
-    Card card1{CardType::bomb};
-    Card card2{CardType::reinforcement};
-    Card card3{CardType::blockade};
-    Card card4{CardType::airlift};
-    Card card5{CardType::diplomacy};
-    int cardType = 1;
-    for (int i; i < size;)
+    for (int i = 0; i < size; ++i)
     {
-            if (cardType == 5)
-            {
-                this->add(card5);
-                cardType = 1;
-                i++;
-                continue;
-            }
-            if (cardType == 4)
-            {
-                this->add(card4);
-                cardType++;
-                i++;
-                continue;
-            }
-            if (cardType == 3)
-            {
-                this->add(card3);
-                cardType++;
-                i++;
-                continue;
-            }
-            if (cardType == 2)
-            {
-                this->add(card2);
-                cardType++;
-                i++;
-                continue;
-            }
-            if (cardType == 1)
-            {
-                this->add(card1);
-                cardType++;
-                i++;
-                continue;
-            }
+        switch(i % 5) {
+            case (int) CardType::bomb:
+                this->add(CardType::bomb);
+                break;
+            case (int) CardType::reinforcement:
+                this->add(CardType::reinforcement);
+                break;
+            case (int) CardType::blockade:
+                this->add(CardType::blockade);
+                break;
+            case (int) CardType::airlift:
+                this->add(CardType::airlift);
+                break;
+            case (int) CardType::diplomacy:
+                this->add(CardType::diplomacy);
+                break;
+        }
     }
 }
 
@@ -181,7 +156,7 @@ Deck::Deck(unsigned int size) {
 Deck::Deck(const std::vector<Card> &cardDeck) {
     cards_ = new std::vector<const Card *>();
     for (const auto &c: cardDeck) {
-        cards_->push_back(new Card(c));
+        cards_->push_back(new Card(c.type()));
     }
 }
 
@@ -191,8 +166,8 @@ Deck::Deck(const std::vector<Card> &cardDeck) {
  */
 Deck::Deck(const Deck &deckToCopy) {
     cards_ = new std::vector<const Card *>();
-    for (const auto &c: *deckToCopy.cards_) {
-        cards_->push_back(new Card(*c));
+    for (auto c: *deckToCopy.cards_) {
+        cards_->push_back(new Card(c->type()));
     }
 }
 
@@ -210,8 +185,8 @@ Deck::~Deck() {
  * @param card The card to be added.
  * @return The Deck with the new card.
  */
-Deck &Deck::add(const Card &card) {
-    cards_->push_back(new Card(card));
+Deck &Deck::add(CardType cardType) {
+    cards_->push_back(new Card(cardType));
     return *this;
 }
 
@@ -315,7 +290,7 @@ Deck &Deck::operator=(const Deck &deck) {
         delete cards_;
         cards_ = new std::vector<const Card *>();
         for (const auto &c: *deck.cards_) {
-            add(*c);
+            add(c->type());
         }
     }
     return *this;
@@ -464,9 +439,8 @@ Hand &Hand::operator=(const Hand &hand) {
  * @return the output stream
  */
 std::ostream &operator<<(std::ostream &os, const Hand &hand) {
-    os << "Hand (size: " << hand.cards_->size() << "): " << std::endl;
     for (auto &it: *hand.cards_) {
-        os << "\t" << *it << std::endl;
+        os << *it << " ";
     }
     return os;
 }

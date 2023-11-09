@@ -26,9 +26,6 @@ class Hand;
 
 class Player {
 public:
-    //Constructor
-    Player();
-
     explicit Player(const std::string &name);
 
     Player(const Player &other);
@@ -60,8 +57,7 @@ public:
     // Add methods to manage the player's hand of cards
     void drawCardFromDeck(Deck &deck);
 
-
-    void playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target, Territory &source, Territory &territory, unsigned int armies);
+    void playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target);
 
     [[nodiscard]] const Hand &getHand() const;
 
@@ -73,8 +69,6 @@ private:
     std::vector<Player *> *cantTarget;
     int *reinforcementPool;
     Hand *hand;
-
-
 };
 
 

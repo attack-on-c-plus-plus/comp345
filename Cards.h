@@ -38,11 +38,11 @@ enum class CardType {
  */
 class Card {
 public:
-    explicit Card(const CardType& type);
+    explicit Card(CardType type);
     Card(const Card&);
     ~Card();
-    [[nodiscard]] const CardType &type() const;
-    [[nodiscard]] const Card &play(Player& player, Territory& territory, Territory &source, Territory &target, unsigned armies, GameEngine &gameEngine) const;
+    [[nodiscard]] CardType type() const;
+    [[nodiscard]] const Card &play(Player& player, Territory& territory, GameEngine &gameEngine) const;
     bool operator==(const Card& card) const;
     Card &operator=(const Card&);
     friend std::ostream &operator<<(std::ostream &os, const Card &card);
@@ -56,11 +56,11 @@ private:
  */
 class Deck {
 public:
-    explicit Deck(unsigned size = 6);
+    explicit Deck(unsigned size = 5);
     explicit Deck(const std::vector<Card> &cardDeck);
     Deck(const Deck&);
     ~Deck();
-    Deck &add(const Card &card);
+    Deck &add(CardType card);
     Deck &remove(const Card &card);
     Deck &draw(Hand &hand);
     Deck &discard(const Card &card, Hand& fromHand);
