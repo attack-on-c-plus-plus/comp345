@@ -22,6 +22,7 @@ void testCards() {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     Card card6{CardType::bomb};
 =======
     // Creating cards
@@ -45,6 +46,8 @@ void testCards() {
 
 =======
 >>>>>>> 50240d0 (updaing remote branch)
+=======
+>>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
     Card card6{CardType::bomb};
 <<<<<<< HEAD
 
@@ -66,9 +69,12 @@ void testCards() {
     gameDeck.add(CardType::airlift);
     gameDeck.add(CardType::diplomacy);
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 50240d0 (updaing remote branch)
+=======
+>>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
 
     std::cout<<std::endl;
     std::cout << gameDeck << std::endl;

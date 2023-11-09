@@ -487,6 +487,11 @@ unsigned Territory::removeArmies(int armies) {
     return (*armyCount_ -= armies);
 }
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
 /**
  * Gets the army count for a Territory
  * @return

@@ -141,8 +141,15 @@ DeployOrder::~DeployOrder() {
  */
 bool DeployOrder::validate() const {
     
+<<<<<<< HEAD
     if (*armies_ > 0) {
 
+=======
+    
+    if (*armies_ > 0) {
+
+
+>>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
         if (target_->owner().getName() == player_->getName()) {
             *effect_ = "Succesfully deployed armies to target territory!";
             return true;
@@ -622,6 +629,15 @@ bool AirliftOrder::validate() const {
         return false;
     }
 
+<<<<<<< HEAD
+=======
+    //If the source or target territory does not belong to the player that issued the order, the order is invalid
+    if ((source_->owner().getName() != target_->owner().getName()) && (player_->getName() != source_->owner().getName())) {
+        *effect_ = "Failed to play AirliftOrder: " + target_->name() + " doesn't own the source and target territories!";
+        return false;
+    }
+
+>>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
 
     return true;
 }
@@ -644,6 +660,8 @@ void AirliftOrder::execute() {
     }
     Order::execute();
 }
+    
+
 
 /**
  * Operator= overload
