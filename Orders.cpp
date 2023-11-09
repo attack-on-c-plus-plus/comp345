@@ -1,9 +1,13 @@
 // Orders.cpp
 
 #include "Orders.h"
+#include "Cards.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <random>
+#include <vector>
+using namespace std;
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -136,7 +140,22 @@ DeployOrder::~DeployOrder() {
  * @return true if valid; false otherwise
  */
 bool DeployOrder::validate() const {
-    return *armies_ > 0;
+
+    if (*armies_ > 0) {
+
+        if (target_->owner().getName() == player_->getName()) {
+            *effect_ = "Succesfully deployed armies to target territory!";
+            return true;
+        } 
+        else {
+            *effect_ = "Failed to execute DeployOrder: Target territory is not owned by the player.";
+        }
+    } 
+    else {
+        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
+    }
+    return false;
+
 }
 
 /**
@@ -144,7 +163,8 @@ bool DeployOrder::validate() const {
  */
 void DeployOrder::execute() {
     if (validate()) {
-        *effect_ = "Deployed " + std::to_string(*armies_) + " armies.";
+        target_->addArmies(*armies_);
+        *effect_ = "Deployed " + std::to_string(*armies_) + " armies on " + (target_->name()) + "!";
     }
     Order::execute();
 }
@@ -213,38 +233,123 @@ AdvanceOrder::~AdvanceOrder() {
  * @return true if valid; false otherwise
  */
 bool AdvanceOrder::validate() const {
+
     // Check if the number of armies to advance is non-negative
-
-    // Check if the source and target territories exist
-//    if (source_->getOwner() == *player_ || target_->getOwner() == *player_) {
-//        *effect_ = "Failed to execute AdvanceOrder: Invalid territories.";
-//        return false;
-//    }
-
-
-    return true;
-}
-
-/**
- * Executes the AdvanceOrder
- */
-void AdvanceOrder::execute() {
-    if (validate()) {
-        // Check if the player has enough armies in the source territory to advance
-        unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
-        unsigned armies_in_target_territory = /* Get the number of armies in the target territory */ 0;
-
-        //If AdvanceOrder is valid, armies in source territory are reduced and armies in target territory are increased
-        armies_in_source_territory -= *armies_;
-        armies_in_target_territory += *armies_;
-
-        //Update the effect string to describe the action
-        *effect_ = "Advanced " + std::to_string(*armies_) + " armies from territory "
-                   + source_->name() + " to territory " + target_->name() + ".";
+    if(*armies_ < 0){
+        *effect_ = "Failed to execute AdvanceOrder: Number of armies to deploy must be greater than 0.";
+        return false;
     }
-    Order::execute();
-}
 
+    // If the player doesn't own source territory, order is invalid
+    if (player_ != &source_->owner()){
+        *effect_ = "Failed to execute AdvanceOrder: Player issuing Advance Order must own the source territory";
+        return false;
+    }
+    // Get the player's adjacent territories
+    auto * playerTerritories = new std::vector<Territory*>(player_->getTerritories());
+
+    Map map = gameEngine_->map();
+
+    // If target territory is not adjacent to the territory owned by the player
+    // issuing the order, order is invalid
+    bool isValid = false;
+    for (Territory *territory : *playerTerritories) {
+        auto * adjacentTerritories = new std::vector<const Territory*> (map.adjacencies(*territory));
+        if(std::find(adjacentTerritories->begin(), adjacentTerritories->end(), target_) != adjacentTerritories->end()) {
+            isValid = true;
+            delete adjacentTerritories;
+            break;
+        }
+        delete adjacentTerritories;
+    }
+
+    delete playerTerritories;
+    if(isValid){
+        *effect_ = (player_->getName()) + "Successfully played AdvanceOrder!";
+        return true;
+    }
+    else{
+        *effect_ = "Failed to execute AdvanceOrder: target territory must be adjacent to the territory owned by the player issuing the order";
+        return false;
+    }
+    
+}
+    
+    
+void AdvanceOrder::execute() {
+
+    if (validate()) {
+        
+        //if player issuing order owns target and source territory
+        if(source_->owner().getName() == target_->owner().getName()){
+            //If AdvanceOrder is valid, armies in source territory are reduced and armies in target territory are increased
+            source_->removeArmies(*armies_);
+            target_->addArmies(*armies_);
+
+            //Update the effect string to describe the action
+            *effect_ = player_->getName() + "succesfully Advanced " + std::to_string(*armies_) + " armies from territory "
+                    + source_->name() + " to territory " + target_->name() + ".";
+        }
+
+        //if player issuing order owns source territory but doesn't own target territory
+        //ATTACK
+        if(source_->owner().getName() != target_->owner().getName()){
+            int remainingAttackers = *armies_; // used of attackers win
+            std::default_random_engine generator;
+            std::uniform_int_distribution<int> distribution(1, 100);
+            std::cout << " --> Initiating attack!" << std::endl;
+
+            // initiating attack: loops through number of armies for each territory.
+            // each army has a probability to kill off the other, the first territory that reaches zero armies left loses.
+            int result1{}, result2{};
+            while (target_->armyCount() > 0 && *armies_ > 0) {
+                  int targetArmies = target_->armyCount();
+                 // Each attacking army unit involved has 60% chances of killing one defending army
+                 for (int i = 0; i < *armies_; i++) {
+                     result1 = distribution(generator);
+                     if (result1 <= 60) {
+                     target_->removeArmies(1);
+                     }
+                    }
+                  // Each defending army unit has 70% chances of killing one attacking army unit
+                 for (int i = 0; i < targetArmies; i++) {
+                     result2 = distribution(generator);
+                     if (result2 <= 70){
+                        *armies_ -= 1;
+                        remainingAttackers--;
+                     } 
+                 }
+             }
+
+
+             //Attackers won
+             if(target_->armyCount() == 0){
+                //Player issuing Attack claims target territory
+                target_->owner(*player_);
+                //The attacking army units that survived the battle then occupy the conquered territory.
+                target_->addArmies(remainingAttackers);
+                //A player receives a card at the end of his turn if they successfully conquered at least one territory during their turn
+                Player(*player_).drawCardFromDeck(gameEngine_->getDeck());
+
+                std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
+             }
+             //Defenders won
+             else{
+                //remove armies sent from source territory
+                source_->removeArmies(*armies_);
+                std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
+             }
+
+        }
+            //Update the effect string to describe the action
+            *effect_ = player_->getName() + "succesfully Advanced " + std::to_string(*armies_) + " armies from territory "
+                    + source_->name() + " to territory " + target_->name() + ".";
+        }
+
+    Order::execute();
+     
+}
+    
 /**
  * Operator= overload
  * @param order
@@ -339,8 +444,10 @@ bool BombOrder::validate() const {
 void BombOrder::execute() {
     if (validate()) {
         // Remove armies from the target territory:
-        unsigned armies_in_target_territory = target_->armyCount();
-        armies_in_target_territory /= 2;
+        int armies_in_target = target_->armyCount();
+        int updated_armies_in_target = armies_in_target/2;
+        //So now we want to reduce the number of armies in target territory by half i.e armies-armies/2 = armies/2
+        target_->removeArmies(updated_armies_in_target);
 
         // Update the effect string to describe the action
         *effect_ = "Bombed territory " + target_->name() + ".";
@@ -416,9 +523,9 @@ bool BlockadeOrder::validate() const {
 void BlockadeOrder::execute() {
     if (validate()) {
 
-        // Double armies from the target territory:
-        unsigned armies_in_target_territory = target_->armyCount();
-        armies_in_target_territory *= 2;
+        // Double armies from the target territory i.e x + x = x * 2:
+        unsigned int armies_in_target_territory = target_->armyCount();
+        target_->addArmies(armies_in_target_territory);
 
         // Update the effect string to describe the action
         *effect_ = "Blocked territory " + target_->name() + ".";
@@ -504,11 +611,15 @@ AirliftOrder::~AirliftOrder() {
  */
 bool AirliftOrder::validate() const {
     // Check if the player has enough armies in the source territory to airlift
-    unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 10;
-    if (armies_in_source_territory < *armies_) {
-
+    if (source_->armyCount() < *armies_) {
+        *effect_ = "Failed to play AirliftOrder: not enough armies in the source territory to airlift...";
         return false;
+    }
 
+    //If the source or target territory does not belong to the player that issued the order, the order is invalid
+    if ((source_->owner().getName() != target_->owner().getName()) && (player_->getName() != source_->owner().getName())) {
+        *effect_ = "Failed to play AirliftOrder: " + target_->name() + " doesn't own the source and target territories!";
+        return false;
     }
 
     return true;
@@ -521,11 +632,10 @@ void AirliftOrder::execute() {
     if (validate()) {
 
         // Reduce armies in source territory
-        unsigned armies_in_source_territory = /* Get the number of armies in the source territory */ 0;
-        armies_in_source_territory -= *armies_;
+        source_->removeArmies(*armies_);
+         
         // Increase armies in source territory
-        unsigned armies_in_target_territory = /* Get the number of armies in the source territory */ 0;
-        armies_in_target_territory += *armies_;
+        target_->addArmies(*armies_);
 
         // Update the effect string to describe the action
         *effect_ = "Airlifted " + std::to_string(*armies_) + " armies from territory "
@@ -533,6 +643,8 @@ void AirliftOrder::execute() {
     }
     Order::execute();
 }
+    
+
 
 /**
  * Operator= overload

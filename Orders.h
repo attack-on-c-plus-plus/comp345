@@ -81,6 +81,7 @@ public:
     void execute() override;
     AdvanceOrder &operator=(const AdvanceOrder&);
      std::ostream& printTo(std::ostream& os) const override;
+    //Deck() AdvanceOrdermydeck = new Deck()
 private:
     Territory *source_;  // weak ptr
     Territory *target_;  // weak ptr

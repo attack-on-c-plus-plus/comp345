@@ -11,23 +11,23 @@
 
 //Parameterized Constructor
 Player::Player(const std::string &name)
-    : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},
-    hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>} {}
+        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},
+          hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>} {}
 
 //Copy Constructor
 Player::Player(const Player &other)
-    : name{new std::string(*(other.name))},
-      ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)},
-      reinforcementPool{new int(*other.reinforcementPool)}, cantTarget{new std::vector<Player *>(*other.cantTarget)} {}
+        : name{new std::string(*(other.name))},
+          ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)},
+          reinforcementPool{new int(*other.reinforcementPool)}, cantTarget{new std::vector<Player *>(*other.cantTarget)} {}
 
 //Destructor
 Player::~Player() {
-   delete name;
-   delete ordersList;
-   delete hand;
-   delete territories;
-   delete reinforcementPool;
-   delete cantTarget;
+    delete name;
+    delete ordersList;
+    delete hand;
+    delete territories;
+    delete reinforcementPool;
+    delete cantTarget;
 }
 
 std::string &Player::getName() const {
@@ -192,14 +192,3 @@ OrdersList &Player::orderList()
 {
     return *ordersList;
 }
-
-
-
-
-
-
-
-
-
-
-

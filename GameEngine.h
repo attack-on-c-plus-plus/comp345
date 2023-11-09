@@ -65,7 +65,7 @@ public:
     [[nodiscard]] bool gameOver() const;
     [[nodiscard]] Map &map() const;
     [[nodiscard]] std::vector<Player *> &getPlayers();
-    [[nodiscard]] Deck getDeck() const;
+    [[nodiscard]] Deck &getDeck() const;
     void map(Map &map);
     void startup();
     void mainGameLoop();

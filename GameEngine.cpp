@@ -150,7 +150,7 @@ std::vector<Player *> &GameEngine::getPlayers()
 /**
  * Gets the Deck
  */
-Deck GameEngine::getDeck() const
+Deck &GameEngine::getDeck() const
 {
     return *deck_;
 }

@@ -50,6 +50,7 @@ const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEng
             break;
         case CardType::reinforcement: {}
             break;
+            
         case CardType::blockade: {
             auto *order = new BlockadeOrder(player, territory, gameEngine);
             order->execute();
