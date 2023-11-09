@@ -24,6 +24,7 @@ void testCards() {
     std::cout << "===================================" << std::endl;
 
     // Creating cards
+    
     Card card1{CardType::bomb};
     Card card2{CardType::reinforcement};
     Card card3{CardType::blockade};
@@ -31,7 +32,6 @@ void testCards() {
     Card card5{CardType::diplomacy};
 
     Card card6{CardType::bomb};
-
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
