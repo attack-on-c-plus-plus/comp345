@@ -174,7 +174,7 @@ void GameEngine::nextTurn()
 /**
  * Gets the Deck
  */
-Deck GameEngine::getDeck() const
+Deck &GameEngine::getDeck() const
 {
     return *deck_;
 }

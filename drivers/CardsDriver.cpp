@@ -25,11 +25,13 @@ void testCards() {
 
     // Creating cards
     Card card1{CardType::bomb};
-    Card card2{CardType::advance};
-    Card card3{CardType::deploy};
-    Card card4{CardType::blockade};
-    Card card5{CardType::airlift};
-    Card card6{CardType::diplomacy};
+    Card card2{CardType::reinforcement};
+    Card card3{CardType::blockade};
+    Card card4{CardType::airlift};
+    Card card5{CardType::diplomacy};
+
+    Card card6{CardType::bomb};
+
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
@@ -44,6 +46,7 @@ void testCards() {
     gameDeck.add(card3);
     gameDeck.add(card4);
     gameDeck.add(card5);
+
 
     std::cout<<std::endl;
     std::cout << gameDeck << std::endl;
