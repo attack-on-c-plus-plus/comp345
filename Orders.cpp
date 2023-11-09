@@ -1,11 +1,13 @@
 // Orders.cpp
 
 #include "Orders.h"
-#include "Cards.cpp"
+#include "Cards.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include <random>
+#include <vector>
+using namespace std;
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -237,7 +239,6 @@ bool AdvanceOrder::validate() const {
         *effect_ = "Failed to execute AdvanceOrder: Number of armies to deploy must be greater than 0.";
         return false;
     }
-    // Pre-Condition Checks
 
     // If the player doesn't own source territory, order is invalid
     if (player_ != &source_->owner()){
@@ -330,13 +331,13 @@ void AdvanceOrder::execute() {
                 //A player receives a card at the end of his turn if they successfully conquered at least one territory during their turn
                 Player(*player_).drawCardFromDeck(gameEngine_->getDeck());
 
-                 std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
+                std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
              }
              //Defenders won
              else{
                 //remove armies sent from source territory
                 source_->removeArmies(*armies_);
-                 std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
+                std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
              }
 
         }
