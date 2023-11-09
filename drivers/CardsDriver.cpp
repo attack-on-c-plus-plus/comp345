@@ -20,40 +20,7 @@ void testCards() {
     std::cout << "Creating New Cards" << std::endl;
     std::cout << "===================================" << std::endl;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     Card card6{CardType::bomb};
-=======
-    // Creating cards
-    
-    Card card1{CardType::bomb};
-<<<<<<< HEAD
-<<<<<<< HEAD
-    Card card2{CardType::advance};
-    Card card3{CardType::deploy};
-    Card card4{CardType::blockade};
-    Card card5{CardType::airlift};
-    Card card6{CardType::diplomacy};
->>>>>>> 3feb183 (updated play function in Card's driver class to satisfy all card types)
-=======
-=======
->>>>>>> ebbb955 (Update CardsDriver.cpp)
-    Card card2{CardType::reinforcement};
-    Card card3{CardType::blockade};
-    Card card4{CardType::airlift};
-    Card card5{CardType::diplomacy};
-
-=======
->>>>>>> 50240d0 (updaing remote branch)
-=======
->>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
-    Card card6{CardType::bomb};
-<<<<<<< HEAD
-
->>>>>>> c4649cd (fixed advanced order to properly give attacker a card if he wins battle)
-=======
->>>>>>> ebbb955 (Update CardsDriver.cpp)
 
     std::cout<<std::endl;
     std::cout << "===================================" << std::endl;
@@ -68,13 +35,6 @@ void testCards() {
     gameDeck.add(CardType::blockade);
     gameDeck.add(CardType::airlift);
     gameDeck.add(CardType::diplomacy);
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> 50240d0 (updaing remote branch)
-=======
->>>>>>> 50240d095beac2bba48406e50f84aa1489e5c2bd
 
     std::cout<<std::endl;
     std::cout << gameDeck << std::endl;
