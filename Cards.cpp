@@ -39,7 +39,7 @@ CardType Card::type() const {
 /**
  * Creates a special order
  */
-const Card &Card::play(Player& player, Territory& territory, Territory &source, Territory &target, unsigned armies, GameEngine &gameEngine) const {
+const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEngine) const {
     // Check the card type. For each case, play an order
     switch(*this->type_) {
         case CardType::bomb: {
@@ -48,20 +48,16 @@ const Card &Card::play(Player& player, Territory& territory, Territory &source, 
             delete order;
         }
             break;
-<<<<<<< HEAD
         case CardType::reinforcement: {}
             break;
-=======
->>>>>>> 4364030 (-m "Added last part of advance order")
+            
         case CardType::blockade: {
             auto *order = new BlockadeOrder(player, territory, gameEngine);
             order->execute();
             delete order;
         }
             break;
-        case CardType::airlift: {
-            AirliftOrder *order = new AirliftOrder(player, target, source, armies, gameEngine);
-        }
+        case CardType::airlift: {}
             break;
         case CardType::diplomacy: {}
             break;
@@ -69,7 +65,6 @@ const Card &Card::play(Player& player, Territory& territory, Territory &source, 
     std::cout << "Played card " << *this << std::endl;
     return *this;
 }
-
 
 /**
  * An equals operator that compares the cardType
@@ -109,11 +104,7 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
             os << "bomb";
             break;
         case CardType::reinforcement:
-<<<<<<< HEAD
             os << "reinforcement";
-=======
-            os << "reinforce";
->>>>>>> 4364030 (-m "Added last part of advance order")
             break;
         case CardType::blockade:
             os << "blockade";
@@ -132,7 +123,7 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
 
 /**
  * Deck constructor that initializes a deck of a specified size.
- * @param size The deck size. By default, the size is set to 6.
+ * @param size The deck size. By default, the size is set to 5.
  */
 Deck::Deck(unsigned int size) {
     cards_ = new std::vector<const Card *>();

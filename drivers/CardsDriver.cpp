@@ -15,14 +15,12 @@ void testCards() {
     GameEngine engine{GameState::start, *processor};
     Player player{"Bob"};
     Territory territory{};
-    Territory source{};
-    Territory target{};
-    unsigned int armies;
     std::cout << "Testing the implementation of Cards" << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << "Creating New Cards" << std::endl;
     std::cout << "===================================" << std::endl;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     Card card6{CardType::bomb};
 =======
@@ -45,6 +43,8 @@ void testCards() {
     Card card4{CardType::airlift};
     Card card5{CardType::diplomacy};
 
+=======
+>>>>>>> 50240d0 (updaing remote branch)
     Card card6{CardType::bomb};
 <<<<<<< HEAD
 
@@ -65,7 +65,10 @@ void testCards() {
     gameDeck.add(CardType::blockade);
     gameDeck.add(CardType::airlift);
     gameDeck.add(CardType::diplomacy);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 50240d0 (updaing remote branch)
 
     std::cout<<std::endl;
     std::cout << gameDeck << std::endl;
@@ -99,7 +102,7 @@ void testCards() {
 
         auto cardSelected = playerHand.card(random);
         std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
-        gameDeck.discard(cardSelected.play(player, territory, source, target, armies, engine), playerHand);
+        gameDeck.discard(cardSelected.play(player, territory,engine), playerHand);
         std::cout << std::endl;
     }
 
