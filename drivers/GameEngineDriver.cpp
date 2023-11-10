@@ -1,5 +1,6 @@
 #include <iostream>
 #include "../GameEngine.h"
+#include "../CommandProcessing.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -14,22 +15,20 @@
  */
 void testGameStates() {
     std::cout << "Testing game state setup and transitions..." << std::endl;
-    auto *processor = new CommandProcessor();
-    GameEngine engine = GameEngine(GameState::start, *processor);
+    CommandProcessor processor;
+    GameEngine engine = GameEngine(processor);
     engine.gameLoop();
-    delete processor;
 }
 
 void testGameStartup() {
     std::cout << "Testing game startup: console mode" << std::endl;
-    auto *processor = new CommandProcessor();
-    GameEngine engine{GameState::start, *processor};
+    CommandProcessor commandProcessor;
+    GameEngine engine = GameEngine(commandProcessor);
     engine.startup();
-    delete processor;
 
     std::cout << "Testing game startup: file mode" << std::endl;
-    processor = new FileCommandProcessorAdapter("res/gameStartup.txt");
-    engine = GameEngine(GameState::start, *processor);
+    FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
+    engine = GameEngine(fileCommandProcessorAdapter);
     engine.startup();
     // force win condition
     engine.transition(GameState::win);
@@ -40,6 +39,4 @@ void testGameStartup() {
     // force win condition
     engine.transition(GameState::win);
     engine.gameOverPhase();
-
-    delete processor;
 }

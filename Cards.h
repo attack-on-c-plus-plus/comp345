@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "Player.h"
-#include "GameEngine.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -23,6 +21,7 @@ class Hand;
 class Player;
 class Territory;
 class GameEngine;
+class BombOrder;
 
 enum class CardType {
     bomb,

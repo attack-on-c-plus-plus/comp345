@@ -47,16 +47,22 @@ private:
     std::ofstream *out_;
 };
 
+class IObservable {
+public:
+    virtual void attach(const Observer &observer) = 0;
+    virtual void detach(const Observer &observer) = 0;
+};
+
 /**
  * Subject class used for Observer pattern
  */
-class Subject {
+class Subject : virtual public IObservable {
 public:
     Subject();
     Subject(const Subject &subject);
     ~Subject();
-    virtual void attach(const Observer &observer);
-    virtual void detach(const Observer &observer);
+    void attach(const Observer &observer) override;
+    void detach(const Observer &observer) override;
     virtual void Notify(const ILoggable &loggable);
 private:
     std::list<const Observer *> *observers_;

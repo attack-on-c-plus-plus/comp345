@@ -6,7 +6,7 @@
 
 #include "LoggingObserver.h"
 #include "Map.h"
-#include "CommandProcessing.h"
+
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -21,8 +21,8 @@
  */
 
 // Forward declaration.
-class GameEngine;
-class Command;
+//class GameEngine;
+//class Command;
 class CommandProcessor;
 class Player;
 class Map;
@@ -53,7 +53,7 @@ std::ostream &operator<<(std::ostream &os, GameState state);
 class GameEngine : public ILoggable, public Subject
 {
 public:
-    explicit GameEngine(const GameState &gameStates, CommandProcessor &commandProcessor);
+    explicit GameEngine(CommandProcessor &commandProcessor);
     // Copy constructor
     GameEngine(const GameEngine &gameEngine);
     GameEngine &operator=(const GameEngine &gameEngine);
@@ -87,17 +87,22 @@ private:
     friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
 };
 
-class Command : public ILoggable, public Subject
+class ICommand : virtual public IObservable {
+public:
+    [[nodiscard]] virtual bool validate() = 0;
+    virtual void execute() = 0;
+    [[nodiscard]] virtual const std::string &description() const = 0;
+};
+
+class Command : public ILoggable, public Subject, public ICommand
 {
 public:
     explicit Command(GameEngine &gameEngine, const std::string &description);
     Command(const Command &command);
     virtual ~Command();
-    virtual bool validate();
-    virtual GameState execute() = 0;
-    [[nodiscard]] virtual Command *clone() const = 0;
     void saveEffect(const std::string &effect);
-    [[nodiscard]] std::string &description() const;
+    [[nodiscard]] bool validate() override;
+    [[nodiscard]] std::string &description() const override;
     [[nodiscard]] std::string stringToLog() const override;
     Command &operator=(const Command &command);
 
@@ -117,10 +122,8 @@ public:
     LoadMapCommand(const LoadMapCommand &loadMap);
     ~LoadMapCommand() override;
     bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] LoadMapCommand *clone() const override;
+    void execute() override;
     LoadMapCommand &operator=(const LoadMapCommand &command);
-
 private:
     std::string *filename_;
 };
@@ -132,8 +135,7 @@ public:
     ValidateMapCommand(const ValidateMapCommand &validateMap);
     ~ValidateMapCommand() override;
     bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] ValidateMapCommand *clone() const override;
+    void execute() override;
     ValidateMapCommand &operator=(const ValidateMapCommand &command);
 };
 
@@ -144,8 +146,7 @@ public:
     AddPlayerCommand(const AddPlayerCommand &addPlayer);
     ~AddPlayerCommand() override;
     bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] AddPlayerCommand *clone() const override;
+    void execute() override;
     AddPlayerCommand &operator=(const AddPlayerCommand &command);
 
 private:
@@ -159,8 +160,7 @@ public:
     GameStartCommand(const GameStartCommand &assignTerritories);
     ~GameStartCommand() override;
     bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] GameStartCommand *clone() const override;
+    void execute() override;
     GameStartCommand &operator=(const GameStartCommand &command);
     void assignTerritories(std::vector<Territory *> &territories, std::default_random_engine &e, std::ostream &os);
     void setPlayerTurnOrder(std::default_random_engine &e, std::ostream &os);
@@ -172,8 +172,7 @@ public:
     ReplayCommand(const ReplayCommand &play);
     ~ReplayCommand() override;
     bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] ReplayCommand *clone() const override;
+    void execute() override;
     ReplayCommand &operator=(const ReplayCommand &command);
 };
 class QuitCommand : public Command
@@ -183,8 +182,7 @@ public:
     QuitCommand(const QuitCommand &quit);
     ~QuitCommand() override;
     bool validate() override;
-    GameState execute() override;
-    [[nodiscard]] QuitCommand *clone() const override;
+    void execute() override;
     QuitCommand &operator=(const QuitCommand &command);
 };
 #endif // COMP345_GAMEENGINE_H

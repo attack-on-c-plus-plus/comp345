@@ -1,4 +1,6 @@
 #include "GameEngine.h"
+#include "Cards.h"
+#include "Player.h"
 #include <iostream>
 #include <filesystem>
 #include <cctype>
@@ -49,10 +51,10 @@ std::ostream &operator<<(std::ostream &os, GameState state)
 
 /**
  * Main constructor for the GameEngine object
- * @param gameStates
+ * @param commandProcessor
  */
-GameEngine::GameEngine(const GameState &state, CommandProcessor &commandProcessor) :
-    state_{new GameState(state)},
+GameEngine::GameEngine(CommandProcessor &commandProcessor) :
+    state_{new GameState(GameState::start)},
     map_{new Map} {
     commandProcessor_ = &commandProcessor;
     players_ = new std::vector<Player *>();
@@ -176,12 +178,12 @@ void GameEngine::gameLoop()
 
 void GameEngine::startup()
 {
-    Command *command;
+    ICommand *command;
     resetGameElements();
     while (*state_ != GameState::assignReinforcements) {
-        command = &commandProcessor_->getCommand(*this); //readCommand(*this);
+        command = &commandProcessor_->getCommand(*this);
         if (command == nullptr) continue;
-        transition(command->execute());
+        command->execute();
     }
 }
 
@@ -209,11 +211,11 @@ void GameEngine::mainGameLoop() {
 }
 
 void GameEngine::gameOverPhase() {
-    Command *command;
+    ICommand *command;
     while (*state_ == GameState::win)
     {
-        command = &commandProcessor_->getCommand(*this); // readCommand(); //&commandProcessor_->getCommand();
-        transition(command->execute());
+        command = &commandProcessor_->getCommand(*this);
+        command->execute();
     }
 }
 
@@ -327,18 +329,18 @@ void GameEngine::reinforcementPhase()
 {
     if (*state_ != GameState::assignReinforcements)
         return; // Game engine is in the wrong state
-    // TODO: implement issue #110
-    std::cout << "begin reinforcements" << std::endl;
-    for (auto player : *players_){
-        int territorySize = static_cast<int>(player->getTerritories().size());
-        int reinforcements = territorySize/3;
-
-        //TODO: Insert Country Specific Reinforcements here
-
-        if(reinforcements < 3){ reinforcements = 3;}
-        player->addReinforcements(reinforcements);
-        std::cout << "added " << reinforcements << " armies for player " << player->getName() << std::endl;
-    }
+//    // TODO: implement issue #110
+//    std::cout << "begin reinforcements" << std::endl;
+//    for (auto player : *players_){
+//        int territorySize = static_cast<int>(player->getTerritories().size());
+//        int reinforcements = territorySize/3;
+//
+//        //TODO: Insert Country Specific Reinforcements here
+//
+//        if(reinforcements < 3){ reinforcements = 3;}
+//        player->add(reinforcements);
+//        std::cout << "added " << reinforcements << " armies for player " << player->getName() << std::endl;
+//    }
     transition(GameState::issueOrders);
 }
 
@@ -454,18 +456,12 @@ bool LoadMapCommand::validate()
     return Command::validate();
 }
 
-GameState LoadMapCommand::execute()
+void LoadMapCommand::execute()
 {
-    if (!validate())
-        return gameEngine_->state();
+    if (!validate()) return;
     MapLoader::load(*filename_, gameEngine_->map());
     saveEffect("Map \"" + gameEngine_->map().name() + "\" loaded.");
-    return GameState::mapLoaded;
-}
-
-LoadMapCommand *LoadMapCommand::clone() const
-{
-    return new LoadMapCommand(*this);
+    gameEngine_->transition(GameState::mapLoaded);
 }
 
 ValidateMapCommand::ValidateMapCommand(GameEngine &gameEngine) : Command(gameEngine, "ValidateMap") {}
@@ -491,20 +487,15 @@ bool ValidateMapCommand::validate()
     return Command::validate();
 }
 
-GameState ValidateMapCommand::execute()
+void ValidateMapCommand::execute()
 {
     if (!validate() || !gameEngine_->map().validate())
     {
         saveEffect("Map not valid, enter a new map please.");
-        return gameEngine_->state();
+        return;
     }
     saveEffect("Map \"" + gameEngine_->map().name() + "\" validated.");
-    return GameState::mapValidated;
-}
-
-ValidateMapCommand *ValidateMapCommand::clone() const
-{
-    return new ValidateMapCommand(*this);
+    gameEngine_->transition(GameState::mapValidated);
 }
 
 AddPlayerCommand::AddPlayerCommand(GameEngine &gameEngine, const std::string &playerName) : Command(gameEngine, "AddPlayer"), playerName_{new std::string(playerName)} {}
@@ -531,27 +522,20 @@ bool AddPlayerCommand::validate()
 {
     if (gameEngine_->state() == GameState::mapValidated || gameEngine_->state() == GameState::playersAdded)
         return true;
-
+    if (gameEngine_->getPlayers().size() >= 6)
+    {
+        saveEffect("Maximum of 6 players already reached.");
+        return false;
+    }
     return Command::validate();
 }
 
-GameState AddPlayerCommand::execute()
+void AddPlayerCommand::execute()
 {
-    if (!validate())
-        return gameEngine_->state();
-    if (gameEngine_->getPlayers().size() >= 6)
-    {
-        std::cout << "Already reached maximum player count of 6." << std::endl;
-        return gameEngine_->state();
-    }
-    gameEngine_->getPlayers().push_back(new Player(*playerName_));
+    if (!validate()) return;
+    gameEngine_->getPlayers().push_back(new Player(*gameEngine_, *playerName_));
     saveEffect("Player \"" + *playerName_ + "\" added.");
-    return GameState::playersAdded;
-}
-
-AddPlayerCommand *AddPlayerCommand::clone() const
-{
-    return new AddPlayerCommand(*this);
+    gameEngine_->transition(GameState::playersAdded);
 }
 
 GameStartCommand::GameStartCommand(GameEngine &gameEngine)
@@ -582,10 +566,9 @@ bool GameStartCommand::validate()
     return false;
 }
 
-GameState GameStartCommand::execute()
+void GameStartCommand::execute()
 {
-    if (!validate())
-        return gameEngine_->state();
+    if (!validate()) return;
     auto territories = gameEngine_->map().territories();
     std::random_device r;
     std::default_random_engine e(r());
@@ -599,12 +582,12 @@ GameState GameStartCommand::execute()
     Deck ourDeck = gameEngine_->getDeck();
     for (auto i : gameEngine_->getPlayers())
     {
-        i->drawCardFromDeck(ourDeck);
-        i->drawCardFromDeck(ourDeck);
+        i->draw();
+        i->draw();
         s << "\n" << i->getName() << " drew " << i->getHand();
     }
     saveEffect(s.str());
-    return GameState::assignReinforcements;
+    gameEngine_->transition(GameState::assignReinforcements);
 }
 
 void GameStartCommand::setPlayerTurnOrder(std::default_random_engine &e, std::ostream &os) {
@@ -624,19 +607,13 @@ void GameStartCommand::assignTerritories(std::vector<Territory *> &territories, 
             std::uniform_int_distribution<size_t> u(0, territories.size() - 1);
             auto random = u(e);
             auto territory = territories[random];
-            territory->owner(*it);
-            (*it).addTerritory(*territory);
+            (*it).add(*territory);
             territories.erase(territories.begin() + random);
             os << "\t" <<  territory->name() << " to " << it->getName() << std::endl;
             if (territories.empty())
                 break;
         }
     }
-}
-
-GameStartCommand *GameStartCommand::clone() const
-{
-    return new GameStartCommand(*this);
 }
 
 ReplayCommand::ReplayCommand(GameEngine &gameEngine) : Command(gameEngine, "Play") {}
@@ -662,17 +639,11 @@ bool ReplayCommand::validate()
     return Command::validate();
 }
 
-GameState ReplayCommand::execute()
+void ReplayCommand::execute()
 {
-    if (!validate())
-        return gameEngine_->state();
+    if (!validate()) return;
     saveEffect("Replaying the Conquest game.");
-    return GameState::start;
-}
-
-ReplayCommand *ReplayCommand::clone() const
-{
-    return new ReplayCommand(*this);
+    gameEngine_->transition(GameState::start);
 }
 
 QuitCommand::QuitCommand(GameEngine &gameEngine) : Command(gameEngine, "Quit") {}
@@ -698,15 +669,9 @@ bool QuitCommand::validate()
     return Command::validate();
 }
 
-GameState QuitCommand::execute()
+void QuitCommand::execute()
 {
-    if (!validate())
-        return gameEngine_->state();
+    if (!validate()) return;
     saveEffect("Quitting the Conquest game. Thank you for playing!");
-    return GameState::gameOver;
-}
-
-QuitCommand *QuitCommand::clone() const
-{
-    return new QuitCommand(*this);
+    gameEngine_->transition(GameState::gameOver);
 }

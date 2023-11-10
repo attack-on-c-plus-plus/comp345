@@ -1,4 +1,5 @@
 #include "Cards.h"
+#include "Orders.h"
 #include <iostream>
 #include <stdexcept>
 #include <random>
@@ -43,7 +44,7 @@ const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEng
     // Check the card type. For each case, play an order
     switch(*this->type_) {
         case CardType::bomb: {
-            BombOrder *order = new BombOrder(player, territory, gameEngine);
+            auto *order = new BombOrder(gameEngine, player, territory);
             order->execute();
             delete order;
         }
@@ -52,7 +53,7 @@ const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEng
             break;
             
         case CardType::blockade: {
-            auto *order = new BlockadeOrder(player, territory, gameEngine);
+            auto *order = new BlockadeOrder(gameEngine, player, territory);
             order->execute();
             delete order;
         }

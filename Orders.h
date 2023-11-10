@@ -1,4 +1,9 @@
-// Orders.h
+// Daniel Soldera
+// Carson Senthilkumar
+// Joe El-Khoury
+// Henri Stephane Carbon
+// Haris Mahmood
+
 #ifndef COMP345_ORDERS_H
 #define COMP345_ORDERS_H
 
@@ -6,15 +11,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include "Map.h"
-#include "Player.h"
-#include "LoggingObserver.h"
-
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+#include "GameEngine.h"
 
 // Forward declaration
 class Player;
@@ -24,22 +21,19 @@ class GameEngine;
 /**
  *
  */
-class Order : public ILoggable, public Subject {
+class Order : public ILoggable, public Subject, public ICommand {
 public:
-    Order(const Player &player, const std::string &description, GameEngine &gameEngine);
+    explicit Order(GameEngine &gameEngine, const std::string &description, Player &player);
     // Copy constructor
     Order(const Order &order);
     virtual ~Order();
-    [[nodiscard]] virtual Order* clone() const = 0;
-    [[nodiscard]] virtual bool validate() const = 0;
-    virtual void execute();
-    [[nodiscard]] const std::string &description() const;
-    [[nodiscard]] const std::string &effect() const;
+    void execute() override;
+    [[nodiscard]] const std::string &description() const override;
     Order &operator=(const Order&);
     virtual std::ostream &printTo(std::ostream& os) const;
     [[nodiscard]] std::string stringToLog() const override;
 protected:
-    const Player *player_; // weak ptr
+    Player *player_; // weak ptr
     std::string *description_;
     std::string *effect_;
     GameEngine *gameEngine_;
@@ -53,11 +47,10 @@ private:
  */
 class DeployOrder : public Order {
 public:
-    explicit DeployOrder(const Player &player, Territory &target, unsigned , GameEngine &gameEngine);
+    explicit DeployOrder(GameEngine &gameEngine, Player &player, Territory &target, unsigned armies);
     DeployOrder(const DeployOrder &order);
     ~DeployOrder() override;
-    [[nodiscard]] DeployOrder* clone() const override;
-    [[nodiscard]] bool validate() const override;
+    [[nodiscard]] bool validate() override;
     void execute() override;
     DeployOrder &operator=(const DeployOrder&);
     std::ostream& printTo(std::ostream& os) const override;
@@ -72,12 +65,10 @@ private:
  */
 class AdvanceOrder : public Order {
 public:
-    explicit AdvanceOrder(const Player &player, Territory &source, Territory &target, unsigned armies,
-                          GameEngine &gameEngine);
+    explicit AdvanceOrder(GameEngine &gameEngine, Player &player, Territory &source, Territory &target, unsigned armies);
     AdvanceOrder(const AdvanceOrder &order);
     ~AdvanceOrder() override;
-    [[nodiscard]] AdvanceOrder* clone() const override;
-    [[nodiscard]] bool validate() const override;
+    [[nodiscard]] bool validate() override;
     void execute() override;
     AdvanceOrder &operator=(const AdvanceOrder&);
      std::ostream& printTo(std::ostream& os) const override;
@@ -95,11 +86,10 @@ private:
  */
 class BombOrder : public Order {
 public:
-    explicit BombOrder(const Player &player, Territory &target, GameEngine &gameEngine);
+    explicit BombOrder(GameEngine &gameEngine, Player &player, Territory &target);
     BombOrder(const BombOrder &order);
     ~BombOrder() override;
-    [[nodiscard]] BombOrder* clone() const override;
-    [[nodiscard]] bool validate() const override;
+    [[nodiscard]] bool validate() override;
     void execute() override;
     BombOrder &operator=(const BombOrder&);
     std::ostream& printTo(std::ostream& os) const override;
@@ -114,11 +104,10 @@ private:
  */
 class BlockadeOrder : public Order {
 public:
-    explicit BlockadeOrder(const Player &player, Territory &target, GameEngine &gameEngine);
+    explicit BlockadeOrder(GameEngine &gameEngine, Player &player, Territory &target);
     BlockadeOrder(const BlockadeOrder &order);
     ~BlockadeOrder() override;
-    [[nodiscard]] BlockadeOrder* clone() const override;
-    [[nodiscard]] bool validate() const override;
+    [[nodiscard]] bool validate() override;
     void execute() override;
     BlockadeOrder &operator=(const BlockadeOrder&);
     std::ostream& printTo(std::ostream& os) const override;
@@ -132,12 +121,10 @@ private:
  */
 class AirliftOrder : public Order {
 public:
-    explicit AirliftOrder(const Player &player, Territory &source, Territory &target, unsigned armies,
-                          GameEngine &gameEngine);
+    explicit AirliftOrder(GameEngine &gameEngine, Player &player, Territory &source, Territory &target, unsigned armies);
     AirliftOrder(const AirliftOrder &order);
     ~AirliftOrder() override;
-    [[nodiscard]] AirliftOrder* clone() const override;
-    [[nodiscard]] bool validate() const override;
+    [[nodiscard]] bool validate() override;
     void execute() override;
     AirliftOrder &operator=(const AirliftOrder&);
     std::ostream& printTo(std::ostream& os) const override;
@@ -153,16 +140,15 @@ private:
  */
 class NegotiateOrder : public Order {
 public:
-    explicit NegotiateOrder(const Player &player, const Player &otherPlayer, GameEngine &gameEngine);
+    explicit NegotiateOrder(GameEngine &gameEngine, Player &player, Player &otherPlayer);
     NegotiateOrder(const NegotiateOrder &order);
     ~NegotiateOrder() override;
-    [[nodiscard]] NegotiateOrder* clone() const override;
-    [[nodiscard]] bool validate() const override;
+    [[nodiscard]] bool validate() override;
     void execute() override;
     NegotiateOrder &operator=(const NegotiateOrder&);
     std::ostream& printTo(std::ostream& os) const override;
 private:
-    const Player *otherPlayer_; // weak ptr
+    Player *otherPlayer_; // weak ptr
 };
 
 /**
@@ -174,7 +160,7 @@ public:
     OrdersList(const OrdersList&);
     ~OrdersList();
 
-    OrdersList& addOrder(const Order &order);
+    OrdersList& addOrder(Order &order);
     OrdersList& remove(int index);
     OrdersList& move(int from, int to);
     OrdersList& executeOrders();

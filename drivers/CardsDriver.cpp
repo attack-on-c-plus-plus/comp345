@@ -1,6 +1,8 @@
 #include <iostream>
 #include <random>
 #include "../Cards.h"
+#include "../CommandProcessing.h"
+#include "../Player.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -12,8 +14,8 @@ size_t randomInt(size_t min, size_t max);
 
 void testCards() {
     auto *processor = new CommandProcessor();
-    GameEngine engine{GameState::start, *processor};
-    Player player{"Bob"};
+    GameEngine engine{*processor};
+    Player player{engine, "Bob"};
     Territory territory{};
     std::cout << "Testing the implementation of Cards" << std::endl;
     std::cout << "===================================" << std::endl;

@@ -14,20 +14,27 @@
  * Commands available to the command processor
  */
 std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands = std::make_unique<std::map<CommandType, std::string>>(
-    std::map<CommandType, std::string> {
-        {CommandType::loadmap,     "loadmap"},
-        {CommandType::validatemap, "validatemap"},
-        {CommandType::addplayer,   "addplayer"},
-        {CommandType::gamestart,   "gamestart"},
-        {CommandType::replay,      "replay"},
-        {CommandType::quit,        "quit"}
-    });
+        std::map<CommandType, std::string> {
+                {CommandType::loadmap,      "loadmap"},
+                {CommandType::validatemap,  "validatemap"},
+                {CommandType::addplayer,    "addplayer"},
+                {CommandType::gamestart,    "gamestart"},
+                {CommandType::replay,       "replay"},
+                {CommandType::quit,         "quit"},
+                {CommandType::deploy,       "deploy"},
+                {CommandType::advance,      "advance"},
+                {CommandType::bomb,         "bomb"},
+                {CommandType::blockade,     "blockade"},
+                {CommandType::airlift,      "airlift"},
+                {CommandType::negotiate,    "negotiate"}
+        });
+
 
 /**
  * Constructor
  */
 CommandProcessor::CommandProcessor() {
-    commands_ = new std::vector<Command *>();
+    commands_ = new std::vector<ICommand *>();
 }
 
 /**
@@ -36,7 +43,7 @@ CommandProcessor::CommandProcessor() {
  */
 CommandProcessor::CommandProcessor(const CommandProcessor &commandProcessor) :
     Subject(commandProcessor) {
-    commands_ = new std::vector<Command *>(*commandProcessor.commands_);
+    commands_ = new std::vector<ICommand *>(*commandProcessor.commands_);
 }
 
 /**
@@ -67,7 +74,7 @@ CommandProcessor &CommandProcessor::operator=(const CommandProcessor &commandPro
         }
         commands_->clear();
         delete commands_;
-        commands_ = new std::vector<Command *>(*commandProcessor.commands_);
+        commands_ = new std::vector<ICommand *>(*commandProcessor.commands_);
     }
 
     return *this;
@@ -78,8 +85,8 @@ CommandProcessor &CommandProcessor::operator=(const CommandProcessor &commandPro
  * @param gameEngine
  * @return the command
  */
-Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
-    Command *c = nullptr;
+ICommand &CommandProcessor::readCommand(GameEngine &gameEngine) {
+    ICommand *c = nullptr;
     // read the first element to determine what the name of the is;
     while (!c) {
         std::cout << "Enter command" << std::endl;
@@ -96,9 +103,9 @@ Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
     return *c;
 }
 
-Command *
+ICommand *
 CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter) {
-    Command *c;
+    ICommand *c;
     std::transform(commandStr.begin(), commandStr.end(), commandStr.begin(), tolower);
     if (commandStr == commands->at(CommandType::loadmap)) {
         c = new LoadMapCommand{gameEngine, parameter};
@@ -127,8 +134,8 @@ CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr,
  * @param gameEngine
  * @return
  */
-Command &CommandProcessor::getCommand(GameEngine &gameEngine) {
-    Command *c = &readCommand(gameEngine);
+ICommand &CommandProcessor::getCommand(GameEngine &gameEngine) {
+    ICommand *c = &readCommand(gameEngine);
     saveCommand(*c);
     return *c;
 }
@@ -146,7 +153,7 @@ bool CommandProcessor::validate(Command &command) const {
  * Saves a command to the command list
  * @param command
  */
-void CommandProcessor::saveCommand(Command &command) {
+void CommandProcessor::saveCommand(ICommand &command) {
     commands_->push_back(&command);
     Notify(*this);
 }
@@ -172,8 +179,8 @@ FileCommandProcessorAdapter::~FileCommandProcessorAdapter() {
     delete fileLineReader_;
 }
 
-Command &FileCommandProcessorAdapter::readCommand(GameEngine &gameEngine) {
-    Command *c = nullptr;
+ICommand &FileCommandProcessorAdapter::readCommand(GameEngine &gameEngine) {
+    ICommand *c = nullptr;
 
     std::string line;
     if (fileLineReader_->readLineFromFile(line)) {

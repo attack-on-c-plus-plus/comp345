@@ -9,13 +9,12 @@
 
 #include <map>
 #include <memory>
-#include "LoggingObserver.h"
+#include <vector>
 #include "GameEngine.h"
 
-class Command;
-enum class GameState;
-class GameEngine;
 class FileLineReader;
+class Command;
+class GameEngine;
 
 /**
  * Command types that are available
@@ -26,7 +25,13 @@ enum class CommandType {
     addplayer,
     gamestart,
     replay,
-    quit
+    quit,
+    deploy,
+    advance,
+    bomb,
+    blockade,
+    airlift,
+    negotiate
 };
 
 /**
@@ -39,16 +44,16 @@ public:
     CommandProcessor &operator=(const CommandProcessor &gameEngine);
     // Destructor
     virtual ~CommandProcessor();
-    Command &getCommand(GameEngine &gameEngine);
+    ICommand &getCommand(GameEngine &gameEngine);
     [[nodiscard]] bool validate(Command &command) const;
     [[nodiscard]] std::string stringToLog() const override;
     static std::unique_ptr<std::map<CommandType, std::string>> commands;
 protected:
-    [[nodiscard]] virtual Command &readCommand(GameEngine &gameEngine);
-    static Command *createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter);
+    [[nodiscard]] virtual ICommand &readCommand(GameEngine &gameEngine);
+    static ICommand *createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter);
 private:
-    void saveCommand(Command &command);
-    std::vector<Command *> *commands_;
+    void saveCommand(ICommand &command);
+    std::vector<ICommand *> *commands_;
 };
 
 class FileCommandProcessorAdapter : public CommandProcessor {
@@ -59,7 +64,7 @@ public:
     FileCommandProcessorAdapter &operator=(const FileCommandProcessorAdapter &fileCommandProcessorAdapter) = delete;
     ~FileCommandProcessorAdapter() override;
 private:
-    Command &readCommand(GameEngine &gameEngine) override;
+    ICommand &readCommand(GameEngine &gameEngine) override;
     FileLineReader *fileLineReader_;
 };
 

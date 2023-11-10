@@ -1,6 +1,8 @@
 #include <iostream>
 #include "Drivers.h"
 #include "../Orders.h"
+#include "../CommandProcessing.h"
+#include "../Player.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
@@ -8,37 +10,38 @@
 // Henri Stephane Carbon
 // Haris Mahmood
 
+void createMap(Map &map);
+
 void testOrderList() {
-    CommandProcessor *commandProcessor = new CommandProcessor();
-    GameEngine engine{GameState::start, *commandProcessor};
+    CommandProcessor commandProcessor;
+    GameEngine engine{commandProcessor};
 
-    Player p1{"p1"};
-    Player p2{"p2"};
+    Player player1{engine, "player1"};
+    Player player2{engine, "player2"};
 
-    Territory t1{};
-    Territory t2{};
-    Territory t3{};
+    auto &map = engine.map();
+    createMap(map);
 
-    t1.owner(p1);
-    t2.owner(p1);
-    t3.owner(p2);
+    player1.add(map.territory(0));
+    player1.add(map.territory(1));
+    player2.add(map.territory(2));
 
     // Create some sample orders
-    DeployOrder deployOrder{p1, t1, 10, engine};
-    AdvanceOrder advanceOrder{p1, t1, t2, 5, engine};
-    BombOrder bombOrder{p1, t3, engine};
-    BlockadeOrder blockadeOrder{p1, t2, engine};
-    AirliftOrder airliftOrder{p1, t2, t1, 2, engine};
-    NegotiateOrder negotiateOrder{p2, p1, engine};
+    auto *deployOrder = new DeployOrder(engine, player1, map.territory(0), 10);
+    auto *advanceOrder = new AdvanceOrder(engine, player1, map.territory(0), map.territory(1), 5);
+    auto *bombOrder = new BombOrder(engine, player1, map.territory(2));
+    auto *blockadeOrder = new BlockadeOrder(engine, player1, map.territory(1));
+    auto *airliftOrder = new AirliftOrder(engine, player1, map.territory(1), map.territory(0), 2);
+    auto *negotiateOrder = new NegotiateOrder(engine, player1, player2);
 
     // Create an OrdersList and add orders to it
     OrdersList ordersList;
-    ordersList.addOrder(deployOrder)
-            .addOrder(advanceOrder)
-            .addOrder(bombOrder)
-            .addOrder(blockadeOrder)
-            .addOrder(airliftOrder)
-            .addOrder(negotiateOrder);
+    ordersList.addOrder(*deployOrder)
+            .addOrder(*advanceOrder)
+            .addOrder(*bombOrder)
+            .addOrder(*blockadeOrder)
+            .addOrder(*airliftOrder)
+            .addOrder(*negotiateOrder);
 
     // Execute the orders
     ordersList.executeOrders();
@@ -65,5 +68,4 @@ void testOrderList() {
     for (auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
-    delete commandProcessor;
 }

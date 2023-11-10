@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <ranges>
 #include "Map.h"
+#include "Player.h"
 
 // Daniel Soldera
 // Carson Senthilkumar
