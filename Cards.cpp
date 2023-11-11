@@ -17,6 +17,7 @@
 #include <random>
 #include <stdexcept>
 
+#include "GameEngine.h"
 #include "Orders.h"
 
 /**
@@ -225,10 +226,8 @@ Deck &Deck::draw(const Hand &hand) {
     if (cards_->empty()) {
         throw std::out_of_range("No more cards in the deck");
     }
-    std::random_device r;
-    std::uniform_int_distribution<size_t> u(0, cards_->size() - 1);
-    std::default_random_engine e(r());
-    const auto random = u(e);
+    Random rnd;
+    const auto random = rnd.generate(0, cards_->size() - 1);
 
     hand.cards_->push_back(cards_->at(random));
     cards_->erase(cards_->begin() + random);

@@ -520,14 +520,12 @@ bool GameStartCommand::validate() {
 
 void GameStartCommand::execute() {
     if (!validate()) return;
-    auto territories = gameEngine_->map().territories();
-    std::random_device r;
-    std::default_random_engine e(r());
 
     std::stringstream s;
-    assignTerritories(territories, e, s);
 
-    setPlayerTurnOrder(e, s);
+    assignTerritories(gameEngine_->map().territories(), s);
+
+    setPlayerTurnOrder(s);
 
     // This lets each player draw 2 cards
     Deck ourDeck = gameEngine_->getDeck();
@@ -540,7 +538,9 @@ void GameStartCommand::execute() {
     gameEngine_->transition(GameState::assignReinforcements);
 }
 
-void GameStartCommand::setPlayerTurnOrder(std::default_random_engine &e, std::ostream &os) const {
+void GameStartCommand::setPlayerTurnOrder(std::ostream &os) const {
+    std::random_device r;
+    std::default_random_engine e(r());
     std::ranges::shuffle(gameEngine_->getPlayers(), e);
     os << "Turn Order: ";
     for (const auto p: gameEngine_->getPlayers()) {
@@ -548,13 +548,11 @@ void GameStartCommand::setPlayerTurnOrder(std::default_random_engine &e, std::os
     }
 }
 
-void GameStartCommand::assignTerritories(std::vector<Territory *> &territories, std::default_random_engine &e,
-                                         std::ostream&os) const {
+void GameStartCommand::assignTerritories(std::vector<Territory *> &territories, std::ostream&os) const {
     os << "Assigned Territories:" << std::endl;
     while (!territories.empty()) {
         for (const auto &it: gameEngine_->getPlayers()) {
-            std::uniform_int_distribution<size_t> u(0, territories.size() - 1);
-            const auto random = u(e);
+            Random rnd; const auto random = rnd.generate(0, territories.size() - 1);
             const auto territory = territories[random];
             it->add(*territory);
             territories.erase(territories.begin() + random);
@@ -617,4 +615,13 @@ void QuitCommand::execute() {
     if (!validate()) return;
     saveEffect("Quitting the Conquest game. Thank you for playing!");
     gameEngine_->transition(GameState::gameOver);
+}
+
+Random::Random() {
+    e = std::default_random_engine(r());
+}
+
+unsigned Random::generate(const unsigned from, const unsigned to) {
+    std::uniform_int_distribution u(from, to);
+    return u(e);
 }

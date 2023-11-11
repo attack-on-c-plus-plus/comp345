@@ -162,8 +162,8 @@ public:
     bool validate() override;
     void execute() override;
     GameStartCommand &operator=(const GameStartCommand &command);
-    void assignTerritories(std::vector<Territory *> &territories, std::default_random_engine &e, std::ostream &os) const;
-    void setPlayerTurnOrder(std::default_random_engine &e, std::ostream &os) const;
+    void assignTerritories(std::vector<Territory *> &territories, std::ostream &os) const;
+    void setPlayerTurnOrder(std::ostream &os) const;
 };
 class ReplayCommand final : public Command
 {
@@ -185,4 +185,17 @@ public:
     void execute() override;
     QuitCommand &operator=(const QuitCommand &command);
 };
+
+class Random {
+public:
+    Random();
+    Random(const Random& random) = delete;
+    ~Random() = default;
+    Random &operator=(const Random &command) = delete;
+    unsigned generate(unsigned from, unsigned to);
+private:
+    std::random_device r;
+    std::default_random_engine e;
+};
+
 #endif // COMP345_GAMEENGINE_H

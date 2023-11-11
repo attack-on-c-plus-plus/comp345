@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <iostream>
-#include <random>
 #include <sstream>
 #include <vector>
 
@@ -50,7 +49,7 @@ Order::Order(const Order& order) :
     gameEngine_ = order.gameEngine_;
 }
 
-/**
+/**Random
  * Destructor
  */
 Order::~Order() {
@@ -284,21 +283,20 @@ void AdvanceOrder::execute() {
         //ATTACK
         if(source_->owner().getName() != target_->owner().getName()){
             unsigned remainingAttackers = *armies_; // used of attackers win
-            std::default_random_engine generator;
-            std::uniform_int_distribution distribution(1, 100);
+            Random random;
             std::cout << " --> Initiating attack!" << std::endl;
 
             while (target_->armyCount() > 0 && *armies_ > 0) {
                 const unsigned targetArmies = target_->armyCount();
                 // Each attacking army unit involved has 60% chances of killing one defending army
                 for (int i = 0; i < *armies_; i++) {
-                    if (const int result1 = distribution(generator); result1 <= 60) {
+                    if (const int result1 = random.generate(1,100); result1 <= 60) {
                         target_->removeArmies(1);
                     }
                 }
                 // Each defending army unit has 70% chances of killing one attacking army unit
                 for (int i = 0; i < targetArmies; i++) {
-                    if (const int result2 = distribution(generator); result2 <= 70) {
+                    if (const int result2 = random.generate(1,100); result2 <= 70) {
                         *armies_ -= 1;
                         remainingAttackers--;
                     }

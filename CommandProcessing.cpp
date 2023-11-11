@@ -10,7 +10,6 @@
  * @author Haris Mahmood
  */
 
-
 #include "CommandProcessing.h"
 
 #include <fstream>

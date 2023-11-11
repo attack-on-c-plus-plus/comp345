@@ -10,7 +10,6 @@
  * @author Haris Mahmood
  */
 
-
 #ifndef COMP345_COMMANDPROCESSING_H
 #define COMP345_COMMANDPROCESSING_H
 
