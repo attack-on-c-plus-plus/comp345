@@ -1,20 +1,29 @@
-#include "Cards.h"
-#include "Orders.h"
-#include <iostream>
-#include <stdexcept>
-#include <random>
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+
+#include "Cards.h"
+
+#include <iostream>
+#include <random>
+#include <stdexcept>
+
+#include "Orders.h"
 
 /**
  * Creates a new card
  * @param type The card type
  */
-Card::Card(CardType type) : type_(new CardType(type)) {}
+Card::Card(const CardType type) : type_(new CardType(type)) {}
 
 /**
  * Creates a new Card by copying the card type of the card to be copied.
@@ -74,7 +83,7 @@ const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEng
  * @return True if the card type is the same, and false otherwise.
  */
 bool Card::operator==(const Card &card) const {
-    return (*this->type_ == *card.type_);
+    return *this->type_ == *card.type_;
 }
 
 /**
@@ -126,25 +135,25 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
  * Deck constructor that initializes a deck of a specified size.
  * @param size The deck size. By default, the size is set to 5.
  */
-Deck::Deck(unsigned int size) {
+Deck::Deck(const unsigned int size) {
     cards_ = new std::vector<const Card *>();
     cards_->reserve(size);
     for (int i = 0; i < size; ++i)
     {
-        switch(i % 5) {
-            case (int) CardType::bomb:
+        switch(static_cast<CardType>(i % 5)) {
+            case CardType::bomb:
                 this->add(CardType::bomb);
                 break;
-            case (int) CardType::reinforcement:
+            case CardType::reinforcement:
                 this->add(CardType::reinforcement);
                 break;
-            case (int) CardType::blockade:
+            case CardType::blockade:
                 this->add(CardType::blockade);
                 break;
-            case (int) CardType::airlift:
+            case CardType::airlift:
                 this->add(CardType::airlift);
                 break;
-            case (int) CardType::diplomacy:
+            case CardType::diplomacy:
                 this->add(CardType::diplomacy);
                 break;
         }
@@ -168,7 +177,7 @@ Deck::Deck(const std::vector<Card> &cardDeck) {
  */
 Deck::Deck(const Deck &deckToCopy) {
     cards_ = new std::vector<const Card *>();
-    for (auto c: *deckToCopy.cards_) {
+    for (const auto c: *deckToCopy.cards_) {
         cards_->push_back(new Card(c->type()));
     }
 }
@@ -177,17 +186,17 @@ Deck::Deck(const Deck &deckToCopy) {
  * Destructor for the Deck class. Deletes the cardDeck pointer.
  */
 Deck::~Deck() {
-    for (auto c: *cards_) delete c;
+    for (const auto c: *cards_) delete c;
     cards_->clear();
     delete cards_;
-};
+}
 
 /**
  * Adds a card to the Deck.
- * @param card The card to be added.
+ * @param cardType The card type to be added.
  * @return The Deck with the new card.
  */
-Deck &Deck::add(CardType cardType) {
+Deck &Deck::add(const CardType cardType) {
     cards_->push_back(new Card(cardType));
     return *this;
 }
@@ -212,14 +221,14 @@ Deck &Deck::remove(const Card &card) {
  * Draw cards from the deck and place it directly into a hand
  * @param hand The hand where the randomly chosen card will be placed.
  */
-Deck &Deck::draw(Hand &hand) {
+Deck &Deck::draw(const Hand &hand) {
     if (cards_->empty()) {
         throw std::out_of_range("No more cards in the deck");
     }
     std::random_device r;
     std::uniform_int_distribution<size_t> u(0, cards_->size() - 1);
     std::default_random_engine e(r());
-    auto random = u(e);
+    const auto random = u(e);
 
     hand.cards_->push_back(cards_->at(random));
     cards_->erase(cards_->begin() + random);
@@ -230,10 +239,10 @@ Deck &Deck::draw(Hand &hand) {
 /**
  * Discards a card back from the supplied hand back to this deck
  * @param card
- * @param deck
- * @return The hand
+ * @param fromHand
+ * @return
  */
-Deck &Deck::discard(const Card &card, Hand &fromHand) {
+Deck &Deck::discard(const Card &card, const Hand &fromHand) {
     for (auto it = fromHand.cards_->begin(); it != fromHand.cards_->end(); ++it) {
         if (**it == card) {
             cards_->push_back(*it);
@@ -249,7 +258,7 @@ Deck &Deck::discard(const Card &card, Hand &fromHand) {
  * @param index The index of the selected card from the Deck of cards.
  * @return The selected card
  */
-const Card &Deck::card(size_t index) const {
+const Card &Deck::card(const size_t index) const {
     return *cards_->at(index);
 }
 
@@ -287,7 +296,7 @@ const std::vector<const Card *> &Deck::cards() const {
  */
 Deck &Deck::operator=(const Deck &deck) {
     if (this != &deck) {
-        for (auto c: *cards_) delete c;
+        for (const auto c: *cards_) delete c;
         cards_->clear();
         delete cards_;
         cards_ = new std::vector<const Card *>();
@@ -306,7 +315,7 @@ Deck &Deck::operator=(const Deck &deck) {
  */
 std::ostream &operator<<(std::ostream &os, const Deck &deck) {
     os << "Deck (size: " << deck.cards_->size() << "): " << std::endl;
-    for (auto &card: *deck.cards_) {
+    for (const auto &card: *deck.cards_) {
         os << "\t" << *card << std::endl;
     }
     return os;
@@ -316,7 +325,7 @@ std::ostream &operator<<(std::ostream &os, const Deck &deck) {
  * Creates a hand object of a specific size
  * @param size: The number of cards a hand can hold initially.
  */
-Hand::Hand(unsigned int size) :
+Hand::Hand(const unsigned int size) :
         cards_{new std::vector<const Card *>()} {
     cards_->reserve(size);
 }
@@ -347,12 +356,12 @@ Hand::Hand(const Hand &handToCopy) {
  * Default Card destructor. Deletes the cardType pointer.
  */
 Hand::~Hand() {
-    for (auto c: *cards_) delete c;
+    for (const auto c: *cards_) delete c;
     cards_->clear();
     delete cards_;
     cards_ = new std::vector<const Card *>();
     delete cards_;
-};
+}
 
 /**
  * Adds a card to the hand.
@@ -385,7 +394,7 @@ Hand &Hand::remove(const Card &card) {
  * @param index The index of the selected card from the player's card collection.
  * @return The selected card
  */
-const Card &Hand::card(size_t index) const {
+const Card &Hand::card(const size_t index) const {
     return *cards_->at(index);
 }
 
@@ -423,7 +432,7 @@ const std::vector<const Card *> &Hand::cards() const {
  */
 Hand &Hand::operator=(const Hand &hand) {
     if (this != &hand) {
-        for (auto c: *cards_) delete c;
+        for (const auto c: *cards_) delete c;
         cards_->clear();
         delete cards_;
         cards_ = new std::vector<const Card *>(hand.cards_->size());
@@ -441,7 +450,7 @@ Hand &Hand::operator=(const Hand &hand) {
  * @return the output stream
  */
 std::ostream &operator<<(std::ostream &os, const Hand &hand) {
-    for (auto &it: *hand.cards_) {
+    for (const auto &it: *hand.cards_) {
         os << *it << " ";
     }
     return os;

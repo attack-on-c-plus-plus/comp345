@@ -1,11 +1,18 @@
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
+
+#include "LoggingObserver.h"
 
 #include <fstream>
-#include "LoggingObserver.h"
 
 /**
  * Constructor
@@ -19,7 +26,7 @@ Subject::Subject() {
  * @param subject
  */
 Subject::Subject(const Subject &subject) {
-    observers_ = new std::list<const Observer *>(*subject.observers_);
+    observers_ = new std::list(*subject.observers_);
 }
 
 /**
@@ -50,7 +57,7 @@ void Subject::detach(const Observer &observer) {
  * @param loggable
  */
 void Subject::Notify(const ILoggable &loggable) {
-    for (auto & observer : *observers_) {
+    for (const auto & observer : *observers_) {
         observer->Update(loggable);
     }
 }
@@ -61,14 +68,14 @@ LogObserver::LogObserver(const std::string &filename) {
 
 LogObserver::~LogObserver() {
     if (out_->is_open()) {
-        (*out_) << std::string(70, '=') << std::endl;
+        *out_ << std::string(70, '=') << std::endl;
     }
     delete out_;
 }
 
 void LogObserver::Update(const ILoggable &loggable) const {
     if (out_->is_open()) {
-        (*out_) << std::string(70, '=') << std::endl;
-        (*out_) << loggable.stringToLog() << std::endl;
+        *out_ << std::string(70, '=') << std::endl;
+        *out_ << loggable.stringToLog() << std::endl;
     }
 }

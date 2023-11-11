@@ -1,12 +1,19 @@
-#include <iostream>
-#include "../GameEngine.h"
-#include "../CommandProcessing.h"
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+#include <iostream>
+
+#include "../CommandProcessing.h"
+#include "../GameEngine.h"
 
 /**
  * This is the method used to test the game engine state transitions, it takes a string

@@ -1,19 +1,28 @@
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
 #ifndef COMP345_ORDERS_H
 #define COMP345_ORDERS_H
 
-#include <iostream>
-#include <vector>
-#include <string>
 #include <algorithm>
-#include "GameEngine.h"
+#include <iostream>
+#include <string>
+#include <vector>
 
-// Forward declaration
+#include "LoggingObserver.h"
+
+/**
+ * Forward declaration
+ */
 class Player;
 class Territory;
 class GameEngine;
@@ -21,14 +30,15 @@ class GameEngine;
 /**
  *
  */
-class Order : public ILoggable, public Subject, public ICommand {
+class Order : public ILoggable, public Subject {
 public:
     explicit Order(GameEngine &gameEngine, const std::string &description, Player &player);
     // Copy constructor
     Order(const Order &order);
-    virtual ~Order();
-    void execute() override;
-    [[nodiscard]] const std::string &description() const override;
+    ~Order() override;
+    [[nodiscard]] virtual bool validate() = 0;
+    virtual void execute();
+    [[nodiscard]] virtual const std::string &description() const;
     Order &operator=(const Order&);
     virtual std::ostream &printTo(std::ostream& os) const;
     [[nodiscard]] std::string stringToLog() const override;
@@ -45,7 +55,7 @@ private:
 /**
  * Deploy: put a certain number of army units on a target territory
  */
-class DeployOrder : public Order {
+class DeployOrder final : public Order {
 public:
     explicit DeployOrder(GameEngine &gameEngine, Player &player, Territory &target, unsigned armies);
     DeployOrder(const DeployOrder &order);
@@ -63,7 +73,7 @@ private:
 /**
  * Advance: move a certain number of army units from a source territory to a target territory
  */
-class AdvanceOrder : public Order {
+class AdvanceOrder final : public Order {
 public:
     explicit AdvanceOrder(GameEngine &gameEngine, Player &player, Territory &source, Territory &target, unsigned armies);
     AdvanceOrder(const AdvanceOrder &order);
@@ -84,7 +94,7 @@ private:
  * Bomb: destroy half of the army units located on a target territory. This order can only be issued if
  * a player has the bomb card in their hand.
  */
-class BombOrder : public Order {
+class BombOrder final : public Order {
 public:
     explicit BombOrder(GameEngine &gameEngine, Player &player, Territory &target);
     BombOrder(const BombOrder &order);
@@ -102,7 +112,7 @@ private:
  * Blockade: Triple the number of army units on a target territory and make it a neutral territory. This
  * order can only be issued if a player has the blockade card in their hand.
  */
-class BlockadeOrder : public Order {
+class BlockadeOrder final : public Order {
 public:
     explicit BlockadeOrder(GameEngine &gameEngine, Player &player, Territory &target);
     BlockadeOrder(const BlockadeOrder &order);
@@ -119,7 +129,7 @@ private:
  * Airlift: advance a certain number of army units from one from source territory to a target
  * territory. This order can only be issued if a player has the airlift card in their hand.
  */
-class AirliftOrder : public Order {
+class AirliftOrder final : public Order {
 public:
     explicit AirliftOrder(GameEngine &gameEngine, Player &player, Territory &source, Territory &target, unsigned armies);
     AirliftOrder(const AirliftOrder &order);
@@ -138,7 +148,7 @@ private:
  * Negotiate: prevent attacks between the current player and another target player until the end
  * of the turn. This order can only be issued if a player has the diplomacy card in their hand.
  */
-class NegotiateOrder : public Order {
+class NegotiateOrder final : public Order {
 public:
     explicit NegotiateOrder(GameEngine &gameEngine, Player &player, Player &otherPlayer);
     NegotiateOrder(const NegotiateOrder &order);
@@ -154,11 +164,11 @@ private:
 /**
  * OrdersList class contains a list of Order objects
  */
-class OrdersList : public ILoggable, public Subject {
+class OrdersList final : public ILoggable, public Subject {
 public:
     OrdersList();
     OrdersList(const OrdersList&);
-    ~OrdersList();
+    ~OrdersList() override;
 
     OrdersList& addOrder(Order &order);
     OrdersList& remove(int index);

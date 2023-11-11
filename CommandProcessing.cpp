@@ -1,14 +1,25 @@
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
+
+#include "CommandProcessing.h"
+
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <fstream>
-#include "CommandProcessing.h"
+
+#include "GameEngine.h"
+#include "Orders.h"
 
 /**
  * Commands available to the command processor
@@ -34,7 +45,7 @@ std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands =
  * Constructor
  */
 CommandProcessor::CommandProcessor() {
-    commands_ = new std::vector<ICommand *>();
+    commands_ = new std::vector<Command *>();
 }
 
 /**
@@ -43,14 +54,14 @@ CommandProcessor::CommandProcessor() {
  */
 CommandProcessor::CommandProcessor(const CommandProcessor &commandProcessor) :
     Subject(commandProcessor) {
-    commands_ = new std::vector<ICommand *>(*commandProcessor.commands_);
+    commands_ = new std::vector(*commandProcessor.commands_);
 }
 
 /**
  * Destructor
  */
 CommandProcessor::~CommandProcessor() {
-    for (auto c : *commands_)
+    for (const auto c : *commands_)
     {
         delete c;
     }
@@ -68,13 +79,13 @@ CommandProcessor &CommandProcessor::operator=(const CommandProcessor &commandPro
     {
         // This is used in case we are re-assigning to ourselves i.e. f = f;
         // We need to clean up the current pointers because destructor won't be called.
-        for (auto c : *commands_)
+        for (const auto c : *commands_)
         {
             delete c;
         }
         commands_->clear();
         delete commands_;
-        commands_ = new std::vector<ICommand *>(*commandProcessor.commands_);
+        commands_ = new std::vector(*commandProcessor.commands_);
     }
 
     return *this;
@@ -85,8 +96,8 @@ CommandProcessor &CommandProcessor::operator=(const CommandProcessor &commandPro
  * @param gameEngine
  * @return the command
  */
-ICommand &CommandProcessor::readCommand(GameEngine &gameEngine) {
-    ICommand *c = nullptr;
+Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
+    Command *c = nullptr;
     // read the first element to determine what the name of the is;
     while (!c) {
         std::cout << "Enter command" << std::endl;
@@ -103,10 +114,10 @@ ICommand &CommandProcessor::readCommand(GameEngine &gameEngine) {
     return *c;
 }
 
-ICommand *
+Command *
 CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter) {
-    ICommand *c;
-    std::transform(commandStr.begin(), commandStr.end(), commandStr.begin(), tolower);
+    Command *c = nullptr;
+    std::ranges::transform(commandStr, commandStr.begin(), tolower);
     if (commandStr == commands->at(CommandType::loadmap)) {
         c = new LoadMapCommand{gameEngine, parameter};
     }
@@ -134,10 +145,23 @@ CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr,
  * @param gameEngine
  * @return
  */
-ICommand &CommandProcessor::getCommand(GameEngine &gameEngine) {
-    ICommand *c = &readCommand(gameEngine);
+Command &CommandProcessor::getCommand(GameEngine &gameEngine) {
+    Command *c = &readCommand(gameEngine);
     saveCommand(*c);
     return *c;
+}
+
+/**
+ * Gets a command
+ * @param gameEngine
+ * @return
+ */
+Order &CommandProcessor::getOrder(GameEngine &gameEngine) {
+    Order *o = nullptr;
+
+    //    Command *c = &readCommand(gameEngine);
+//    saveCommand(*c);
+    return *o;
 }
 
 /**
@@ -153,7 +177,7 @@ bool CommandProcessor::validate(Command &command) const {
  * Saves a command to the command list
  * @param command
  */
-void CommandProcessor::saveCommand(ICommand &command) {
+void CommandProcessor::saveCommand(Command &command) {
     commands_->push_back(&command);
     Notify(*this);
 }
@@ -179,11 +203,10 @@ FileCommandProcessorAdapter::~FileCommandProcessorAdapter() {
     delete fileLineReader_;
 }
 
-ICommand &FileCommandProcessorAdapter::readCommand(GameEngine &gameEngine) {
-    ICommand *c = nullptr;
+Command &FileCommandProcessorAdapter::readCommand(GameEngine &gameEngine) {
+    Command *c = nullptr;
 
-    std::string line;
-    if (fileLineReader_->readLineFromFile(line)) {
+    if (std::string line; fileLineReader_->readLineFromFile(line)) {
         std::stringstream s{line};
 
         std::string commandStr;
@@ -206,6 +229,6 @@ FileLineReader::~FileLineReader() {
     delete in_;
 }
 
-bool FileLineReader::readLineFromFile(std::string &line) {
-    return (bool)getline(*in_, line);
+bool FileLineReader::readLineFromFile(std::string &line) const {
+    return static_cast<bool>(getline(*in_, line));
 }

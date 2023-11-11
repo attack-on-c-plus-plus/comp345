@@ -1,14 +1,23 @@
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
+
 #include <iostream>
 #include <random>
+
 #include "../Cards.h"
 #include "../CommandProcessing.h"
+#include "../GameEngine.h"
+#include "../Map.h"
 #include "../Player.h"
-
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
 
 size_t randomInt(size_t min, size_t max);
 

@@ -1,14 +1,23 @@
-#include <iostream>
-#include "Drivers.h"
-#include "../Orders.h"
-#include "../CommandProcessing.h"
-#include "../Player.h"
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+#include <iostream>
+
+#include "Drivers.h"
+#include "../CommandProcessing.h"
+#include "../GameEngine.h"
+#include "../Map.h"
+#include "../Orders.h"
+#include "../Player.h"
 
 void createMap(Map &map);
 

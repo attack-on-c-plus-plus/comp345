@@ -1,15 +1,24 @@
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
 #include <iostream>
+
 #include "Drivers.h"
+#include "../Cards.h"
+#include "../CommandProcessing.h"
+#include "../GameEngine.h"
+#include "../Map.h"
+#include "../Orders.h"
 #include "../Player.h"
-
-using namespace std;
-
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
 
 void createMap(Map &map);
 
@@ -107,17 +116,17 @@ void testPlayer() {
 
 //------------------------------------------------------------------------------------------------------
 
-    // OrderList + Player Relation Testing : "Player contains a issueOrder() method that creates an order object and adds it to the list of orders."
+    // OrderList + Player Relation Testing : "Player contains a issueOrders() method that creates an order object and adds it to the list of orders."
     std::cout << "\nDisplaying OrderList + Player Relation\n";
     std::cout << "**************************************\n";
 
     // Issue some orders
-    player1.issueOrder();
-    player1.issueOrder();
-    player1.issueOrder();
-    player1.issueOrder();
-    player1.issueOrder();
-    player1.issueOrder();
+    player1.issueOrders();
+    player1.issueOrders();
+    player1.issueOrders();
+    player1.issueOrders();
+    player1.issueOrders();
+    player1.issueOrders();
 
     // Check the orders that were given
     std::cout << "\n\tOrders executed: Player Name is " << player1.getName() << std::endl;

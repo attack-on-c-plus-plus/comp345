@@ -1,15 +1,23 @@
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
 #include <iostream>
 #include <type_traits>
-#include "../LoggingObserver.h"
-#include "../Orders.h"
-#include "../GameEngine.h"
+
 #include "../CommandProcessing.h"
+#include "../GameEngine.h"
+#include "../LoggingObserver.h"
+#include "../Map.h"
+#include "../Orders.h"
 #include "../Player.h"
 
 void createMap(Map &map);
@@ -115,7 +123,7 @@ void testLoggingObserver() {
     engine.transition(GameState::start);
 
     commandProcessor.attach(logObserver);
-    ICommand *command = &commandProcessor.getCommand(engine);
+    Command *command = &commandProcessor.getCommand(engine);
     command->attach(logObserver);
     command->execute();
 }
