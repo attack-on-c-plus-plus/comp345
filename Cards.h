@@ -1,28 +1,31 @@
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
+
+
 #ifndef COMP345_CARDS_H
 #define COMP345_CARDS_H
 
-#include <string>
-#include <vector>
 #include <memory>
-#include "Player.h"
-#include "GameEngine.h"
-
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+#include <vector>
 
 /**
  * Cards.h includes groups of classes that implements a deck and a hand of Warzone cards.
  */
 
-class Card;
-class Deck;
-class Hand;
 class Player;
 class Territory;
 class GameEngine;
+class BombOrder;
+class Hand;
 
 enum class CardType {
     bomb,
@@ -60,10 +63,10 @@ public:
     explicit Deck(const std::vector<Card> &cardDeck);
     Deck(const Deck&);
     ~Deck();
-    Deck &add(CardType card);
+    Deck &add(CardType cardType);
     Deck &remove(const Card &card);
-    Deck &draw(Hand &hand);
-    Deck &discard(const Card &card, Hand& fromHand);
+    Deck &draw(const Hand &hand);
+    Deck &discard(const Card &card, const Hand& fromHand);
     [[nodiscard]] bool empty() const;
     [[nodiscard]] size_t size() const;
     [[nodiscard]] const std::vector<const Card*> &cards() const;
@@ -93,8 +96,8 @@ public:
     Hand &operator=(const Hand&);
 private:
     std::vector<const Card*> *cards_;
-    friend Deck &Deck::draw(Hand &hand);
-    friend Deck &Deck::discard(const Card &card, Hand& fromHand);
+    friend Deck &Deck::draw(const Hand &hand);
+    friend Deck &Deck::discard(const Card &card, const Hand& fromHand);
     friend std::ostream &operator<<(std::ostream &os, const Hand &hand);
 };
 

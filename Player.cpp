@@ -1,95 +1,109 @@
-#include <iostream>
-#include <string>
-#include <vector>
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
+
 #include "Player.h"
 
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+#include <algorithm>
+#include <string>
+#include <vector>
 
-//Parameterized Constructor
-Player::Player(const std::string &name)
-        : name{new std::string(name)}, ordersList{new OrdersList()}, territories{new std::vector<Territory *>},
-          hand{new Hand()}, reinforcementPool{new int(50)}, cantTarget{new std::vector<Player *>} {}
+#include "Cards.h"
+#include "CommandProcessing.h"
+#include "GameEngine.h"
+#include "Map.h"
+#include "Orders.h"
 
-//Copy Constructor
-Player::Player(const Player &other)
-        : name{new std::string(*(other.name))},
-          ordersList{other.ordersList}, territories{new std::vector<Territory *>(*other.territories)},
-          reinforcementPool{new int(*other.reinforcementPool)}, cantTarget{new std::vector<Player *>(*other.cantTarget)} {}
-
-//Destructor
-Player::~Player() {
-    delete name;
-    delete ordersList;
-    delete hand;
-    delete territories;
-    delete reinforcementPool;
-    delete cantTarget;
+/**
+ * Parameterized Constructor
+ */
+Player::Player(GameEngine &gameEngine, const std::string &name) :
+    name_{new std::string(name)}, ordersList_{new OrdersList()}, territories_{new std::vector<Territory *>},
+    hand_{new Hand()}, reinforcementPool_{new unsigned(50)}, cantTarget_{new std::vector<Player *>},
+    deployComplete_{new bool(false)}, ordersComplete_{new bool(false)}, commandProcessor_{new CommandProcessor()}
+{
+    gameEngine_ = &gameEngine;
 }
 
-std::string &Player::getName() const {
-    return *name;
+/**
+ * Copy Constructor
+ */
+Player::Player(const Player &player) : name_{new std::string(*player.name_)}, ordersList_{player.ordersList_},
+    territories_{new std::vector(*player.territories_)}, reinforcementPool_{new unsigned(*player.reinforcementPool_)},
+    cantTarget_{new std::vector(*player.cantTarget_)}, hand_{new Hand(*player.hand_)},
+    deployComplete_{new bool(*player.deployComplete_)}, ordersComplete_{new bool(*player.ordersComplete_)},
+    commandProcessor_{new CommandProcessor()}
+{
+    gameEngine_ = player.gameEngine_;
+}
+
+/**
+ * Destructor
+ */
+Player::~Player() {
+    delete name_;
+    delete ordersList_;
+    delete hand_;
+    delete territories_;
+    delete reinforcementPool_;
+    delete cantTarget_;
+    delete deployComplete_;
+    delete ordersComplete_;
+    delete commandProcessor_;
+}
+
+std::string Player::getName() const {
+    return *name_;
 }
 
 void Player::changeName(const std::string &newName) {
-    name = new std::string(newName);
-}
-
-/**
- * Gives the number of armies in the reinforcement pool
- */
-int Player::getReinforcmentNumber() const
-{
-    return *reinforcementPool;
-}
-/**
- * Adds reinforcements to the pool
- */
-void Player::addReinforcements(int armies)
-{
-    *reinforcementPool = *reinforcementPool + armies;
+    name_ = new std::string(newName);
 }
 
 // Add a method to add a territory to the player's collection
-void Player::addTerritory(Territory &territory) {
-    territories->push_back(&territory);
+void Player::add(Territory &territory) const {
+    territories_->push_back(&territory);
     territory.owner(*this);
 }
 
 const std::vector<Territory *> &Player::getTerritories() const {
-    return *territories;
+    return *territories_;
 }
 
 const std::vector<Player *> &Player::getCantAttack() const
 {
-    return *cantTarget;
+    return *cantTarget_;
 }
 
-void Player::removeNegotiators()
-{
-    cantTarget->clear();
+void Player::removeNegotiators() const {
+    cantTarget_->clear();
 }
 
 void Player::addNegotiator(Player negotiator) const
 {
-    cantTarget->push_back(&negotiator);
+    cantTarget_->push_back(&negotiator);
 }
 
-std::vector<const Territory *> Player::toDefend(const Map &map) const {
+std::vector<const Territory *> Player::toDefend() const {
     std::vector<const Territory *> territoriesToDefend;
 
     // Iterate through the player's territories
-    for (auto territory: *territories) {
+    for (const auto territory: *territories_) {
         // Get the adjacent territories of the current territory
-        auto adjacentTerritories = map.adjacencies(*territory);
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
 
         // Check if any adjacent territory is not owned by the player
         bool needsDefense = false;
-        for (auto adjacentTerritory: adjacentTerritories) {
-            if (adjacentTerritory->owner().name != this->name) {
+        for (const auto adjacentTerritory: adjacentTerritories) {
+            if (adjacentTerritory->owner().name_ != this->name_) {
                 needsDefense = true;
                 break; // At least one adjacent territory is not owned by the player
             }
@@ -105,24 +119,20 @@ std::vector<const Territory *> Player::toDefend(const Map &map) const {
 }
 
 
-std::vector<const Territory *> Player::toAttack(const Map &map) const
+std::vector<const Territory *> Player::toAttack() const
 {
     std::vector<const Territory*> territoriesToAttack;
 
     // Iterate through the player's territories
-    for (auto myTerritory: *territories) {
-        // Get the adjacent territories of the current territory
-        auto adjacentTerritories = map.adjacencies(*myTerritory);
-
+    for (const auto myTerritory: *territories_) {
         // Check if adjacent territories are owned by other players
-        for (auto adjacentTerritory: adjacentTerritories) {
-            if (&(adjacentTerritory->owner()) != this) {
-
+        for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory: territories) {
+            if (&territory->owner() != this) {
                 // Check that owner is not on cantAttack list because of negotiate order
                 bool canAttack = true;
-                for (auto player : *cantTarget)
+                for (const auto player : *cantTarget_)
                 {
-                    if (&(adjacentTerritory->owner()) == &(*player))
+                    if (&territory->owner() == &*player)
                     {
                         canAttack = false;
                         break;
@@ -131,8 +141,8 @@ std::vector<const Territory *> Player::toAttack(const Map &map) const
 
                 // Check if adjacentTerritory is not already in territoriesToAttack
                 bool isUnique = true;
-                for (auto attackTerritory : territoriesToAttack) {
-                    if (attackTerritory->name() == adjacentTerritory->name()) {
+                for (const auto attackTerritory : territoriesToAttack) {
+                    if (attackTerritory->name() == territory->name()) {
                         isUnique = false;
                         break;
                     }
@@ -140,55 +150,133 @@ std::vector<const Territory *> Player::toAttack(const Map &map) const
                 // If it's unique, add it to the list of territories to attack
                 if (isUnique && canAttack)
                 {
-                    territoriesToAttack.push_back(adjacentTerritory);
+                    territoriesToAttack.push_back(territory);
                 }
             }
         }
     }
-
     return territoriesToAttack;
 }
 
 
-void Player::issueOrder(const std::string &orderType, Territory &source, Territory &target, unsigned armies, const Player &otherPlayer, GameEngine &gameEngine)
-{
-    if (orderType == "Deploy") {
-        // Create a DeployOrder object
-        ordersList->addOrder(DeployOrder{*this, target, armies, gameEngine});
-    } else if (orderType == "Advance") {
-        // Create an AdvanceOrder object
-        ordersList->addOrder(AdvanceOrder{*this, source, target, armies, gameEngine});
-    } else if (orderType == "Bomb") {
-        // Create a BombOrder object
-        ordersList->addOrder(BombOrder{*this, target, gameEngine});
-    } else if (orderType == "Blockade") {
-        // Create a BlockadeOrder object
-        ordersList->addOrder(BlockadeOrder{*this, target, gameEngine});
-    } else if (orderType == "Airlift") {
-        // Create an AirliftOrder object
-        ordersList->addOrder(AirliftOrder{*this, source, target, armies, gameEngine});
-    } else if (orderType == "Negotiate") {
-        // Create a NegotiateOrder object with the target player ID
-        ordersList->addOrder(NegotiateOrder{*this, otherPlayer, gameEngine});
-    } else {
-        return;
+bool Player::isDeploying() const {
+    return gameEngine_->state() == GameState::assignReinforcements && !*deployComplete_;
+}
+
+bool Player::isIssuingOrders() const {
+    return gameEngine_->state() == GameState::issueOrders && !*ordersComplete_;
+}
+
+/**
+ * \brief Issues multiple orders
+ */
+void Player::issueOrders() {
+    // list available orders
+
+    if (!commandProcessor_) return;
+
+    // get the command from the command line
+    while (isDeploying() || isIssuingOrders()) {
+        issueOrder();
     }
 }
 
-void Player::drawCardFromDeck(Deck &deck) {
-    deck.draw(*hand);
+/**
+ * \brief Issues one order
+ */
+void Player::issueOrder() {
+    if (!(isDeploying() || isIssuingOrders())) return;
+
+    if (Order *order = commandProcessor_->getOrder(*gameEngine_, *this)) {
+        orderList().addOrder(*order);
+        return;
+    }
+    if (gameEngine_->state() == GameState::assignReinforcements) { *deployComplete_ = true; *ordersComplete_ = false; }
+    if (gameEngine_->state() == GameState::issueOrders) { *deployComplete_ = false; *ordersComplete_ = true; }
 }
 
-void Player::playCardFromHand(const Card &card, Deck &deck, GameEngine &engine, Territory &target) {
+void Player::draw() const {
+    gameEngine_->getDeck().draw(*hand_);
+}
+
+void Player::play(const Card &card, Territory &target) {
     // Implement logic to play the card
     // Right now, I'll create a custom territory class
-    deck.discard(card.play(*this, target, engine), *hand);
+    gameEngine_->getDeck().discard(card.play(*this, target, *gameEngine_), *hand_);
 }
 const Hand &Player::getHand() const {
-    return *hand;
+    return *hand_;
 }
 
-OrdersList &Player::orderList()
-{
-    return *ordersList;
+const unsigned Player::reinforcementPool() const {
+    return *reinforcementPool_;
+}
+
+Player& Player::operator=(const Player& player) {
+    if (this != &player) {
+        // This is used in case we are re-assigning to ourselves i.e. f = f;
+        // We need to clean up the current pointers because destructor won't be called.
+        delete name_;
+        delete ordersList_;
+        delete hand_;
+        delete territories_;
+        delete reinforcementPool_;
+        delete cantTarget_;
+        delete deployComplete_;
+        delete ordersComplete_;
+        delete commandProcessor_;
+        name_ = new std::string(*player.name_);
+        ordersList_ = new OrdersList(*player.ordersList_),
+        territories_ = new std::vector(*player.territories_);
+        reinforcementPool_ = new unsigned(*player.reinforcementPool_);
+        cantTarget_ = new std::vector(*player.cantTarget_);
+        hand_ = new Hand(*player.hand_);
+        deployComplete_ = new bool(*player.deployComplete_);
+        ordersComplete_ = new bool(*player.ordersComplete_);
+        gameEngine_ = player.gameEngine_;
+        commandProcessor_ = player.commandProcessor_;
+    }
+    return *this;
+}
+
+OrdersList &Player::orderList() const {
+    return *ordersList_;
+}
+
+void Player::fillReinforcementPool() const {
+    *reinforcementPool_ += territoryBonusArmies() + continentBonusArmies();
+}
+
+void Player::deploy(const unsigned armies) const {
+    if (armies > *reinforcementPool_)
+        throw std::out_of_range("armies cannot be larger than pool of reinforcements");
+    *reinforcementPool_ -= armies;
+
+}
+
+unsigned int Player::territoryBonusArmies() const {
+    return territories_->size() >= 9 ? territories_->size() / 3 : 3;
+}
+
+unsigned int Player::continentBonusArmies() const {
+    unsigned armies = 0;
+    const Map &map = gameEngine_->map();
+    const auto p = *this;
+    auto ownedBy = [p](const Territory *t) { return t->owner() == p; };
+    for (const auto continent : map.continents()) {
+        if (auto adj = map.adjacencies(*continent); adj.size() == std::ranges::count_if(adj, ownedBy))
+            armies += continent->bonusArmies();
+    }
+    return armies;
+}
+
+bool Player::operator==(const Player &player) const {
+    if (this == &player || *name_ == player.getName())
+        return true;
+    return false;
+}
+
+std::ostream& operator<<(std::ostream& os, const Player& player) {
+    os << *player.name_;
+    return os;
 }

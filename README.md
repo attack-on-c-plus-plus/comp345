@@ -1,6 +1,6 @@
-# COMP 345 - Section N - Fall 2023
+# COMP 345 - Section N - Fall 2023 - Prof. Hakim Mellah
 
-## Team
+## Team 5 Attack on C++
 
 - Daniel Soldera
 - Carson Senthilkumar
@@ -40,16 +40,16 @@ Thank you.
 
 **Due date:**
 
-[Assignment 1 Readme](Assignment1.md)
+[Assignment 1 Readme](docs/Assignment1.md)
 
 # Assignment 2
 
 **Due date:**
 
-[Assignment 2 Readme](Assignment2.md)
+[Assignment 2 Readme](docs/Assignment2.md)
 
 # Assignment 3
 
 **Due date:**
 
-[Assignment 3 Readme](Assignment2.md)
+[Assignment 3 Readme](docs/Assignment2.md)

@@ -1,21 +1,41 @@
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
 #ifndef COMP345_COMMANDPROCESSING_H
 #define COMP345_COMMANDPROCESSING_H
 
 #include <map>
 #include <memory>
-#include "LoggingObserver.h"
-#include "GameEngine.h"
+#include <vector>
 
-class Command;
-enum class GameState;
-class GameEngine;
+#include "LoggingObserver.h"
+#include "Player.h"
+
+class Player;
+/**
+ * Forward declarations
+ */
 class FileLineReader;
+class ILoggable;
+class Subject;
+class Order;
+class Command;
+class GameEngine;
+class LoadMapCommand;
+class ValidateMapCommand;
+class AddPlayerCommand;
+class GameStartCommand;
+class ReplayCommand;
+class QuitCommand;
 
 /**
  * Command types that are available
@@ -29,6 +49,16 @@ enum class CommandType {
     quit
 };
 
+enum class OrderType {
+    deploy,
+    advance,
+    bomb,
+    blockade,
+    airlift,
+    negotiate,
+    end
+};
+
 /**
  * Processes Command from the console
  */
@@ -36,22 +66,26 @@ class CommandProcessor : public ILoggable, public Subject {
 public:
     CommandProcessor();
     CommandProcessor(const CommandProcessor& commandProcessor);
-    CommandProcessor &operator=(const CommandProcessor &gameEngine);
+    CommandProcessor &operator=(const CommandProcessor &commandProcessor);
     // Destructor
-    virtual ~CommandProcessor();
+    ~CommandProcessor() override;
     Command &getCommand(GameEngine &gameEngine);
+    Order *getOrder(GameEngine &gameEngine, Player &player);
     [[nodiscard]] bool validate(Command &command) const;
     [[nodiscard]] std::string stringToLog() const override;
     static std::unique_ptr<std::map<CommandType, std::string>> commands;
+    static std::unique_ptr<std::map<OrderType, std::string>> orders;
 protected:
     [[nodiscard]] virtual Command &readCommand(GameEngine &gameEngine);
+    [[nodiscard]] virtual Order *readOrder(GameEngine &gameEngine, Player &player);
     static Command *createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter);
+    static Order *createOrder(GameEngine &gameEngine, Player &player, const std::string &orderStr, std::istream &parameters);
 private:
     void saveCommand(Command &command);
     std::vector<Command *> *commands_;
 };
 
-class FileCommandProcessorAdapter : public CommandProcessor {
+class FileCommandProcessorAdapter final : public CommandProcessor {
 public:
     explicit FileCommandProcessorAdapter(const std::string &filename);
     // don't allow copying or assignment due to file manipulation
@@ -70,7 +104,7 @@ public:
     FileLineReader(const FileLineReader &fileLineReader) = delete;
     FileLineReader &operator=(const FileLineReader &fileLineReader) = delete;
     ~FileLineReader();
-    bool readLineFromFile(std::string &line);
+    bool readLineFromFile(std::string &line) const;
 private:
     std::ifstream *in_;
 };

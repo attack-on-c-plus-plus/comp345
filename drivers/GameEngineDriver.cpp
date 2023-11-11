@@ -1,11 +1,20 @@
-#include <iostream>
-#include "../GameEngine.h"
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+#include <iostream>
+
+#include "../CommandProcessing.h"
+#include "../GameEngine.h"
+#include "../Map.h"
 
 /**
  * This is the method used to test the game engine state transitions, it takes a string
@@ -14,22 +23,20 @@
  */
 void testGameStates() {
     std::cout << "Testing game state setup and transitions..." << std::endl;
-    auto *processor = new CommandProcessor();
-    GameEngine engine = GameEngine(GameState::start, *processor);
+    CommandProcessor processor;
+    GameEngine engine = GameEngine(processor);
     engine.gameLoop();
-    delete processor;
 }
 
 void testGameStartup() {
     std::cout << "Testing game startup: console mode" << std::endl;
-    auto *processor = new CommandProcessor();
-    GameEngine engine{GameState::start, *processor};
+    CommandProcessor commandProcessor;
+    GameEngine engine = GameEngine(commandProcessor);
     engine.startup();
-    delete processor;
 
     std::cout << "Testing game startup: file mode" << std::endl;
-    processor = new FileCommandProcessorAdapter("res/gameStartup.txt");
-    engine = GameEngine(GameState::start, *processor);
+    FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
+    engine = GameEngine(fileCommandProcessorAdapter);
     engine.startup();
     // force win condition
     engine.transition(GameState::win);
@@ -40,6 +47,20 @@ void testGameStartup() {
     // force win condition
     engine.transition(GameState::win);
     engine.gameOverPhase();
+}
 
-    delete processor;
+void testReinforcementPhase() {
+    FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
+    GameEngine engine{fileCommandProcessorAdapter};
+    engine.startup();
+
+    for (auto t : engine.map().territories()) {
+        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
+    }
+
+    engine.reinforcementPhase();
+
+    for (auto t : engine.map().territories()) {
+        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
+    }
 }

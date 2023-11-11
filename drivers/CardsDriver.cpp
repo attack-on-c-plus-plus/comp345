@@ -1,19 +1,27 @@
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
+
 #include <iostream>
-#include <random>
+
 #include "../Cards.h"
-
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
-
-size_t randomInt(size_t min, size_t max);
+#include "../CommandProcessing.h"
+#include "../GameEngine.h"
+#include "../Map.h"
+#include "../Player.h"
 
 void testCards() {
     auto *processor = new CommandProcessor();
-    GameEngine engine{GameState::start, *processor};
-    Player player{"Bob"};
+    GameEngine engine{*processor};
+    Player player{engine, "Bob"};
     Territory territory{};
     std::cout << "Testing the implementation of Cards" << std::endl;
     std::cout << "===================================" << std::endl;
@@ -63,8 +71,8 @@ void testCards() {
     // Revised solution
     while (!playerHand.empty()) {
         std::cout << playerHand << std::flush;
-        auto hs = playerHand.size();
-        auto random = randomInt(0, hs);
+        Random rnd;
+        const auto random = rnd.generate(0, playerHand.size() - 1);
 
         auto cardSelected = playerHand.card(random);
         std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
@@ -81,11 +89,4 @@ void testCards() {
     std::cout << gameDeck << std::endl;
 
     delete processor;
-}
-
-size_t randomInt(size_t min, size_t max) {
-    std::random_device r;
-    std::uniform_int_distribution<size_t> u(0, max - 1);
-    std::default_random_engine e(r());
-    return u(e);
 }

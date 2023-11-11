@@ -1,8 +1,15 @@
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
+
 #include <iostream>
 
 #include "drivers/Drivers.h"
@@ -21,6 +28,8 @@ int main() {
     testLoggingObserver();
 
     testGameStartup();
+
+    testReinforcementPhase();
 
     return 0;
 }

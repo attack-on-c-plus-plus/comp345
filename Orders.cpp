@@ -1,28 +1,36 @@
-// Orders.cpp
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
 #include "Orders.h"
-#include "Cards.h"
-#include <iostream>
+
 #include <algorithm>
+#include <iostream>
 #include <sstream>
-#include <random>
 #include <vector>
-using namespace std;
 
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
-
+#include "Cards.h"
+#include "GameEngine.h"
+#include "Map.h"
+#include "Player.h"
 
 // Implementation Order class
 
 /**
  * Constructor
+ * @param gameEngine
  * @param description
+ * @param player
  */
-Order::Order(const Player &player, const std::string &description, GameEngine &gameEngine) {
+Order::Order(GameEngine &gameEngine, const std::string &description, Player &player) {
     player_ = &player;
     description_ = new std::string(description);
     effect_ = new std::string();
@@ -31,17 +39,17 @@ Order::Order(const Player &player, const std::string &description, GameEngine &g
 
 /**
  * Copy constructor
- * @param other
+ * @param order
  */
-Order::Order(const Order& other) :
-    Subject(other),
-    description_(new std::string(*(other.description_))),
-    effect_(new std::string(*(other.effect_))) {
-    player_ = other.player_;
-    gameEngine_ = other.gameEngine_;
+Order::Order(const Order& order) :
+    Subject(order),
+    description_(new std::string(*order.description_)),
+    effect_(new std::string(*order.effect_)) {
+    player_ = order.player_;
+    gameEngine_ = order.gameEngine_;
 }
 
-/**
+/**Random
  * Destructor
  */
 Order::~Order() {
@@ -59,14 +67,6 @@ void Order::execute() {
  */
 const std::string &Order::description() const  {
     return *description_;
-}
-
-/**
- * Gets the orders affect
- * @return
- */
-const std::string &Order::effect() const {
-    return *effect_;
 }
 
 /**
@@ -111,10 +111,13 @@ std::ostream &Order::printTo(std::ostream &os) const {
 // Implementation DeployOrder class
 /**
  * Constructor
+ * @param gameEngine
+ * @param player
+ * @param target
  * @param armies
  */
-DeployOrder::DeployOrder(const Player &player, Territory &target, unsigned armies, GameEngine &gameEngine) :
-    Order(player, "Deploy", gameEngine),
+DeployOrder::DeployOrder(GameEngine &gameEngine, Player &player, Territory &target, const unsigned armies) :
+        Order(gameEngine, "Deploy", player),
     armies_{new unsigned (armies)} {
     target_ = &target;
 }
@@ -139,17 +142,15 @@ DeployOrder::~DeployOrder() {
  * Validates the DeployOrder
  * @return true if valid; false otherwise
  */
-bool DeployOrder::validate() const {
+bool DeployOrder::validate() {
 
-    if (*armies_ > 0) {
+    if (*armies_ > 0 && *armies_ <= player_->reinforcementPool()) {
 
         if (target_->owner().getName() == player_->getName()) {
             *effect_ = "Succesfully deployed armies to target territory!";
             return true;
-        } 
-        else {
-            *effect_ = "Failed to execute DeployOrder: Target territory is not owned by the player.";
         }
+        *effect_ = "Failed to execute DeployOrder: Target territory is not owned by the player.";
     } 
     else {
         *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
@@ -164,7 +165,9 @@ bool DeployOrder::validate() const {
 void DeployOrder::execute() {
     if (validate()) {
         target_->addArmies(*armies_);
-        *effect_ = "Deployed " + std::to_string(*armies_) + " armies on " + (target_->name()) + "!";
+        player_->deploy(*armies_);
+        *effect_ = "Deployed " + std::to_string(*armies_) + " armies on " + target_->name() + "!";
+
     }
     Order::execute();
 }
@@ -183,14 +186,6 @@ DeployOrder &DeployOrder::operator=(const DeployOrder &order) {
     return *this;
 }
 
-/**
- * Clones the DeployOrder
- * @return
- */
-DeployOrder *DeployOrder::clone() const {
-    return new DeployOrder(*this);
-}
-
 std::ostream &DeployOrder::printTo(std::ostream &os) const {
     return Order::printTo(os) << std::to_string(*armies_) << " armies to " << target_->name();
 }
@@ -198,13 +193,15 @@ std::ostream &DeployOrder::printTo(std::ostream &os) const {
 // Implementation AdvanceOrder class
 /**
  * Constructor
+ * @param gameEngine
+ * @param player
  * @param source
  * @param target
  * @param armies
  */
-AdvanceOrder::AdvanceOrder(const Player &player, Territory &source, Territory &target, unsigned armies,
-                           GameEngine &gameEngine) :
-    Order(player, "Advance", gameEngine),
+AdvanceOrder::AdvanceOrder(GameEngine &gameEngine, Player &player, Territory &source, Territory &target,
+                           const unsigned armies) :
+        Order(gameEngine, "Advance", player),
     armies_{new unsigned(armies)} {
     source_ = &source;
     target_ = &target;
@@ -232,7 +229,7 @@ AdvanceOrder::~AdvanceOrder() {
  * Validates the AdvanceOrder
  * @return true if valid; false otherwise
  */
-bool AdvanceOrder::validate() const {
+bool AdvanceOrder::validate() {
 
     // Check if the number of armies to advance is non-negative
     if(*armies_ < 0){
@@ -246,33 +243,26 @@ bool AdvanceOrder::validate() const {
         return false;
     }
     // Get the player's adjacent territories
-    auto * playerTerritories = new std::vector<Territory*>(player_->getTerritories());
-
-    Map map = gameEngine_->map();
+    const auto playerTerritories = player_->getTerritories();
 
     // If target territory is not adjacent to the territory owned by the player
     // issuing the order, order is invalid
     bool isValid = false;
-    for (Territory *territory : *playerTerritories) {
-        auto * adjacentTerritories = new std::vector<const Territory*> (map.adjacencies(*territory));
-        if(std::find(adjacentTerritories->begin(), adjacentTerritories->end(), target_) != adjacentTerritories->end()) {
+    for (const auto territory : playerTerritories) {
+        if(auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+            std::ranges::find(adjacentTerritories, target_) != adjacentTerritories.end()) {
             isValid = true;
-            delete adjacentTerritories;
             break;
         }
-        delete adjacentTerritories;
     }
 
-    delete playerTerritories;
     if(isValid){
-        *effect_ = (player_->getName()) + "Successfully played AdvanceOrder!";
+        const auto name = player_->getName();
+        *effect_ = name + "Successfully played AdvanceOrder!";
         return true;
     }
-    else{
-        *effect_ = "Failed to execute AdvanceOrder: target territory must be adjacent to the territory owned by the player issuing the order";
-        return false;
-    }
-    
+    *effect_ = "Failed to execute AdvanceOrder: target territory must be adjacent to the territory owned by the player issuing the order";
+    return false;
 }
     
     
@@ -294,60 +284,50 @@ void AdvanceOrder::execute() {
         //if player issuing order owns source territory but doesn't own target territory
         //ATTACK
         if(source_->owner().getName() != target_->owner().getName()){
-            int remainingAttackers = *armies_; // used of attackers win
-            std::default_random_engine generator;
-            std::uniform_int_distribution<int> distribution(1, 100);
+            unsigned remainingAttackers = *armies_; // used of attackers win
+            Random random;
             std::cout << " --> Initiating attack!" << std::endl;
 
-            // initiating attack: loops through number of armies for each territory.
-            // each army has a probability to kill off the other, the first territory that reaches zero armies left loses.
-            int result1{}, result2{};
             while (target_->armyCount() > 0 && *armies_ > 0) {
-                  int targetArmies = target_->armyCount();
-                 // Each attacking army unit involved has 60% chances of killing one defending army
-                 for (int i = 0; i < *armies_; i++) {
-                     result1 = distribution(generator);
-                     if (result1 <= 60) {
-                     target_->removeArmies(1);
-                     }
+                const unsigned targetArmies = target_->armyCount();
+                // Each attacking army unit involved has 60% chances of killing one defending army
+                for (int i = 0; i < *armies_; i++) {
+                    if (const int result1 = random.generate(1,100); result1 <= 60) {
+                        target_->removeArmies(1);
                     }
-                  // Each defending army unit has 70% chances of killing one attacking army unit
-                 for (int i = 0; i < targetArmies; i++) {
-                     result2 = distribution(generator);
-                     if (result2 <= 70){
+                }
+                // Each defending army unit has 70% chances of killing one attacking army unit
+                for (int i = 0; i < targetArmies; i++) {
+                    if (const int result2 = random.generate(1,100); result2 <= 70) {
                         *armies_ -= 1;
                         remainingAttackers--;
-                     } 
-                 }
-             }
-
-
-             //Attackers won
-             if(target_->armyCount() == 0){
+                    }
+                }
+            }
+            //Attackers won
+            if(target_->armyCount() == 0) {
                 //Player issuing Attack claims target territory
                 target_->owner(*player_);
                 //The attacking army units that survived the battle then occupy the conquered territory.
                 target_->addArmies(remainingAttackers);
                 //A player receives a card at the end of his turn if they successfully conquered at least one territory during their turn
-                Player(*player_).drawCardFromDeck(gameEngine_->getDeck());
+                player_->draw();
 
                 std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
-             }
-             //Defenders won
-             else{
+            }
+            //Defenders won
+            else {
                 //remove armies sent from source territory
                 source_->removeArmies(*armies_);
                 std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
-             }
-
-        }
-            //Update the effect string to describe the action
-            *effect_ = player_->getName() + "succesfully Advanced " + std::to_string(*armies_) + " armies from territory "
-                    + source_->name() + " to territory " + target_->name() + ".";
+            }
         }
 
+        //Update the effect string to describe the action
+        *effect_ = player_->getName() + "succesfully Advanced " + std::to_string(*armies_) + " armies from territory "
+        + source_->name() + " to territory " + target_->name() + ".";
+    }
     Order::execute();
-     
 }
     
 /**
@@ -367,14 +347,6 @@ AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order) {
     return *this;
 }
 
-/**
- * Clones the AdvanceOrder
- * @return
- */
-AdvanceOrder *AdvanceOrder::clone() const {
-    return new AdvanceOrder(*this);
-}
-
 std::ostream &AdvanceOrder::printTo(std::ostream &os) const {
     return Order::printTo(os) << std::to_string(*armies_) << " armies from "
         << source_->name() << " to " << target_->name();
@@ -385,8 +357,8 @@ std::ostream &AdvanceOrder::printTo(std::ostream &os) const {
  * Constructor
  * @param targetTerritory
  */
-BombOrder::BombOrder(const Player &player, Territory &target, GameEngine &gameEngine) :
-    Order(player, "Bomb", gameEngine) {
+BombOrder::BombOrder(GameEngine &gameEngine, Player &player, Territory &target) :
+        Order(gameEngine, "Bomb", player) {
     target_ = &target;
 }
 
@@ -406,10 +378,9 @@ BombOrder::~BombOrder() = default;
 
 /**
  * Validates the BombOrder
- * @param map
  * @return boolean
  */
-bool BombOrder::validate() const {
+bool BombOrder::validate() {
     bool isValid = false;
     // Pre-Condition Checks
 
@@ -418,23 +389,17 @@ bool BombOrder::validate() const {
         return isValid;
 
     // Get the player's adjacent territories
-    auto * playerTerritories = new std::vector<Territory*>(player_->getTerritories());
-
-    Map map = gameEngine_->map();
 
     // If target territory is not adjacent to the territory owned by the player
     // issuing the order, order is invalid
-    for (Territory *territory : *playerTerritories) {
-        auto * adjacentTerritories = new std::vector<const Territory*> (map.adjacencies(*territory));
-        if(std::find(adjacentTerritories->begin(), adjacentTerritories->end(), target_) != adjacentTerritories->end()) {
+    for (const auto playerTerritories = player_->getTerritories(); const auto territory : playerTerritories) {
+        if(auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+            std::ranges::find(adjacentTerritories, target_) != adjacentTerritories.end()) {
             isValid = true;
-            delete adjacentTerritories;
             break;
         }
-        delete adjacentTerritories;
     }
 
-    delete playerTerritories;
     return isValid;
 }
 
@@ -444,8 +409,8 @@ bool BombOrder::validate() const {
 void BombOrder::execute() {
     if (validate()) {
         // Remove armies from the target territory:
-        int armies_in_target = target_->armyCount();
-        int updated_armies_in_target = armies_in_target/2;
+        const unsigned armies_in_target = target_->armyCount();
+        const unsigned updated_armies_in_target = armies_in_target/2;
         //So now we want to reduce the number of armies in target territory by half i.e armies-armies/2 = armies/2
         target_->removeArmies(updated_armies_in_target);
 
@@ -468,14 +433,6 @@ BombOrder &BombOrder::operator=(const BombOrder &order) {
     return *this;
 }
 
-/**
- * Clones the BombOrder
- * @return
- */
-BombOrder *BombOrder::clone() const {
-    return new BombOrder(*this);
-}
-
 std::ostream &BombOrder::printTo(std::ostream &os) const {
     return Order::printTo(os) << target_->name();
 }
@@ -487,8 +444,8 @@ std::ostream &BombOrder::printTo(std::ostream &os) const {
  * Constructor
  * @param target
  */
-BlockadeOrder::BlockadeOrder(const Player &player, Territory &target, GameEngine &gameEngine) :
-    Order(player, "Blockade", gameEngine) {
+BlockadeOrder::BlockadeOrder(GameEngine &gameEngine, Player &player, Territory &target) :
+        Order(gameEngine, "Blockade", player) {
     target_ = &target;
 }
 
@@ -509,12 +466,11 @@ BlockadeOrder::~BlockadeOrder() = default;
  * Validates the BlockadeOrder
  * @return
  */
-bool BlockadeOrder::validate() const {
+bool BlockadeOrder::validate() {
     if (player_ == &target_->owner()) {
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 /**
@@ -524,14 +480,14 @@ void BlockadeOrder::execute() {
     if (validate()) {
 
         // Double armies from the target territory i.e x + x = x * 2:
-        unsigned int armies_in_target_territory = target_->armyCount();
+        const unsigned int armies_in_target_territory = target_->armyCount();
         target_->addArmies(armies_in_target_territory);
 
         // Update the effect string to describe the action
         *effect_ = "Blocked territory " + target_->name() + ".";
 
         bool neutralFound = false;
-        for (Player *player : gameEngine_->getPlayers()) {
+        for (const Player *player : gameEngine_->getPlayers()) {
             if (player->getName() == "Neutral") {
                 target_->owner(*player);
                 neutralFound = true;
@@ -539,7 +495,7 @@ void BlockadeOrder::execute() {
             }
         }
         if (!neutralFound) {
-            auto * player = new Player("Netural");
+            auto * player = new Player(*gameEngine_, "Neutral");
             gameEngine_->getPlayers().push_back(player);
         }
     }
@@ -559,18 +515,9 @@ BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order) {
     return *this;
 }
 
-/**
- * Clones the BlockadeOrder
- * @return
- */
-BlockadeOrder *BlockadeOrder::clone() const {
-    return new BlockadeOrder(*this);
-}
-
 std::ostream &BlockadeOrder::printTo(std::ostream &os) const {
     return Order::printTo(os) << target_->name();
 }
-
 
 // Implementation AirliftOrder
 /**
@@ -579,9 +526,9 @@ std::ostream &BlockadeOrder::printTo(std::ostream &os) const {
  * @param target
  * @param armies
  */
-AirliftOrder::AirliftOrder(const Player &player, Territory &source, Territory &target, unsigned armies,
-                           GameEngine &gameEngine) :
-    Order(player, "Airlift", gameEngine),
+AirliftOrder::AirliftOrder(GameEngine &gameEngine, Player &player, Territory &source, Territory &target,
+                           const unsigned armies) :
+        Order(gameEngine, "Airlift", player),
     armies_{new unsigned(armies)} {
     source_ = &source;
     target_ = &target;
@@ -609,7 +556,7 @@ AirliftOrder::~AirliftOrder() {
  * Validates the AirliftOrder
  * @return
  */
-bool AirliftOrder::validate() const {
+bool AirliftOrder::validate() {
     // Check if the player has enough armies in the source territory to airlift
     if (source_->armyCount() < *armies_) {
         *effect_ = "Failed to play AirliftOrder: not enough armies in the source territory to airlift...";
@@ -617,7 +564,7 @@ bool AirliftOrder::validate() const {
     }
 
     //If the source or target territory does not belong to the player that issued the order, the order is invalid
-    if ((source_->owner().getName() != target_->owner().getName()) && (player_->getName() != source_->owner().getName())) {
+    if (source_->owner().getName() != target_->owner().getName() && player_->getName() != source_->owner().getName()) {
         *effect_ = "Failed to play AirliftOrder: " + target_->name() + " doesn't own the source and target territories!";
         return false;
     }
@@ -663,14 +610,6 @@ AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order) {
     return *this;
 }
 
-/**
- * Clones the AirliftOrder
- * @return
- */
-AirliftOrder *AirliftOrder::clone() const {
-    return new AirliftOrder(*this);
-}
-
 std::ostream &AirliftOrder::printTo(std::ostream &os) const {
     return Order::printTo(os) << std::to_string(*armies_) + " armies from "
         << source_->name() << " to " << target_->name();
@@ -682,8 +621,8 @@ std::ostream &AirliftOrder::printTo(std::ostream &os) const {
  * @param player
  * @param otherPlayer
  */
-NegotiateOrder::NegotiateOrder(const Player &player, const Player &otherPlayer, GameEngine &gameEngine) :
-    Order(player,"Negotiation",gameEngine) {
+NegotiateOrder::NegotiateOrder(GameEngine &gameEngine, Player &player, Player &otherPlayer) :
+        Order(gameEngine, "Negotiation", player) {
     otherPlayer_ = &otherPlayer;
 }
 
@@ -704,16 +643,16 @@ NegotiateOrder::~NegotiateOrder() = default;
  * Validates the NegotiateOrder
  * @return
  */
-bool NegotiateOrder::validate() const {
+bool NegotiateOrder::validate() {
     if (player_ == otherPlayer_)
     {
         return false;
     }
 
-    std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
+    const std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
     // check if the target player exists:
     bool playerExists = /*!game_state.playerExists(target_player)*/ false;
-    for (Player *i : ourPlayers)
+    for (const Player *i : ourPlayers)
     {
         if (i == otherPlayer_)
         {
@@ -723,14 +662,8 @@ bool NegotiateOrder::validate() const {
 
     // check if player has a negotiate card ?
     if (playerExists) {
-        std::vector<const Card *> ourHand = player_->getHand().cards();
-        Card const card5{CardType::diplomacy};
-        for(Card const *card : ourHand)
-        {
-            if (*card == card5)
-            {
-                return true;
-            }
+        for (const std::vector<const Card *> ourHand = player_->getHand().cards(); auto *card: ourHand) {
+            if (card->type() == CardType::diplomacy) return true;
         }
         return false;
     }
@@ -764,14 +697,6 @@ NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order) {
     return *this;
 }
 
-/**
- * Clones the NegotiateOrder
- * @return
- */
-NegotiateOrder *NegotiateOrder::clone() const {
-    return new NegotiateOrder(*this);
-}
-
 std::ostream &NegotiateOrder::printTo(std::ostream &os) const {
     return Order::printTo(os) << "with " << otherPlayer_->getName();
 }
@@ -789,9 +714,9 @@ OrdersList::OrdersList() : orders_{new std::vector<Order*>{}} { }
 OrdersList::OrdersList(const OrdersList &ordersList) : Subject(ordersList) {
     orders_ = new std::vector<Order*>{};
     // create a deep copy
-    for (auto & order : *ordersList.orders_)
+    for (auto order : *ordersList.orders_)
     {
-        orders_->push_back(order->clone());
+        orders_->push_back(order);
     }
 }
 
@@ -799,7 +724,7 @@ OrdersList::OrdersList(const OrdersList &ordersList) : Subject(ordersList) {
  * Destructor
  */
 OrdersList::~OrdersList() {
-    for (auto o: *orders_) {
+    for (const auto o: *orders_) {
         delete o;
     }
     orders_->clear();
@@ -811,8 +736,8 @@ OrdersList::~OrdersList() {
  * @param order
  * @return
  */
-OrdersList& OrdersList::addOrder(const Order& order) {
-    orders_->push_back(order.clone()); // Store the pointer to the Order
+OrdersList& OrdersList::addOrder(Order& order) {
+    orders_->push_back(&order); // Store the pointer to the Order
     Notify(*this);
     return *this;
 }
@@ -822,7 +747,7 @@ OrdersList& OrdersList::addOrder(const Order& order) {
  * @param index
  * @return
  */
-OrdersList& OrdersList::remove(int index) {
+OrdersList& OrdersList::remove(const int index) {
     if (index >= 0 && index < orders_->size()) {
         delete (*orders_)[index]; // Delete the Order object
         orders_->erase(orders_->begin() + index); // Remove it from the vector
@@ -836,9 +761,9 @@ OrdersList& OrdersList::remove(int index) {
  * @param to index
  * @return
  */
-OrdersList& OrdersList::move(int from, int to) {
+OrdersList& OrdersList::move(const int from, const int to) {
     if (from >= 0 && from < orders_->size() && to >= 0 && to < orders_->size()) {
-        auto temp = (*orders_)[from];
+        const auto temp = (*orders_)[from];
         (*orders_)[from] = (*orders_)[to];
         (*orders_)[to] = temp;
     }
@@ -850,7 +775,7 @@ OrdersList& OrdersList::move(int from, int to) {
  * @return
  */
 OrdersList& OrdersList::executeOrders() {
-    for (auto &order : *orders_) {
+    for (const auto order : *orders_) {
         order->execute();
     }
     return *this;
@@ -871,15 +796,15 @@ const std::vector<Order*> &OrdersList::getOrder() const {
  */
 OrdersList &OrdersList::operator=(const OrdersList &ordersList) {
     if (this != &ordersList) {
-        for (auto o: *orders_) {
+        for (const auto o: *orders_) {
             delete o;
         }
         delete orders_;
         orders_ = new std::vector<Order*>{};
         // create a deep copy
-        for (auto & order : *ordersList.orders_)
+        for (auto order : *ordersList.orders_)
         {
-            orders_->push_back(order->clone());
+            orders_->push_back(order);
         }
 
     }
@@ -898,7 +823,7 @@ std::string OrdersList::stringToLog() const {
 
 std::ostream &operator<<(std::ostream &os, const OrdersList &ordersList) {
     os << "Orders [" << std::endl;
-    for (auto order : *ordersList.orders_) {
+    for (const auto order : *ordersList.orders_) {
         os << "\t" << *order << std::endl;
     }
     os << "]";

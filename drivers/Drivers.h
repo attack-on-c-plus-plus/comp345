@@ -1,11 +1,17 @@
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
+
 #ifndef COMP345_DRIVERS_H
 #define COMP345_DRIVERS_H
-
-// Daniel Soldera
-// Carson Senthilkumar
-// Joe El-Khoury
-// Henri Stephane Carbon
-// Haris Mahmood
 
 static const char *const mapsPathValid = "maps/valid";
 
@@ -28,7 +34,7 @@ void testPlayer();
 */
 //void testGameStates();
 void testGameStartup();
-
+void testReinforcementPhase();
 
 /*
  * Demonstrates that Decks, Hand, and Card work as expected
