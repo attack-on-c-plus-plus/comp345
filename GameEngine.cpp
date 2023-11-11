@@ -24,45 +24,12 @@
 #include "Orders.h"
 #include "Player.h"
 
-
-std::ostream& operator<<(std::ostream&os, const GameState state) {
-    switch (state) {
-        case GameState::start:
-            os << "start";
-            break;
-        case GameState::mapLoaded:
-            os << "mapLoaded";
-            break;
-        case GameState::mapValidated:
-            os << "mapValidated";
-            break;
-        case GameState::playersAdded:
-            os << "playersAdded";
-            break;
-        case GameState::assignReinforcements:
-            os << "assignReinforcements";
-            break;
-        case GameState::issueOrders:
-            os << "issueOrders";
-            break;
-        case GameState::executeOrders:
-            os << "executeOrders";
-            break;
-        case GameState::win:
-            os << "win";
-            break;
-        default:
-            os.setstate(std::ios_base::failbit);
-    }
-    return os;
-}
-
 /**
  * Main constructor for the GameEngine object
  * @param commandProcessor
  */
 GameEngine::GameEngine(CommandProcessor&commandProcessor) : state_{new GameState(GameState::start)},
-                                                            map_{new Map} {
+    previousState_{new GameState(GameState::start)}, map_{new Map} {
     commandProcessor_ = &commandProcessor;
     players_ = new std::vector<Player *>();
     deck_ = new Deck(24);
@@ -72,8 +39,8 @@ GameEngine::GameEngine(CommandProcessor&commandProcessor) : state_{new GameState
  * Copy constructor
  * @param gameEngine
  */
-GameEngine::GameEngine(const GameEngine&gameEngine) : Subject(gameEngine), state_{new GameState(*gameEngine.state_)},
-                                                      map_{new Map(*gameEngine.map_)} {
+GameEngine::GameEngine(const GameEngine &gameEngine) : Subject(gameEngine), state_{new GameState(*gameEngine.state_)},
+    previousState_{new GameState(*gameEngine.previousState_)}, map_{new Map(*gameEngine.map_)} {
     commandProcessor_ = gameEngine.commandProcessor_;
     players_ = new std::vector(*gameEngine.players_);
     deck_ = new Deck(*gameEngine.deck_);
@@ -84,6 +51,7 @@ GameEngine::GameEngine(const GameEngine&gameEngine) : Subject(gameEngine), state
  */
 GameEngine::~GameEngine() {
     delete state_;
+    delete previousState_;
     delete map_;
     // Delete each object in vector
     for (const auto p: *players_) {
@@ -104,6 +72,7 @@ GameEngine& GameEngine::operator=(const GameEngine&gameEngine) {
         // This is used in case we are re-assigning to ourselves i.e. f = f;
         // We need to clean up the current pointers because destructor won't be called.
         delete state_;
+        delete previousState_;
         delete map_;
         for (const auto p: *players_) {
             delete p;
@@ -211,38 +180,6 @@ void GameEngine::gameOverPhase() {
     }
 }
 
-std::ostream& operator<<(std::ostream&os, const GameEngine&gameEngine) {
-    switch (*gameEngine.state_) {
-        case GameState::start:
-            os << "start";
-            break;
-        case GameState::mapLoaded:
-            os << "map loaded";
-            break;
-        case GameState::mapValidated:
-            os << "map validated";
-            break;
-        case GameState::playersAdded:
-            os << "players added";
-            break;
-        case GameState::assignReinforcements:
-            os << "assign reinforcements";
-            break;
-        case GameState::issueOrders:
-            os << "issue orders";
-            break;
-        case GameState::executeOrders:
-            os << "execute orders";
-            break;
-        case GameState::win:
-            os << "win";
-            break;
-        default:
-            os.setstate(std::ios_base::failbit);
-    }
-    return os;
-}
-
 std::string GameEngine::stringToLog() const {
     std::stringstream s;
     s << "| Game Engine new state: " << *this;
@@ -256,6 +193,7 @@ std::string GameEngine::stringToLog() const {
  * @param newState game state to transition to
  */
 void GameEngine::transition(const GameState newState) {
+    *previousState_ = *state_;
     *state_ = newState;
     Notify(*this);
 }
@@ -312,11 +250,10 @@ void GameEngine::reinforcementPhase() {
         return;
 
     for (const auto player: *players_) {
-        player->fillReinforcementPool();
+        if (*previousState_ != GameState::playersAdded) player->fillReinforcementPool();
         player->issueOrders();
         player->orderList().executeOrders();
     }
-
 
     transition(GameState::issueOrders);
 }
@@ -330,6 +267,38 @@ void GameEngine::issuingOrderPhase() {
     // TODO: implement issue #111
     std::cout << "begin issuing orders" << std::endl;
     transition(GameState::executeOrders);
+}
+
+std::ostream& operator<<(std::ostream&os, const GameEngine&gameEngine) {
+    switch (*gameEngine.state_) {
+        case GameState::start:
+            os << "start";
+            break;
+        case GameState::mapLoaded:
+            os << "map loaded";
+            break;
+        case GameState::mapValidated:
+            os << "map validated";
+            break;
+        case GameState::playersAdded:
+            os << "players added";
+            break;
+        case GameState::assignReinforcements:
+            os << "assign reinforcements";
+            break;
+        case GameState::issueOrders:
+            os << "issue orders";
+            break;
+        case GameState::executeOrders:
+            os << "execute orders";
+            break;
+        case GameState::win:
+            os << "win";
+            break;
+        default:
+            os.setstate(std::ios_base::failbit);
+    }
+    return os;
 }
 
 Command::Command(GameEngine&gameEngine, const std::string&description) {
@@ -521,20 +490,22 @@ bool GameStartCommand::validate() {
 void GameStartCommand::execute() {
     if (!validate()) return;
 
-    std::stringstream s;
+    std::stringstream os;
 
-    assignTerritories(gameEngine_->map().territories(), s);
+    // create a copy
+    std::vector<Territory *> territories{gameEngine_->map().territories()};
+    assignTerritories(territories, os);
 
-    setPlayerTurnOrder(s);
+    setPlayerTurnOrder(os);
 
     // This lets each player draw 2 cards
     Deck ourDeck = gameEngine_->getDeck();
     for (const auto i: gameEngine_->getPlayers()) {
         i->draw();
         i->draw();
-        s << "\n" << i->getName() << " drew " << i->getHand();
+        os << "\n" << i->getName() << " drew " << i->getHand();
     }
-    saveEffect(s.str());
+    saveEffect(os.str());
     gameEngine_->transition(GameState::assignReinforcements);
 }
 

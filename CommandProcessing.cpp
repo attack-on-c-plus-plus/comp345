@@ -18,7 +18,9 @@
 #include <sstream>
 
 #include "GameEngine.h"
+#include "Map.h"
 #include "Orders.h"
+#include "Player.h"
 
 /**
  * Commands available to the command processor
@@ -30,15 +32,19 @@ std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands =
                 {CommandType::addplayer,    "addplayer"},
                 {CommandType::gamestart,    "gamestart"},
                 {CommandType::replay,       "replay"},
-                {CommandType::quit,         "quit"},
-                {CommandType::deploy,       "deploy"},
-                {CommandType::advance,      "advance"},
-                {CommandType::bomb,         "bomb"},
-                {CommandType::blockade,     "blockade"},
-                {CommandType::airlift,      "airlift"},
-                {CommandType::negotiate,    "negotiate"}
+                {CommandType::quit,         "quit"}
         });
 
+std::unique_ptr<std::map<OrderType, std::string>> CommandProcessor::orders = std::make_unique<std::map<OrderType, std::string>>(
+    std::map<OrderType, std::string> {
+        {OrderType::deploy,     "deploy"},
+        {OrderType::advance,    "advance"},
+        {OrderType::bomb,       "bomb"},
+        {OrderType::blockade,   "blockade"},
+        {OrderType::airlift,    "airlift"},
+        {OrderType::negotiate,  "negotiate"},
+        {OrderType::end,        "end"}
+        });
 
 /**
  * Constructor
@@ -96,9 +102,8 @@ CommandProcessor &CommandProcessor::operator=(const CommandProcessor &commandPro
  * @return the command
  */
 Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
-    Command *c = nullptr;
-    // read the first element to determine what the name of the is;
-    while (!c) {
+    Command *command = nullptr;
+    while (!command) {
         std::cout << "Enter command" << std::endl;
         std::string commandStr;
         std::cin >> commandStr;
@@ -107,36 +112,82 @@ Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
             std::cin.get();
             getline(std::cin, parameter);
         }
-
-        c = createCommand(gameEngine, commandStr, parameter);
+        command = createCommand(gameEngine, commandStr, parameter);
+        if (!command) std::cout << "Invalid command" << std::endl;
     }
-    return *c;
+    return *command;
+}
+
+Order* CommandProcessor::readOrder(GameEngine& gameEngine, Player &player) {
+    Order *order = nullptr;
+
+    while (!order) {
+        std::cout << player << " Enter order (type \"end\" when done)" << std::endl;
+        std::string commandStr;
+        std::cin >> commandStr;
+        std::string parameters;
+        if (std::cin.peek() == ' ') {
+            std::cin.get();
+            getline(std::cin, parameters);
+        }
+        std::stringstream parameterStream{parameters};
+        std::ranges::transform(commandStr, commandStr.begin(), tolower);
+        if (commandStr == orders->at(OrderType::end)) break;
+        order = createOrder(gameEngine, player, commandStr, parameterStream);
+        if (!order) std::cout << "Invalid order" << std::endl;
+    }
+    return order;
 }
 
 Command *
 CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter) {
-    Command *c = nullptr;
+    Command *command = nullptr;
     std::ranges::transform(commandStr, commandStr.begin(), tolower);
     if (commandStr == commands->at(CommandType::loadmap)) {
-        c = new LoadMapCommand{gameEngine, parameter};
+        command = new LoadMapCommand{gameEngine, parameter};
     }
     else if (commandStr == commands->at(CommandType::validatemap)) {
-        c = new ValidateMapCommand{gameEngine};
+        command = new ValidateMapCommand{gameEngine};
     }
     else if (commandStr == commands->at(CommandType::addplayer)) {
-        c = new AddPlayerCommand{gameEngine, parameter};
+        command = new AddPlayerCommand{gameEngine, parameter};
     }
     else if (commandStr == commands->at(CommandType::gamestart)) {
-        c = new GameStartCommand{gameEngine};
+        command = new GameStartCommand{gameEngine};
     }
     else if (commandStr == commands->at(CommandType::replay)) {
-        c = new ReplayCommand{gameEngine};
+        command = new ReplayCommand{gameEngine};
     }
     else if (commandStr == commands->at(CommandType::quit)) {
-        c = new QuitCommand{gameEngine};
+        command = new QuitCommand{gameEngine};
     }
     else { std::cout << "Invalid command. " << commandStr << std::endl; }
-    return c;
+    return command;
+}
+
+Order *CommandProcessor::createOrder(GameEngine& gameEngine, Player &player, const std::string& orderStr,
+    std::istream &parameters) {
+    Order *order = nullptr;
+    if (orderStr == orders->at(OrderType::deploy)) {
+        unsigned territoryId, armies;
+        parameters >> territoryId;
+        parameters >> armies;
+        order = new DeployOrder(gameEngine, player, gameEngine.map().territory(territoryId), armies);
+    }
+    else if (orderStr == orders->at(OrderType::advance)) {
+        // TODO: parse the parameters to create this order
+    }
+    else if (orderStr == orders->at(OrderType::airlift)) {
+        // TODO: parse the parameters to create this order
+    }
+    else if (orderStr == orders->at(OrderType::blockade)) {
+        // TODO: parse the parameters to create this order
+    }
+    else if (orderStr == orders->at(OrderType::bomb)) {
+        // TODO: parse the parameters to create this order
+    }
+    else { std::cout << "Invalid command. " << orderStr << std::endl; }
+    return order;
 }
 
 /**
@@ -145,22 +196,20 @@ CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr,
  * @return
  */
 Command &CommandProcessor::getCommand(GameEngine &gameEngine) {
-    Command *c = &readCommand(gameEngine);
-    saveCommand(*c);
-    return *c;
+    Command *command = &readCommand(gameEngine);
+    saveCommand(*command);
+    return *command;
 }
 
 /**
  * Gets a command
  * @param gameEngine
+ * @param player
  * @return
  */
-Order &CommandProcessor::getOrder(GameEngine &gameEngine) {
-    Order *o = nullptr;
+Order *CommandProcessor::getOrder(GameEngine &gameEngine, Player &player) {
+    return readOrder(gameEngine, player);
 
-    //    Command *c = &readCommand(gameEngine);
-//    saveCommand(*c);
-    return *o;
 }
 
 /**

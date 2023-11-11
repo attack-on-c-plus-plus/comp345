@@ -350,6 +350,25 @@ void Map::depthFirstSearchTerritory(std::vector<bool> &visited, size_t &count, c
 }
 
 /**
+ * Gets the Territories belonging to a Player
+ * @param p
+ * @return
+ */
+std::vector<const Territory*> Map::territories(const Player &p) const {
+    auto byPlayer = [p](const Territory *territory)
+    { return territory->isOwned() && territory->owner().getName() == p.getName(); };
+    std::vector<const Territory*> t{};
+    for (const auto& item: *territories_ | std::views::filter(byPlayer)) {
+        t.push_back(item);
+    }
+    return t;
+}
+
+const std::vector<const Continent *> &Map::continents() const {
+    return *continents_;
+}
+
+/**
  * Operator>> overload
  * @param is
  * @param map
@@ -384,25 +403,6 @@ std::istream &operator>>(std::istream &is, const Map &map) {
 std::ostream &operator<<(std::ostream &os, const Map &map) {
     os << "Map: " << *map.name_ << " continents: " << map.continents_->size() << " territories: " << map.territories_->size();
     return os;
-}
-
-/**
- * Gets the Territories belonging to a Player
- * @param p
- * @return
- */
-std::vector<const Territory*> Map::territories(const Player &p) const {
-    auto byPlayer = [p](const Territory *territory)
-    { return territory->isOwned() && territory->owner().getName() == p.getName(); };
-    std::vector<const Territory*> t{};
-    for (const auto& item: *territories_ | std::views::filter(byPlayer)) {
-        t.push_back(item);
-    }
-    return t;
-}
-
-const std::vector<const Continent *> &Map::continents() const {
-    return *continents_;
 }
 
 /**

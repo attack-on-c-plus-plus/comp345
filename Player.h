@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include "Orders.h"
+
 // forward declaration
 class Map;
 class Territory;
@@ -32,16 +34,19 @@ public:
     //Constructor
     explicit Player(GameEngine &gameEngine, const std::string &name);
     explicit Player(GameEngine &gameEngine, const std::string &name, CommandProcessor &commandProcessor);
-    Player(const Player &other);
+    Player(const Player &player);
     //Destructor
     ~Player();
     //Methods
     [[nodiscard]] std::string getName() const;
     void changeName(const std::string &newName);
     [[nodiscard]] std::vector<const Territory *> toAttack() const;
+    [[nodiscard]] bool isDeploying() const;
+    [[nodiscard]] bool isIssuingOrders() const;
     [[nodiscard]] std::vector<const Territory *> toDefend() const;
-    void issueOrders() const;
-    OrdersList &orderList() const;
+    void issueOrders();
+    void issueOrder();
+    [[nodiscard]] OrdersList &orderList() const;
     // Add methods to manage the player's territory
     void add(Territory &territory) const;
     [[nodiscard]] const std::vector<Territory *> &getTerritories() const;
@@ -52,19 +57,25 @@ public:
     void draw() const;
     void play(const Card &card, Territory &target);
     [[nodiscard]] const Hand &getHand() const;
+    [[nodiscard]] const unsigned reinforcementPool() const;
+    Player &operator=(const Player &player);
     bool operator==(const Player &player) const;
     void fillReinforcementPool() const;
+    void deploy(unsigned armies) const;
 private:
-    std::string *name;
-    std::vector<Territory *> *territories;
-    OrdersList *ordersList;
-    std::vector<Player *> *cantTarget;
-    unsigned *reinforcementPool;
-    Hand *hand;
+    std::string *name_;
+    std::vector<Territory *> *territories_;
+    OrdersList *ordersList_;
+    std::vector<Player *> *cantTarget_;
+    unsigned *reinforcementPool_;
+    bool *deployComplete_;
+    bool *ordersComplete_;
+    Hand *hand_;
     GameEngine *gameEngine_;
     CommandProcessor *commandProcessor_;
     [[nodiscard]] unsigned int continentBonusArmies() const;
     [[nodiscard]] unsigned int territoryBonusArmies() const;
+    friend std::ostream &operator<<(std::ostream &os, const Player &player);
 };
 
 

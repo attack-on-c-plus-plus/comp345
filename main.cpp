@@ -29,5 +29,7 @@ int main() {
 
     testGameStartup();
 
+    testReinforcementPhase();
+
     return 0;
 }

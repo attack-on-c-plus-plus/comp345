@@ -85,6 +85,7 @@ public:
     void transition(GameState newState);
 private:
     GameState *state_;
+    GameState *previousState_;
     Map *map_;
     Deck *deck_;
     std::vector<Player *> *players_;

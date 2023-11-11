@@ -18,7 +18,9 @@
 #include <vector>
 
 #include "LoggingObserver.h"
+#include "Player.h"
 
+class Player;
 /**
  * Forward declarations
  */
@@ -44,13 +46,17 @@ enum class CommandType {
     addplayer,
     gamestart,
     replay,
-    quit,
+    quit
+};
+
+enum class OrderType {
     deploy,
     advance,
     bomb,
     blockade,
     airlift,
-    negotiate
+    negotiate,
+    end
 };
 
 /**
@@ -64,17 +70,19 @@ public:
     // Destructor
     ~CommandProcessor() override;
     Command &getCommand(GameEngine &gameEngine);
+    Order *getOrder(GameEngine &gameEngine, Player &player);
     [[nodiscard]] bool validate(Command &command) const;
     [[nodiscard]] std::string stringToLog() const override;
     static std::unique_ptr<std::map<CommandType, std::string>> commands;
+    static std::unique_ptr<std::map<OrderType, std::string>> orders;
 protected:
     [[nodiscard]] virtual Command &readCommand(GameEngine &gameEngine);
+    [[nodiscard]] virtual Order *readOrder(GameEngine &gameEngine, Player &player);
     static Command *createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter);
+    static Order *createOrder(GameEngine &gameEngine, Player &player, const std::string &orderStr, std::istream &parameters);
 private:
     void saveCommand(Command &command);
     std::vector<Command *> *commands_;
-
-    Order &getOrder(GameEngine &gameEngine);
 };
 
 class FileCommandProcessorAdapter final : public CommandProcessor {

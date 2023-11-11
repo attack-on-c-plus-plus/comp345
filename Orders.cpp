@@ -144,7 +144,7 @@ DeployOrder::~DeployOrder() {
  */
 bool DeployOrder::validate() {
 
-    if (*armies_ > 0) {
+    if (*armies_ > 0 && *armies_ <= player_->reinforcementPool()) {
 
         if (target_->owner().getName() == player_->getName()) {
             *effect_ = "Succesfully deployed armies to target territory!";
@@ -165,7 +165,9 @@ bool DeployOrder::validate() {
 void DeployOrder::execute() {
     if (validate()) {
         target_->addArmies(*armies_);
+        player_->deploy(*armies_);
         *effect_ = "Deployed " + std::to_string(*armies_) + " armies on " + target_->name() + "!";
+
     }
     Order::execute();
 }

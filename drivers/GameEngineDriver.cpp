@@ -14,6 +14,7 @@
 
 #include "../CommandProcessing.h"
 #include "../GameEngine.h"
+#include "../Map.h"
 
 /**
  * This is the method used to test the game engine state transitions, it takes a string
@@ -46,4 +47,20 @@ void testGameStartup() {
     // force win condition
     engine.transition(GameState::win);
     engine.gameOverPhase();
+}
+
+void testReinforcementPhase() {
+    FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
+    GameEngine engine{fileCommandProcessorAdapter};
+    engine.startup();
+
+    for (auto t : engine.map().territories()) {
+        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
+    }
+
+    engine.reinforcementPhase();
+
+    for (auto t : engine.map().territories()) {
+        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
+    }
 }

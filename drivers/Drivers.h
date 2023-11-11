@@ -34,6 +34,7 @@ void testPlayer();
 */
 //void testGameStates();
 void testGameStartup();
+void testReinforcementPhase();
 
 /*
  * Demonstrates that Decks, Hand, and Card work as expected
