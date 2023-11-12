@@ -159,7 +159,7 @@ bool DeployOrder::validate() {
             return true;
         }
         *effect_ = "Failed to execute DeployOrder: Target territory is not owned by the player.";
-    } 
+    }
     else {
         *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";
     }
@@ -243,6 +243,15 @@ AdvanceOrder::~AdvanceOrder() {
  */
 bool AdvanceOrder::validate() {
 
+    for(const auto negotiators = player_->getCantAttack(); auto enemy : negotiators)
+    {
+        if (*enemy == target_->owner())
+        {
+            *effect_ = "Unable to attack a player negotiated with this turn";
+            return false;
+        }
+    }
+
     // Check if the number of armies to advance is non-negative
     if(*armies_ < 0){
         *effect_ = "Failed to execute AdvanceOrder: Number of armies to deploy must be greater than 0.";
@@ -254,6 +263,7 @@ bool AdvanceOrder::validate() {
         *effect_ = "Failed to execute AdvanceOrder: Player issuing Advance Order must own the source territory";
         return false;
     }
+
     // Get the player's adjacent territories
     const auto playerTerritories = player_->getTerritories();
 
@@ -274,6 +284,8 @@ bool AdvanceOrder::validate() {
         return true;
     }
     *effect_ = "Failed to execute AdvanceOrder: target territory must be adjacent to the territory owned by the player issuing the order";
+
+
     return false;
 }
 
@@ -348,7 +360,7 @@ void AdvanceOrder::execute() {
     }
     Order::execute();
 }
-    
+
 /**
  * Operator= overload
  * @param order
@@ -613,7 +625,7 @@ void AirliftOrder::execute() {
 
         // Reduce armies in source territory
         source_->removeArmies(*armies_);
-         
+
         // Increase armies in source territory
         target_->addArmies(*armies_);
 
@@ -623,7 +635,7 @@ void AirliftOrder::execute() {
     }
     Order::execute();
 }
-    
+
 
 
 /**
@@ -684,12 +696,13 @@ bool NegotiateOrder::validate() {
 
     if (player_ == otherPlayer_)
     {
+        std::cout<<"Checking players";
         return false;
     }
 
     const std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
     // check if the target player exists:
-    bool playerExists = /*!game_state.playerExists(target_player)*/ false;
+
     for (const Player *i : ourPlayers)
     {
         if (i == otherPlayer_)

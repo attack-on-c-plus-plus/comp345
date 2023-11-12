@@ -50,8 +50,8 @@ public:
     // Add methods to manage the player's territory
     void add(Territory &territory) const;
     [[nodiscard]] const std::vector<Territory *> &getTerritories() const;
-    [[nodiscard]] const std::vector<Player *> &getCantAttack() const;
-    void addNegotiator(Player negotiator) const;
+    [[nodiscard]] const std::vector<const Player *> &getCantAttack() const;
+    void addNegotiator(const Player &negotiator) const;
     void removeNegotiators() const;
     // Add methods to manage the player's hand of cards
     void draw() const;
@@ -66,7 +66,7 @@ private:
     std::string *name_;
     std::vector<Territory *> *territories_;
     OrdersList *ordersList_;
-    std::vector<Player *> *cantTarget_;
+    std::vector<const Player *> *cantTarget_;
     unsigned *reinforcementPool_;
     bool *deployComplete_;
     bool *ordersComplete_;

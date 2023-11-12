@@ -11,7 +11,7 @@
  */
 
 #include <iostream>
-
+#include <cstring>
 #include "CommandProcessing.h"
 #include "GameEngine.h"
 #include "drivers/Drivers.h"
@@ -22,11 +22,11 @@ int main(const int argc, char* argv[]) {
     if (argc == 2 && strcmp(argv[1], "-test") == 0) {
         std::cout << "COMP 345" << std::endl;
 
-        testLoadMaps();
+       testLoadMaps();
 
         testPlayer();
 
-        testOrderList();
+       testOrderList();
 
         testCards();
 
