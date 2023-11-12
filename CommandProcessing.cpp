@@ -174,17 +174,38 @@ Order *CommandProcessor::createOrder(GameEngine& gameEngine, Player &player, con
         parameters >> armies;
         order = new DeployOrder(gameEngine, player, gameEngine.map().territory(territoryId), armies);
     }
-    else if (orderStr == orders->at(OrderType::advance)) {
-        // TODO: parse the parameters to create this order
+    else if (orderStr == orders->at(OrderType::advance))
+    {
+        unsigned targetTerritoriesId,sourceTerritoriesId, armies;
+        parameters >> targetTerritoriesId;
+        parameters >> sourceTerritoriesId;
+        parameters >> armies;
+        order = new AdvanceOrder(gameEngine,player,gameEngine.map().territory(sourceTerritoriesId),gameEngine.map().territory(targetTerritoriesId),armies);
     }
-    else if (orderStr == orders->at(OrderType::airlift)) {
-        // TODO: parse the parameters to create this order
+    else if (orderStr == orders->at(OrderType::airlift))
+    {
+        unsigned targetTerritoriesId,sourceTerritoriesId, armies;
+        parameters >> targetTerritoriesId;
+        parameters >> sourceTerritoriesId;
+        parameters >> armies;
+        order = new AirliftOrder(gameEngine,player,gameEngine.map().territory(sourceTerritoriesId),gameEngine.map().territory(targetTerritoriesId),armies);
     }
-    else if (orderStr == orders->at(OrderType::blockade)) {
-        // TODO: parse the parameters to create this order
+
+    else if (orderStr == orders->at(OrderType::blockade))
+    {
+        unsigned targetTerritoriesId;
+        parameters >> targetTerritoriesId;
+        order = new BlockadeOrder(gameEngine,player,gameEngine.map().territory(targetTerritoriesId));
     }
     else if (orderStr == orders->at(OrderType::bomb)) {
-        // TODO: parse the parameters to create this order
+        unsigned targetTerritoriesId;
+        parameters >> targetTerritoriesId;
+        order = new BombOrder(gameEngine,player,gameEngine.map().territory(targetTerritoriesId));
+    }
+    else if (orderStr == orders->at(OrderType::negotiate)) {
+        unsigned otherPlayerId;
+        parameters >> otherPlayerId;
+        order = new NegotiateOrder(gameEngine,player,*gameEngine.getPlayers().at(otherPlayerId));
     }
     else { std::cout << "Invalid command. " << orderStr << std::endl; }
     return order;
