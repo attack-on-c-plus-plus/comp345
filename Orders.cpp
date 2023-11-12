@@ -703,13 +703,6 @@ bool NegotiateOrder::validate() {
     const std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
     // check if the target player exists:
 
-//    auto position = std::find(ourPlayers.begin(), ourPlayers.end(), otherPlayer_);
-    bool playerExists = false;
-//    // If the player does exist in the vector
-//    if (position != ourPlayers.end()) {
-//        playerExists=true;
-//    }
-
     for (const Player *i : ourPlayers)
     {
         if (i == otherPlayer_)
