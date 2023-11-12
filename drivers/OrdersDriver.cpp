@@ -90,6 +90,9 @@ void testOrderExecution()
     Player player1{engine, "player1"};
     Player player2{engine, "player2"};
 
+    engine.getPlayers().push_back(&player1);
+    engine.getPlayers().push_back(&player2);
+
     auto &map = engine.map();
     createMap(map);
 
@@ -252,21 +255,21 @@ void testOrderExecution()
 
     ordersList.remove(0);
     std::cout <<"\nIf Player 2 Attempts to Attack Player 1:\n";
-//    auto *advanceOrder3 = new AdvanceOrder(engine, player2, map.territory(2), map.territory(0), 10);
-//    ordersList.addOrder(*advanceOrder3);
-//    ordersList.executeOrders();
-//    std::cout <<"\n";
-//    for (auto order : ordersList.getOrder())
-//    {
-//        std::cout << *order << std::endl;
-//    }
-//
-//     ordersList.remove(0);
-//    std::cout <<"\nResults:\n";
-//    for (auto t : engine.map().territories())
-//    {
-//        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
-//    }
+    auto *advanceOrder3 = new AdvanceOrder(engine, player2, map.territory(2), map.territory(0), 10);
+    ordersList.addOrder(*advanceOrder3);
+    ordersList.executeOrders();
+    std::cout <<"\n";
+    for (auto order : ordersList.getOrder())
+    {
+        std::cout << *order << std::endl;
+    }
+
+     ordersList.remove(0);
+    std::cout <<"\nResults:\n";
+    for (auto t : engine.map().territories())
+    {
+        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
+    }
 
 
     //------------------------------------------------------------------------------------------------------------------
@@ -281,7 +284,6 @@ void testOrderExecution()
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
-
     ordersList.addOrder(*blockadeOrder);
     ordersList.executeOrders();
     std::cout <<"\n";
@@ -290,12 +292,14 @@ void testOrderExecution()
         std::cout << *order << std::endl;
     }
 
+    ordersList.remove(0);
+
     std::cout <<"\nAfter:\n";
     for (auto t : engine.map().territories())
     {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
-
+    engine.getPlayers().clear();
 }
 
