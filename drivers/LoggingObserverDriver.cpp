@@ -10,6 +10,8 @@
  * @author Haris Mahmood
  */
 
+#include "LoggingObserverDriver.h"
+
 #include <iostream>
 #include <type_traits>
 

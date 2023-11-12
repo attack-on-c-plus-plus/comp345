@@ -10,33 +10,41 @@
  * @author Haris Mahmood
  */
 
+#include <cstring>
 #include <iostream>
 
 #include "CommandProcessing.h"
 #include "GameEngine.h"
-#include "drivers/Drivers.h"
+
+#include "drivers/CardsDriver.h"
+#include "drivers/CommandProcessingDriver.h"
+#include "drivers/GameEngineDriver.h"
+#include "drivers/LoggingObserverDriver.h"
+#include "drivers/MapDriver.h"
+#include "drivers/OrdersDriver.h"
+#include "drivers/PlayerDriver.h"
 
 int main(const int argc, char* argv[]) {
-    //std::cout << ((strcmp(argv[1], "-file") == 0 && (argc == 2 || argc > 3)) || argc > 2) << std::endl;
-
-    if (argc == 2 && strcmp(argv[1], "-test") == 0) {
-        std::cout << "COMP 345" << std::endl;
-
-        testLoadMaps();
-
-        testPlayer();
-
-        testOrderList();
-
-        testCards();
-
-        testLoggingObserver();
-
-        testGameStartup();
-
-        testOrderExecution();
-
-        testReinforcementPhase();
+    if ((argc == 2 || argc == 3) && strcmp(argv[1], "-test") == 0) {
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "map") == 0)
+            testLoadMaps();
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "player") == 0)
+            testPlayer();
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "order") == 0) {
+            testOrderList();
+            testOrderExecution();
+        }
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "card") == 0)
+            testCards();
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "command") == 0)
+            testCommandProcessor();
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "logging") == 0)
+            testLoggingObserver();
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "game") == 0) {
+            testGameStates();
+            testGameStartup();
+            testMainGameLoop();
+        }
     } else if (argc == 2 && strcmp(argv[1], "-console") == 0) {
         CommandProcessor commandProcessor;
         GameEngine engine = GameEngine(commandProcessor);

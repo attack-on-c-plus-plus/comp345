@@ -10,6 +10,8 @@
  * @author Haris Mahmood
  */
 
+#include "CardsDriver.h"
+
 #include <iostream>
 
 #include "../Cards.h"

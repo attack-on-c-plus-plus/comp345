@@ -10,6 +10,8 @@
  * @author Haris Mahmood
  */
 
+#include "GameEngineDriver.h"
+
 #include <iostream>
 
 #include "../CommandProcessing.h"
@@ -49,7 +51,7 @@ void testGameStartup() {
     engine.gameOverPhase();
 }
 
-void testReinforcementPhase() {
+void testMainGameLoop() {
     FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
     GameEngine engine{fileCommandProcessorAdapter};
     engine.startup();
@@ -58,7 +60,7 @@ void testReinforcementPhase() {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
-    engine.reinforcementPhase();
+    engine.mainGameLoop();
 
     for (auto t : engine.map().territories()) {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
