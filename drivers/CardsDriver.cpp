@@ -10,6 +10,8 @@
  * @author Haris Mahmood
  */
 
+#include "CardsDriver.h"
+
 #include <iostream>
 
 #include "../Cards.h"
@@ -19,21 +21,23 @@
 #include "../Player.h"
 
 void testCards() {
+    const std::string seperator(70, '=');
     auto *processor = new CommandProcessor();
     GameEngine engine{*processor};
     Player player{engine, "Bob"};
     Territory territory{};
+    std::cout << seperator << std::endl;
     std::cout << "Testing the implementation of Cards" << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
     std::cout << "Creating New Cards" << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
 
-    Card card6{CardType::bomb};
+    const Card card6{CardType::bomb};
 
     std::cout<<std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
     std::cout << "Creating a Deck and adding Cards to it" << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
 
     // Creates an empty deck of cards
     // And adds the created cards to the deck
@@ -47,9 +51,9 @@ void testCards() {
     std::cout<<std::endl;
     std::cout << gameDeck << std::endl;
 
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
     std::cout << "Creating a Hand and drawing from the deck" << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
 
     // Creates a Hand by drawing cards from the deck
     Hand playerHand{};
@@ -64,9 +68,9 @@ void testCards() {
     std::cout << "Player has " << playerHand.size() << " cards." << std::endl;
 
     std::cout << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
     std::cout << "Playing the Cards from the hand" << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
 
     // Revised solution
     while (!playerHand.empty()) {
@@ -74,18 +78,17 @@ void testCards() {
         Random rnd;
         const auto random = rnd.generate(0, playerHand.size() - 1);
 
-        auto cardSelected = playerHand.card(random);
+        const auto& cardSelected = playerHand.card(random);
         std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
         gameDeck.discard(cardSelected.play(player, territory,engine), playerHand);
         std::cout << std::endl;
     }
 
     std::cout << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
     std::cout << "Checking the cards from the Deck" << std::endl;
-    std::cout << "===================================" << std::endl;
+    std::cout << seperator << std::endl;
 
-    auto cardAmountInDeck{gameDeck.size()};
     std::cout << gameDeck << std::endl;
 
     delete processor;

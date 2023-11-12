@@ -10,6 +10,8 @@
  * @author Haris Mahmood
  */
 
+#include "LoggingObserverDriver.h"
+
 #include <iostream>
 #include <type_traits>
 
@@ -23,6 +25,11 @@
 void createMap(Map &map);
 
 void testLoggingObserver() {
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Log Observer" << std::endl;
+    std::cout << seperator << std::endl;
+
     CommandProcessor commandProcessor;
     GameEngine engine{commandProcessor};
     Player player1{engine, "Joe"};
@@ -36,6 +43,10 @@ void testLoggingObserver() {
 
     LogObserver logObserver{"gamelog.txt"};
     engine.attach(logObserver);
+
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Log Observer: Orders" << std::endl;
+    std::cout << seperator << std::endl;
 
     OrdersList ordersList{};
     ordersList.attach(logObserver);
@@ -86,6 +97,10 @@ void testLoggingObserver() {
 
     ordersList.executeOrders();
 
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Log Observer: Commands" << std::endl;
+    std::cout << seperator << std::endl;
+
     // Set state to an invalid state to test save effect for invalid commands
     engine.transition(GameState::mapValidated);
 
@@ -121,6 +136,10 @@ void testLoggingObserver() {
 
     // reset state to start to try using a command from the command line
     engine.transition(GameState::start);
+
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Log Observer: Command Processor" << std::endl;
+    std::cout << seperator << std::endl;
 
     commandProcessor.attach(logObserver);
     Command *command = &commandProcessor.getCommand(engine);

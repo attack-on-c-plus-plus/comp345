@@ -151,7 +151,10 @@ DeployOrder::~DeployOrder() {
  * @return true if valid; false otherwise
  */
 bool DeployOrder::validate() {
-
+    if (gameEngine_->state() != GameState::assignReinforcements) {
+        *effect_ = "Failed to execute DeployOrder: wrong game state";
+        return false;
+    }
     if (*armies_ > 0 && *armies_ <= player_->reinforcementPool()) {
 
         if (target_->owner().getName() == player_->getName()) {
@@ -242,6 +245,10 @@ AdvanceOrder::~AdvanceOrder() {
  * @return true if valid; false otherwise
  */
 bool AdvanceOrder::validate() {
+    if (gameEngine_->state() != GameState::issueOrders) {
+        *effect_ = "Failed to execute Advance Order: wrong game state";
+        return false;
+    }
 
     for(const auto negotiators = player_->getCantAttack(); auto enemy : negotiators)
     {
@@ -373,7 +380,7 @@ AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order) {
 
         source_ = order.source_;
         target_ = order.target_;
-        armies_ = new unsigned(*order.armies_);
+        armies_ = new unsigned(*order.armies_);missing tests
     }
     return *this;
 }
@@ -419,6 +426,10 @@ BombOrder::~BombOrder() = default;
 bool BombOrder::validate() {
     bool isValid = false;
     // Pre-Condition Checks
+    if (gameEngine_->state() != GameState::issueOrders) {
+        *effect_ = "Failed to execute BombOrder: wrong game state";
+        return false;
+    }
 
     // If the player they target is themselves, order is invalid
     if (player_ == &target_->owner())
@@ -479,7 +490,7 @@ std::ostream &BombOrder::printTo(std::ostream &os) const {
 }
 
 
-// Implementation BlockadeOrder class
+// Implementation BlockadeOrder classmissing tests
 
 /**
  * Constructor
@@ -508,6 +519,11 @@ BlockadeOrder::~BlockadeOrder() = default;
  * @return
  */
 bool BlockadeOrder::validate() {
+    if (gameEngine_->state() != GameState::issueOrders) {
+        *effect_ = "Failed to execute Blockade Order: wrong game state";
+        return false;
+    }
+
     if (player_ == &target_->owner()) {
         return true;
     }
@@ -602,6 +618,11 @@ AirliftOrder::~AirliftOrder() {
  * @return
  */
 bool AirliftOrder::validate() {
+    if (gameEngine_->state() != GameState::issueOrders) {
+        *effect_ = "Failed to execute AirliftOrder: wrong game state";
+        return false;
+    }
+
     // Check if the player has enough armies in the source territory to airlift
     if (source_->armyCount() < *armies_) {
         *effect_ = "Failed to play AirliftOrder: not enough armies in the source territory to airlift...";
@@ -693,6 +714,10 @@ NegotiateOrder::~NegotiateOrder() = default;
  * @return
  */
 bool NegotiateOrder::validate() {
+    if (gameEngine_->state() != GameState::issueOrders) {
+        *effect_ = "Failed to execute NegotiateOrder: wrong game state";
+        return false;
+    }
 
     if (player_ == otherPlayer_)
     {
@@ -833,6 +858,11 @@ OrdersList& OrdersList::executeOrders() {
     for (const auto order : *orders_) {
         order->execute();
     }
+    // clear orders
+    for (const auto order : *orders_) {
+        delete order;
+    }
+    orders_->clear();
     return *this;
 }
 

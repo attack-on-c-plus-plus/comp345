@@ -10,21 +10,23 @@
  * @author Haris Mahmood
  */
 
+#include "MapDriver.h"
+
 #include <filesystem>
 #include <iostream>
 
-#include "Drivers.h"
 #include "../Map.h"
 
 void checkCodeCreatedMap();
 
 void testLoadMaps() {
     checkCodeCreatedMap();
-    std::cout << "======================" << std::endl;
-    std::cout << "Testing map loading..." << std::endl;
-    std::cout << "======================" << std::endl;
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Map" << std::endl;
+    std::cout << seperator << std::endl;
 
-        // Check naps directory exists
+    // Check naps directory exists
     if (!std::filesystem::exists(mapsPathValid)) {
         std::cout << std::filesystem::path(mapsPathValid) << " directory not found!" << std::endl;
         return;
@@ -35,6 +37,10 @@ void testLoadMaps() {
         return;
     }
 
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Valid Maps" << std::endl;
+    std::cout << seperator << std::endl;
+
     for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(mapsPathValid)) {
         Map map;
         MapLoader::load(dirEntry.path().string(), map);
@@ -44,6 +50,11 @@ void testLoadMaps() {
         else
             std::cout << "Map is invalid!" << std::endl;
     }
+
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Invalid Maps" << std::endl;
+    std::cout << seperator << std::endl;
+
 
     for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(mapsPathInvalid)) {
         Map map;
