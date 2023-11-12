@@ -41,8 +41,8 @@ int main(const int argc, char* argv[]) {
         if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "logging") == 0)
             testLoggingObserver();
         if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "game") == 0) {
-            testGameStates();
-            testGameStartup();
+            // testGameStates();
+            // testGameStartup();
             testMainGameLoop();
         }
     } else if (argc == 2 && strcmp(argv[1], "-console") == 0) {

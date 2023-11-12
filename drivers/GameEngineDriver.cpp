@@ -24,19 +24,27 @@
  * a valid command is given.
  */
 void testGameStates() {
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
     std::cout << "Testing game state setup and transitions..." << std::endl;
+    std::cout << seperator << std::endl;
     CommandProcessor processor;
     GameEngine engine = GameEngine(processor);
     engine.gameLoop();
 }
 
 void testGameStartup() {
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
     std::cout << "Testing game startup: console mode" << std::endl;
+    std::cout << seperator << std::endl;
     CommandProcessor commandProcessor;
     GameEngine engine = GameEngine(commandProcessor);
     engine.startup();
 
+    std::cout << seperator << std::endl;
     std::cout << "Testing game startup: file mode" << std::endl;
+    std::cout << seperator << std::endl;
     FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
     engine = GameEngine(fileCommandProcessorAdapter);
     engine.startup();
@@ -52,17 +60,21 @@ void testGameStartup() {
 }
 
 void testMainGameLoop() {
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
+    std::cout << "Testing main game loop" << std::endl;
+    std::cout << seperator << std::endl;
     FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
     GameEngine engine{fileCommandProcessorAdapter};
     engine.startup();
 
-    for (auto t : engine.map().territories()) {
+    for (const auto t : engine.map().territories()) {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
     engine.mainGameLoop();
 
-    for (auto t : engine.map().territories()) {
+    for (const auto t : engine.map().territories()) {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 }

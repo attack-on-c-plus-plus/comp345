@@ -25,6 +25,11 @@ void createMap(Map &map);
 
 void testOrderList()
 {
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Order List" << std::endl;
+    std::cout << seperator << std::endl;
+
     CommandProcessor commandProcessor;
     GameEngine engine{commandProcessor};
 
@@ -60,29 +65,40 @@ void testOrderList()
 
     // Display the results
 
-    std::cout << "\n 1. Added all given orders to the Orderlist:\n";
-    for (auto order : ordersList.getOrder()) {
+    std::cout << seperator << std::endl;
+    std::cout << " 1. Added all given orders to the Orderlist:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
 
     // remove method
     ordersList.remove(2);
 
-    std::cout << "\n 2.Orders executed after removing a given order:\n";
-    for (auto order : ordersList.getOrder()) {
+    std::cout << seperator << std::endl;
+    std::cout << " 2.Orders executed after removing a given order:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
 
     // move method
     ordersList.move(2,3);
-    std::cout << "\n 3.Orders executed after moving a given order:\n";
-    for (auto order : ordersList.getOrder()) {
+    std::cout << seperator << std::endl;
+    std::cout << " 3.Orders executed after moving a given order:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
 }
 
 void testOrderExecution()
 {
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
+    std::cout << "Testing Order Execution" << std::endl;
+    std::cout << seperator << std::endl;
+
     // Create a Map, Players, and Territories for testing
 
     CommandProcessor commandProcessor;
@@ -100,8 +116,10 @@ void testOrderExecution()
 
 
     //Original territory information before any execution
-    std::cout << "\nOriginal Territory Information:\n";
-    for (auto t : engine.map().territories()) {
+    std::cout << seperator << std::endl;
+    std::cout << "Original Territory Information:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto t : engine.map().territories()) {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
@@ -126,8 +144,10 @@ void testOrderExecution()
     //------------------------------------------------------------------------------------------------------------------
     //                                               Deployment
     //------------------------------------------------------------------------------------------------------------------
-    std::cout <<"---------------------------------------\n" <<"1.Deployment Order:\n";
-    for (auto order : ordersList.getOrder()) {
+    std::cout << seperator << std::endl;
+    std::cout << "1.Deployment Order:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto order : ordersList.getOrder()) {
         std::cout << *order << std::endl;
     }
 
@@ -139,15 +159,19 @@ void testOrderExecution()
 
 
     //Information of territory,army and owner after deploy execution
-    std::cout <<"\nResult:\n";
-    for (auto t : engine.map().territories()) {
+    std::cout << seperator << std::endl;
+    std::cout << "Result: " << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto t : engine.map().territories()) {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
     //------------------------------------------------------------------------------------------------------------------
     //                                               Advance + Cards
     //------------------------------------------------------------------------------------------------------------------
-    std::cout <<"---------------------------------------\n" <<"2 & 3.Advance Order:\n";
+    std::cout << seperator << std::endl;
+    std::cout << "2 & 3.Advance Order: " << std::endl;
+    std::cout << seperator << std::endl;
 
     //Case where both source and target territory belong to a player
     auto *advanceOrder = new AdvanceOrder(engine, player1, map.territory(0), map.territory(1), 5);
@@ -156,27 +180,31 @@ void testOrderExecution()
 
     ordersList.executeOrders();
 
-    for (auto order : ordersList.getOrder())
+    for (const auto order : ordersList.getOrder())
     {
         std::cout << *order << std::endl;
     }
 
     //Information of territory,army and owner after advance execution
-    std::cout <<"\nResult:\n";
-    for (auto t : engine.map().territories())
+    std::cout << seperator << std::endl;
+    std::cout <<"Result:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto t : engine.map().territories())
     {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
     ordersList.remove(0);
 
-    std::cout<<"\n* Case where attacker attacks defender territory (with less troops) *\n";
+    std::cout << seperator << std::endl;
+    std::cout<<"* Case where attacker attacks defender territory (with less troops) *" << std::endl;
+    std::cout << seperator << std::endl;
     //Case where attacker attacks defender territory (with less troops)
     auto *advanceOrder1 = new AdvanceOrder(engine, player1, map.territory(0), map.territory(2), 5);
 
     ordersList.addOrder(*advanceOrder1);
 
-    for (auto order : ordersList.getOrder())
+    for (const auto order : ordersList.getOrder())
     {
         std::cout << *order << std::endl;
     }
@@ -185,22 +213,28 @@ void testOrderExecution()
     ordersList.remove(0);
 
     //Information of territory,army and owner after advance execution
-    std::cout <<"\nResult:\n";
-    for (auto t : engine.map().territories())
+    std::cout << seperator << std::endl;
+    std::cout <<"Result:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto t : engine.map().territories())
     {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
-    std::cout <<"\nPlayers 1 Hand:\n";
+    std::cout << seperator << std::endl;
+    std::cout <<"Players 1 Hand:" << std::endl;
+    std::cout << seperator << std::endl;
     for (const auto card : player1.getHand().cards()) { std::cout << *card << std::endl; }
 
-    std::cout<<"\n* Case where attacker attacks defender territory (with more troops) *\n";
+    std::cout << seperator << std::endl;
+    std::cout<<"* Case where attacker attacks defender territory (with more troops) *" << std::endl;
+    std::cout << seperator << std::endl;
     //Case where attacker attacks defender territory (with more troops)
     auto *advanceOrder2 = new AdvanceOrder(engine, player1, map.territory(1), map.territory(2), 15);
 
     ordersList.addOrder(*advanceOrder2);
 
-    for (auto order : ordersList.getOrder())
+    for (const auto order : ordersList.getOrder())
     {
         std::cout << *order << std::endl;
     }
@@ -208,21 +242,25 @@ void testOrderExecution()
     ordersList.executeOrders();
 
     //Information of territory,army and owner after advance execution
-    std::cout <<"\nResult:\n";
-    for (auto t : engine.map().territories())
+    std::cout << seperator << std::endl;
+    std::cout <<"Result:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto t : engine.map().territories())
     {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
 
     ordersList.remove(0);
 
-    std::cout <<"\nPlayers 1 Hand:";
+    std::cout <<"Players 1 Hand:" << std::endl;
     for (const auto card : player1.getHand().cards()) { std::cout << *card << std::endl; }
 
     //------------------------------------------------------------------------------------------------------------------
     //                                               Negotiate
     //------------------------------------------------------------------------------------------------------------------
-    std::cout <<"---------------------------------------\n" <<"4.Negotiate Order:\n";
+    std::cout << seperator << std::endl;
+    std::cout <<"4.Negotiate Order:" << std::endl;
+    std::cout << seperator << std::endl;
 
     //Default giving player 2 territory 3
     player2.add(map.territory(2));
@@ -235,8 +273,10 @@ void testOrderExecution()
     ordersList.remove(0);
 
 
-    std::cout <<"\nOriginally:\n";
-    for (auto t : engine.map().territories())
+    std::cout << seperator << std::endl;
+    std::cout <<"Originally:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto t : engine.map().territories())
     {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
@@ -245,25 +285,27 @@ void testOrderExecution()
     ordersList.addOrder(*negotiateOrder);
     ordersList.executeOrders();
 
-    std::cout <<"\n";
-    for (auto order : ordersList.getOrder())
+    std::cout <<"" << std::endl;
+    for (const auto order : ordersList.getOrder())
     {
         std::cout << *order << std::endl;
     }
 
     ordersList.remove(0);
-    std::cout <<"\nIf Player 2 Attempts to Attack Player 1:\n";
+    std::cout << seperator << std::endl;
+    std::cout <<"If Player 2 Attempts to Attack Player 1:" << std::endl;
+    std::cout << seperator << std::endl;
 //    auto *advanceOrder3 = new AdvanceOrder(engine, player2, map.territory(2), map.territory(0), 10);
 //    ordersList.addOrder(*advanceOrder3);
 //    ordersList.executeOrders();
-//    std::cout <<"\n";
+//    std::cout <<"" << std::endl;
 //    for (auto order : ordersList.getOrder())
 //    {
 //        std::cout << *order << std::endl;
 //    }
 //
 //     ordersList.remove(0);
-//    std::cout <<"\nResults:\n";
+//    std::cout <<"Results:" << std::endl;
 //    for (auto t : engine.map().territories())
 //    {
 //        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
@@ -273,11 +315,12 @@ void testOrderExecution()
     //------------------------------------------------------------------------------------------------------------------
     //                                               Blockade
     //------------------------------------------------------------------------------------------------------------------
-
-    std::cout <<"---------------------------------------\n" <<"5.Blockade Order:\n";
+    std::cout << seperator << std::endl;
+    std::cout << "5.Blockade Order:" << std::endl;
+    std::cout << seperator << std::endl;
     auto *blockadeOrder = new BlockadeOrder(engine, player1, map.territory(0));
-    std::cout <<"\nOriginally:\n";
-    for (auto t : engine.map().territories())
+    std::cout <<"Originally:" << std::endl;
+    for (const auto t : engine.map().territories())
     {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
@@ -285,14 +328,18 @@ void testOrderExecution()
 
     ordersList.addOrder(*blockadeOrder);
     ordersList.executeOrders();
-    std::cout <<"\n";
-    for (auto order : ordersList.getOrder())
+    std::cout << seperator << std::endl;
+    std::cout <<"" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto order : ordersList.getOrder())
     {
         std::cout << *order << std::endl;
     }
 
-    std::cout <<"\nAfter:\n";
-    for (auto t : engine.map().territories())
+    std::cout << seperator << std::endl;
+    std::cout <<"After:" << std::endl;
+    std::cout << seperator << std::endl;
+    for (const auto t : engine.map().territories())
     {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }

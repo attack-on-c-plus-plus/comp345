@@ -1,0 +1,6 @@
+loadmap maps/valid/3D.map
+validatemap
+addplayer Bob
+gamestart
+replay
+quit
