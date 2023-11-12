@@ -104,7 +104,15 @@ std::ostream& operator<<(std::ostream& os, const Order& order) {
 }
 
 std::ostream &Order::printTo(std::ostream &os) const {
-    os << *description_ << " (" << player_->getName() << ") - ";
+    if(!effect_->empty())
+    {
+        os <<"("<<player_->getName() <<") - "<< *effect_;
+    }
+
+    else
+    {
+        os << *description_ << "(" << player_->getName() << ") - ";
+    }
     return os;
 }
 
@@ -153,7 +161,7 @@ bool DeployOrder::validate() {
         *effect_ = "Failed to execute DeployOrder: Target territory is not owned by the player.";
     } 
     else {
-        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";  
+        *effect_ = "Failed to execute DeployOrder: Number of armies to deploy must be greater than 0.";
     }
     return false;
 
@@ -167,7 +175,6 @@ void DeployOrder::execute() {
         target_->addArmies(*armies_);
         player_->deploy(*armies_);
         *effect_ = "Deployed " + std::to_string(*armies_) + " armies on " + target_->name() + "!";
-
     }
     Order::execute();
 }
@@ -187,7 +194,12 @@ DeployOrder &DeployOrder::operator=(const DeployOrder &order) {
 }
 
 std::ostream &DeployOrder::printTo(std::ostream &os) const {
-    return Order::printTo(os) << std::to_string(*armies_) << " armies to " << target_->name();
+    if(effect_->empty())
+    {
+        return Order::printTo(os) << std::to_string(*armies_) << " armies to " << target_->name();
+    }
+    return Order::printTo(os);
+
 }
 
 // Implementation AdvanceOrder class
@@ -264,14 +276,15 @@ bool AdvanceOrder::validate() {
     *effect_ = "Failed to execute AdvanceOrder: target territory must be adjacent to the territory owned by the player issuing the order";
     return false;
 }
-    
-    
+
+
 void AdvanceOrder::execute() {
 
     if (validate()) {
-        
+
         //if player issuing order owns target and source territory
-        if(source_->owner().getName() == target_->owner().getName()){
+        if(source_->owner().getName() == target_->owner().getName())
+        {
             //If AdvanceOrder is valid, armies in source territory are reduced and armies in target territory are increased
             source_->removeArmies(*armies_);
             target_->addArmies(*armies_);
@@ -283,22 +296,27 @@ void AdvanceOrder::execute() {
 
         //if player issuing order owns source territory but doesn't own target territory
         //ATTACK
+        unsigned originalAttackers=*armies_;
         if(source_->owner().getName() != target_->owner().getName()){
             unsigned remainingAttackers = *armies_; // used of attackers win
             Random random;
             std::cout << " --> Initiating attack!" << std::endl;
 
-            while (target_->armyCount() > 0 && *armies_ > 0) {
+            while (target_->armyCount() > 0 && *armies_ > 0)
+            {
                 const unsigned targetArmies = target_->armyCount();
                 // Each attacking army unit involved has 60% chances of killing one defending army
-                for (int i = 0; i < *armies_; i++) {
-                    if (const int result1 = random.generate(1,100); result1 <= 60) {
+                for (int i = 0; i < *armies_; i++)
+                {
+                    if (const int result1 = random.generate(1,10); result1 <= 6 && target_->armyCount()>=1)
+                    {
                         target_->removeArmies(1);
                     }
                 }
                 // Each defending army unit has 70% chances of killing one attacking army unit
                 for (int i = 0; i < targetArmies; i++) {
-                    if (const int result2 = random.generate(1,100); result2 <= 70) {
+                    if (const int result2 = random.generate(1,10); result2 <= 7 && *armies_>=1)
+                    {
                         *armies_ -= 1;
                         remainingAttackers--;
                     }
@@ -312,19 +330,20 @@ void AdvanceOrder::execute() {
                 target_->addArmies(remainingAttackers);
                 //A player receives a card at the end of his turn if they successfully conquered at least one territory during their turn
                 player_->draw();
+                source_->removeArmies(originalAttackers);
 
                 std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
             }
             //Defenders won
             else {
                 //remove armies sent from source territory
-                source_->removeArmies(*armies_);
+                source_->removeArmies(originalAttackers);
                 std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
             }
         }
 
         //Update the effect string to describe the action
-        *effect_ = player_->getName() + "succesfully Advanced " + std::to_string(*armies_) + " armies from territory "
+        *effect_ = player_->getName() + " Advanced " + std::to_string(*armies_) + " armies from territory "
         + source_->name() + " to territory " + target_->name() + ".";
     }
     Order::execute();
@@ -348,8 +367,13 @@ AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order) {
 }
 
 std::ostream &AdvanceOrder::printTo(std::ostream &os) const {
-    return Order::printTo(os) << std::to_string(*armies_) << " armies from "
-        << source_->name() << " to " << target_->name();
+    if(effect_->empty())
+    {
+        return Order::printTo(os) << std::to_string(*armies_) << " armies from "
+                                  << source_->name() << " to " << target_->name();
+    }
+
+    return Order::printTo(os);
 }
 
 // Implementation BombOrder class
@@ -434,7 +458,12 @@ BombOrder &BombOrder::operator=(const BombOrder &order) {
 }
 
 std::ostream &BombOrder::printTo(std::ostream &os) const {
-    return Order::printTo(os) << target_->name();
+    if(effect_->empty())
+    {
+        return Order::printTo(os) << target_->name();
+    }
+
+    return Order::printTo(os);
 }
 
 
@@ -516,7 +545,11 @@ BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order) {
 }
 
 std::ostream &BlockadeOrder::printTo(std::ostream &os) const {
-    return Order::printTo(os) << target_->name();
+    if(effect_->empty()) {
+        return Order::printTo(os) << target_->name();
+    }
+
+    return Order::printTo(os);
 }
 
 // Implementation AirliftOrder
@@ -611,8 +644,12 @@ AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order) {
 }
 
 std::ostream &AirliftOrder::printTo(std::ostream &os) const {
-    return Order::printTo(os) << std::to_string(*armies_) + " armies from "
-        << source_->name() << " to " << target_->name();
+    if(effect_->empty()) {
+        return Order::printTo(os) << std::to_string(*armies_) + " armies from "
+                                  << source_->name() << " to " << target_->name();
+    }
+
+    return Order::printTo(os);
 }
 
 // Implementation NegotiateOrder class
@@ -644,6 +681,7 @@ NegotiateOrder::~NegotiateOrder() = default;
  * @return
  */
 bool NegotiateOrder::validate() {
+
     if (player_ == otherPlayer_)
     {
         return false;
@@ -698,7 +736,11 @@ NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order) {
 }
 
 std::ostream &NegotiateOrder::printTo(std::ostream &os) const {
-    return Order::printTo(os) << "with " << otherPlayer_->getName();
+    if(effect_->empty())
+    {
+        return Order::printTo(os) << "with " << otherPlayer_->getName();
+    }
+    return Order::printTo(os);
 }
 
 // Implementation OrdersList
@@ -829,3 +871,4 @@ std::ostream &operator<<(std::ostream &os, const OrdersList &ordersList) {
     os << "]";
     return os;
 }
+

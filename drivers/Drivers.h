@@ -45,4 +45,6 @@ void testOrderList();
 
 void testLoggingObserver();
 
+void testOrderExecution();
+
 #endif //COMP345_DRIVERS_H

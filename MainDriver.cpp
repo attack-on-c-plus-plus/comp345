@@ -34,6 +34,8 @@ int main(const int argc, char* argv[]) {
 
         testGameStartup();
 
+        testOrderExecution();
+
         testReinforcementPhase();
     } else if (argc == 2 && strcmp(argv[1], "-console") == 0) {
         CommandProcessor commandProcessor;
