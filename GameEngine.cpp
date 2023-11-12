@@ -261,11 +261,23 @@ void GameEngine::reinforcementPhase() {
 /**
  * Executes the issue orders phase
  */
-void GameEngine::issuingOrderPhase() {
+void GameEngine::issuingOrderPhase()
+{
     if (*state_ != GameState::issueOrders)
-        return; // Game engine is in the wrong state
-    // TODO: implement issue #111
-    std::cout << "begin issuing orders" << std::endl;
+        return;
+
+    std::cout << "Begin issuing orders" << std::endl;
+
+    while (std::ranges::count_if(*players_, [](const Player *p) { return p->isIssuingOrders(); }) > 0)
+    {
+        for (const auto player : *players_) {
+            // Only ask players who are still issuing orders
+            if (player->isIssuingOrders()) {
+                player->issueOrder();
+            }
+        }
+    }
+
     transition(GameState::executeOrders);
 }
 
