@@ -380,7 +380,7 @@ AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order) {
 
         source_ = order.source_;
         target_ = order.target_;
-        armies_ = new unsigned(*order.armies_);missing tests
+        armies_ = new unsigned(*order.armies_);
     }
     return *this;
 }
@@ -490,7 +490,7 @@ std::ostream &BombOrder::printTo(std::ostream &os) const {
 }
 
 
-// Implementation BlockadeOrder classmissing tests
+// Implementation BlockadeOrder class
 
 /**
  * Constructor
@@ -727,7 +727,7 @@ bool NegotiateOrder::validate() {
 
     const std::vector<Player *> ourPlayers = gameEngine_->getPlayers();
     // check if the target player exists:
-
+    bool playerExists = false;
     for (const Player *i : ourPlayers)
     {
         if (i == otherPlayer_)

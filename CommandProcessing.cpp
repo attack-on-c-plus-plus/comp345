@@ -104,7 +104,7 @@ CommandProcessor &CommandProcessor::operator=(const CommandProcessor &commandPro
 Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
     Command *command = nullptr;
     while (!command) {
-        std::cout << "Enter command" << std::endl;
+        std::cout << "Enter command (current game state: " << gameEngine << ")" << std::endl;
         std::string commandStr;
         std::cin >> commandStr;
         std::string parameter;

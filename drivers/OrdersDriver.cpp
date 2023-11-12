@@ -13,7 +13,7 @@
 #include "OrdersDriver.h"
 
 #include <iostream>
-missing tests
+
 #include "../CommandProcessing.h"
 #include "../GameEngine.h"
 #include "../Map.h"
@@ -56,7 +56,7 @@ void testOrderList()
     ordersList.addOrder(*deployOrder)
             .addOrder(*advanceOrder)
             .addOrder(*bombOrder)
-            .addOrder(*blockadeOrder)missing tests
+            .addOrder(*blockadeOrder)
             .addOrder(*airliftOrder)
             .addOrder(*negotiateOrder);
 
