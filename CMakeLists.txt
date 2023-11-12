@@ -3,7 +3,7 @@ project(comp345)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(comp345 main.cpp
+add_executable(comp345 MainDriver.cpp
         Map.cpp
         Map.h
         Player.cpp
