@@ -27,7 +27,7 @@
  */
 Player::Player(GameEngine &gameEngine, const std::string &name) :
     name_{new std::string(name)}, ordersList_{new OrdersList()}, territories_{new std::vector<Territory *>},
-    hand_{new Hand()}, reinforcementPool_{new unsigned(50)}, cantTarget_{new std::vector<Player *>},
+    hand_{new Hand()}, reinforcementPool_{new unsigned(50)}, cantTarget_{new std::vector<const Player *>},
     deployComplete_{new bool(false)}, ordersComplete_{new bool(false)}, commandProcessor_{new CommandProcessor()}
 {
     gameEngine_ = &gameEngine;
@@ -78,7 +78,7 @@ const std::vector<Territory *> &Player::getTerritories() const {
     return *territories_;
 }
 
-const std::vector<Player *> &Player::getCantAttack() const
+const std::vector<const Player *> &Player::getCantAttack() const
 {
     return *cantTarget_;
 }
@@ -87,7 +87,7 @@ void Player::removeNegotiators() const {
     cantTarget_->clear();
 }
 
-void Player::addNegotiator(Player negotiator) const
+void Player::addNegotiator(const Player &negotiator) const
 {
     cantTarget_->push_back(&negotiator);
 }

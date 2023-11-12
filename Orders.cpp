@@ -247,6 +247,7 @@ bool AdvanceOrder::validate() {
     {
         if (*enemy == target_->owner())
         {
+            *effect_ = "Unable to attack a player negotiated with this turn";
             return false;
         }
     }
