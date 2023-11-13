@@ -177,16 +177,16 @@ Order *CommandProcessor::createOrder(GameEngine& gameEngine, Player &player, con
     else if (orderStr == orders->at(OrderType::advance))
     {
         unsigned targetTerritoriesId,sourceTerritoriesId, armies;
-        parameters >> targetTerritoriesId;
         parameters >> sourceTerritoriesId;
+        parameters >> targetTerritoriesId;
         parameters >> armies;
         order = new AdvanceOrder(gameEngine,player,gameEngine.map().territory(sourceTerritoriesId),gameEngine.map().territory(targetTerritoriesId),armies);
     }
     else if (orderStr == orders->at(OrderType::airlift))
     {
         unsigned targetTerritoriesId,sourceTerritoriesId, armies;
-        parameters >> targetTerritoriesId;
         parameters >> sourceTerritoriesId;
+        parameters >> targetTerritoriesId;
         parameters >> armies;
         order = new AirliftOrder(gameEngine,player,gameEngine.map().territory(sourceTerritoriesId),gameEngine.map().territory(targetTerritoriesId),armies);
     }

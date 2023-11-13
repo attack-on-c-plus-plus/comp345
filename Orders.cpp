@@ -245,7 +245,7 @@ AdvanceOrder::~AdvanceOrder() {
  * @return true if valid; false otherwise
  */
 bool AdvanceOrder::validate() {
-    if (gameEngine_->state() != GameState::issueOrders) {
+    if (!(gameEngine_->state() == GameState::issueOrders || gameEngine_->state() == GameState::executeOrders)) {
         *effect_ = "Failed to execute Advance Order: wrong game state";
         return false;
     }
@@ -426,7 +426,7 @@ BombOrder::~BombOrder() = default;
 bool BombOrder::validate() {
     bool isValid = false;
     // Pre-Condition Checks
-    if (gameEngine_->state() != GameState::issueOrders) {
+    if (!(gameEngine_->state() == GameState::issueOrders || gameEngine_->state() == GameState::executeOrders)) {
         *effect_ = "Failed to execute BombOrder: wrong game state";
         return false;
     }
@@ -519,7 +519,7 @@ BlockadeOrder::~BlockadeOrder() = default;
  * @return
  */
 bool BlockadeOrder::validate() {
-    if (gameEngine_->state() != GameState::issueOrders) {
+    if (!(gameEngine_->state() == GameState::issueOrders || gameEngine_->state() == GameState::executeOrders)) {
         *effect_ = "Failed to execute Blockade Order: wrong game state";
         return false;
     }
@@ -618,7 +618,7 @@ AirliftOrder::~AirliftOrder() {
  * @return
  */
 bool AirliftOrder::validate() {
-    if (gameEngine_->state() != GameState::issueOrders) {
+    if (!(gameEngine_->state() == GameState::issueOrders || gameEngine_->state() == GameState::executeOrders)) {
         *effect_ = "Failed to execute AirliftOrder: wrong game state";
         return false;
     }
@@ -714,7 +714,7 @@ NegotiateOrder::~NegotiateOrder() = default;
  * @return
  */
 bool NegotiateOrder::validate() {
-    if (gameEngine_->state() != GameState::issueOrders) {
+    if (!(gameEngine_->state() == GameState::issueOrders || gameEngine_->state() == GameState::executeOrders)) {
         *effect_ = "Failed to execute NegotiateOrder: wrong game state";
         return false;
     }

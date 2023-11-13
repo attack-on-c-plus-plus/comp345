@@ -206,6 +206,11 @@ void GameEngine::executeOrdersPhase() const {
     if (*state_ != GameState::executeOrders)
         return; // Game engine is in the wrong state
 
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
+    std::cout << "Execute Order Phase" << std::endl;
+    std::cout << seperator << std::endl;
+
     // execute player orders
     for (const auto player: *players_) {
         if (player->getTerritories().empty()) // if player has no territories skip turn
@@ -249,7 +254,11 @@ void GameEngine::removeEliminatedPlayers() const {
 void GameEngine::reinforcementPhase() {
     if (*state_ != GameState::assignReinforcements)
         return;
-
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
+    std::cout << "Reinforcement Phase" << std::endl;
+    std::cout << seperator << std::endl;
+    map_->print();
     for (const auto player: *players_) {
         if (*previousState_ != GameState::playersAdded) player->fillReinforcementPool();
         player->issueOrders();
@@ -262,18 +271,21 @@ void GameEngine::reinforcementPhase() {
 /**
  * Executes the issue orders phase
  */
-void GameEngine::issuingOrderPhase()
-{
+void GameEngine::issuingOrderPhase() {
     if (*state_ != GameState::issueOrders)
         return;
 
-    std::cout << "Begin issuing orders" << std::endl;
+    const std::string seperator(70, '=');
+    std::cout << seperator << std::endl;
+    std::cout << "Issuing Order Phase" << std::endl;
+    std::cout << seperator << std::endl;
 
     while (std::ranges::count_if(*players_, [](const Player *p) { return p->isIssuingOrders(); }) > 0)
     {
         for (const auto player : *players_) {
             // Only ask players who are still issuing orders
             if (player->isIssuingOrders()) {
+                map_->print();
                 player->issueOrder();
             }
         }

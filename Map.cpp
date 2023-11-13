@@ -216,6 +216,12 @@ std::vector<const Territory*> Map::adjacencies(const Territory &territory) const
     return adj;
 }
 
+void Map::print() const {
+    for (const auto t : *territories_) {
+        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
+    }
+}
+
 /**
  * Gets the territories
  */

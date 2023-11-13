@@ -68,13 +68,7 @@ void testMainGameLoop() {
     GameEngine engine{fileCommandProcessorAdapter};
     engine.startup();
 
-    for (const auto t : engine.map().territories()) {
-        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
-    }
-
     engine.mainGameLoop();
 
-    for (const auto t : engine.map().territories()) {
-        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
-    }
+    engine.map().print();
 }
