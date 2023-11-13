@@ -81,6 +81,7 @@ GameEngine& GameEngine::operator=(const GameEngine&gameEngine) {
         delete players_;
         delete deck_;
         state_ = new GameState(*gameEngine.state_);
+        previousState_ = new GameState(*gameEngine.previousState_);
         players_ = new std::vector(*gameEngine.players_);
         map_ = new Map(*gameEngine.map_);
         commandProcessor_ = gameEngine.commandProcessor_;

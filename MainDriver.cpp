@@ -40,9 +40,10 @@ int main(const int argc, char* argv[]) {
             testCommandProcessor();
         if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "logging") == 0)
             testLoggingObserver();
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "game") == 0) {
-            testGameStates();
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "gamestartup") == 0) {
             testGameStartup();
+        }
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "gamemainloop") == 0) {
             testMainGameLoop();
         }
     } else if (argc == 2 && strcmp(argv[1], "-console") == 0) {
