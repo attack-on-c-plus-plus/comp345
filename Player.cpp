@@ -261,8 +261,8 @@ unsigned int Player::territoryBonusArmies() const {
 unsigned int Player::continentBonusArmies() const {
     unsigned armies = 0;
     const Map &map = gameEngine_->map();
-    const auto p = *this;
-    auto ownedBy = [p](const Territory *t) { return t->owner() == p; };
+    const auto &p = *this;
+    auto ownedBy = [&p](const Territory *t) { return t->owner() == p; };
     for (const auto continent : map.continents()) {
         if (auto adj = map.adjacencies(*continent); adj.size() == std::ranges::count_if(adj, ownedBy))
             armies += continent->bonusArmies();
