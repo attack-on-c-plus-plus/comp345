@@ -134,9 +134,11 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
 
 /**
  * Deck constructor that initializes a deck of a specified size.
+ * @param random
  * @param size The deck size. By default, the size is set to 5.
  */
-Deck::Deck(const unsigned int size) {
+Deck::Deck(const IRandom &random, const unsigned int size) {
+    random_ = &random;
     cards_ = new std::vector<const Card *>();
     cards_->reserve(size);
     for (int i = 0; i < size; ++i)
@@ -163,9 +165,11 @@ Deck::Deck(const unsigned int size) {
 
 /**
  * A constructor for the Deck class
+ * @param random
  * @param cardDeck an existing vector of Cards
  */
-Deck::Deck(const std::vector<Card> &cardDeck) {
+Deck::Deck(const IRandom &random, const std::vector<Card> &cardDeck) {
+    random_ = &random;
     cards_ = new std::vector<const Card *>();
     for (const auto &c: cardDeck) {
         cards_->push_back(new Card(c.type()));
@@ -177,6 +181,7 @@ Deck::Deck(const std::vector<Card> &cardDeck) {
  * @param deckToCopy The deck to be copied.
  */
 Deck::Deck(const Deck &deckToCopy) {
+    random_ = deckToCopy.random_;
     cards_ = new std::vector<const Card *>();
     for (const auto c: *deckToCopy.cards_) {
         cards_->push_back(new Card(c->type()));
@@ -226,11 +231,10 @@ Deck &Deck::draw(const Hand &hand) {
     if (cards_->empty()) {
         throw std::out_of_range("No more cards in the deck");
     }
-    Random rnd;
-    const auto random = rnd.generate(0, cards_->size() - 1);
+    const auto index = random_->generate(0, cards_->size() - 1);
 
-    hand.cards_->push_back(cards_->at(random));
-    cards_->erase(cards_->begin() + random);
+    hand.cards_->push_back(cards_->at(index));
+    cards_->erase(cards_->begin() + index);
 
     return *this;
 }

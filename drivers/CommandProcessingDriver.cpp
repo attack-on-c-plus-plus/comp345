@@ -22,8 +22,9 @@ void testCommandProcessor() {
     std::cout << "Testing Command Processor" << std::endl;
     std::cout << seperator << std::endl;
 
+    FakeRandom random;
     CommandProcessor commandProcessor;
-    GameEngine gameEngine1{commandProcessor};
+    GameEngine gameEngine1{commandProcessor, random};
 
     for (int i = 0; i < 6; ++i) {
         if (Command *command = &commandProcessor.getCommand(gameEngine1)) {
@@ -42,7 +43,7 @@ void testCommandProcessor() {
     std::cout << seperator << std::endl;
 
     FileCommandProcessorAdapter fileCommandProcessorAdapter{"res/commandTests.txt"};
-    GameEngine gameEngine2{fileCommandProcessorAdapter};
+    GameEngine gameEngine2{fileCommandProcessorAdapter, random};
 
     for (int i = 0; i < 6; ++i) {
         if (Command *command = &fileCommandProcessorAdapter.getCommand(gameEngine2)) {

@@ -28,8 +28,9 @@ void testGameStates() {
     std::cout << seperator << std::endl;
     std::cout << "Testing game state setup and transitions..." << std::endl;
     std::cout << seperator << std::endl;
+    const FakeRandom random;
     CommandProcessor processor;
-    GameEngine engine = GameEngine(processor);
+    GameEngine engine{processor, random};
     engine.gameLoop();
 }
 
@@ -38,15 +39,16 @@ void testGameStartup() {
     std::cout << seperator << std::endl;
     std::cout << "Testing game startup: console mode" << std::endl;
     std::cout << seperator << std::endl;
+    const FakeRandom random;
     CommandProcessor commandProcessor;
-    GameEngine engine = GameEngine(commandProcessor);
+    GameEngine engine{commandProcessor, random};
     engine.startup();
 
     std::cout << seperator << std::endl;
     std::cout << "Testing game startup: file mode" << std::endl;
     std::cout << seperator << std::endl;
     FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
-    engine = GameEngine(fileCommandProcessorAdapter);
+    engine = GameEngine(fileCommandProcessorAdapter, random);
     engine.startup();
     // force win condition
     engine.transition(GameState::win);
@@ -64,8 +66,9 @@ void testMainGameLoop() {
     std::cout << seperator << std::endl;
     std::cout << "Testing main game loop" << std::endl;
     std::cout << seperator << std::endl;
+    const FakeRandom random;
     FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
-    GameEngine engine{fileCommandProcessorAdapter};
+    GameEngine engine{fileCommandProcessorAdapter, random};
     engine.startup();
 
     engine.mainGameLoop();

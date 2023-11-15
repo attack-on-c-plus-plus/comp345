@@ -17,6 +17,7 @@
 #include <memory>
 #include <sstream>
 
+#include "Cards.h"
 #include "GameEngine.h"
 #include "Map.h"
 #include "Orders.h"
@@ -122,7 +123,12 @@ Order* CommandProcessor::readOrder(GameEngine& gameEngine, Player &player) {
     Order *order = nullptr;
 
     while (!order) {
-        std::cout << player << " Enter order (type \"end\" when done)" << std::endl;
+        std::cout << player << " Enter order (type \"end\" when done) ";
+        if (gameEngine.state() == GameState::assignReinforcements)
+            std::cout << "(available reinforcements: " << player.reinforcementPool() << ")";
+        if (gameEngine.state() == GameState::issueOrders)
+            std::cout << "(cards available: " << player.getHand() << ")";
+        std::cout << std::endl;
         std::string commandStr;
         std::cin >> commandStr;
         std::string parameters;

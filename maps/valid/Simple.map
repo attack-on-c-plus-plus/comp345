@@ -1,0 +1,17 @@
+[Map]
+image=Simple.bmp
+wrap=no
+scroll=none
+author=Ashley
+warn=yes
+
+[Continents]
+Cube=2
+Triangle=2
+
+[Territories]
+1c,186,160,Cube,2c,1t,2t
+2c,173,81,Cube,1c,1t,2t
+
+1t,434,204,Triangle,2t,1c,2c
+2t,395,186,Triangle,1t,1c,2c

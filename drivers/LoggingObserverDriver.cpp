@@ -29,9 +29,9 @@ void testLoggingObserver() {
     std::cout << seperator << std::endl;
     std::cout << "Testing Log Observer" << std::endl;
     std::cout << seperator << std::endl;
-
+    FakeRandom random;
     CommandProcessor commandProcessor;
-    GameEngine engine{commandProcessor};
+    GameEngine engine{commandProcessor, random};
     Player player1{engine, "Joe"};
     Player player2{engine, "Jane"};
     auto &map = engine.map();

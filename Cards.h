@@ -21,6 +21,7 @@
  * Cards.h includes groups of classes that implements a deck and a hand of Warzone cards.
  */
 
+class IRandom;
 class Player;
 class Territory;
 class GameEngine;
@@ -59,8 +60,8 @@ private:
  */
 class Deck {
 public:
-    explicit Deck(unsigned size = 5);
-    explicit Deck(const std::vector<Card> &cardDeck);
+    explicit Deck(const IRandom &random, unsigned size = 5);
+    explicit Deck(const IRandom &random, const std::vector<Card> &cardDeck);
     Deck(const Deck&);
     ~Deck();
     Deck &add(CardType cardType);
@@ -73,6 +74,7 @@ public:
     [[nodiscard]] const Card &card(size_t index) const;
     Deck &operator=(const Deck&);
 private:
+    const IRandom *random_;
     std::vector<const Card*> *cards_;
     friend std::ostream &operator<<(std::ostream &os, const Deck &deck);
 };

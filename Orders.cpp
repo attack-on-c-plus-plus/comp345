@@ -93,16 +93,6 @@ std::string Order::stringToLog() const {
     return s.str();
 }
 
-/**
- * Operator<< overload
- * @param os
- * @param order
- * @return
- */
-std::ostream& operator<<(std::ostream& os, const Order& order) {
-    return order.printTo(os);
-}
-
 std::ostream &Order::printTo(std::ostream &os) const {
     if(!effect_->empty())
     {
@@ -114,6 +104,16 @@ std::ostream &Order::printTo(std::ostream &os) const {
         os << *description_ << "(" << player_->getName() << ") - ";
     }
     return os;
+}
+
+/**
+ * Operator<< overload
+ * @param os
+ * @param order
+ * @return
+ */
+std::ostream& operator<<(std::ostream& os, const Order& order) {
+    return order.printTo(os);
 }
 
 // Implementation DeployOrder class
@@ -144,6 +144,12 @@ DeployOrder::DeployOrder(const DeployOrder &order) : Order(order) {
  */
 DeployOrder::~DeployOrder() {
     delete armies_;
+}
+
+/// \brief Clones a DeployOrder
+/// \return a clone
+Order& DeployOrder::clone() const {
+    return *new DeployOrder(*this);
 }
 
 /**
@@ -240,6 +246,12 @@ AdvanceOrder::~AdvanceOrder() {
     delete armies_;
 }
 
+/// \brief Clones an AdvanceOrder
+/// \return a clone
+Order& AdvanceOrder::clone() const {
+    return *new AdvanceOrder(*this);
+}
+
 /**
  * Validates the AdvanceOrder
  * @return true if valid; false otherwise
@@ -318,7 +330,6 @@ void AdvanceOrder::execute() {
         unsigned originalAttackers=*armies_;
         if(source_->owner().getName() != target_->owner().getName()){
             unsigned remainingAttackers = *armies_; // used of attackers win
-            Random random;
             std::cout << " --> Initiating attack!" << std::endl;
 
             while (target_->armyCount() > 0 && *armies_ > 0)
@@ -327,14 +338,14 @@ void AdvanceOrder::execute() {
                 // Each attacking army unit involved has 60% chances of killing one defending army
                 for (int i = 0; i < *armies_; i++)
                 {
-                    if (const int result1 = random.generate(1,10); result1 <= 6 && target_->armyCount()>=1)
+                    if (const unsigned result1 = gameEngine_->random().generate(1, 10); result1 <= 6 && target_->armyCount() >= 1)
                     {
                         target_->removeArmies(1);
                     }
                 }
                 // Each defending army unit has 70% chances of killing one attacking army unit
                 for (int i = 0; i < targetArmies; i++) {
-                    if (const int result2 = random.generate(1,10); result2 <= 7 && *armies_>=1)
+                    if (const unsigned result2 = gameEngine_->random().generate(1,10); result2 <= 7 && *armies_>=1)
                     {
                         *armies_ -= 1;
                         remainingAttackers--;
@@ -418,6 +429,12 @@ BombOrder::BombOrder(const BombOrder &order) :
  * Destructor
  */
 BombOrder::~BombOrder() = default;
+
+/// \brief Clones a BombOrder
+/// \return a clone
+Order& BombOrder::clone() const {
+    return *new BombOrder(*this);
+}
 
 /**
  * Validates the BombOrder
@@ -514,6 +531,12 @@ BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order) {
  */
 BlockadeOrder::~BlockadeOrder() = default;
 
+/// \brief Clones an Blockade
+/// \return a clone
+Order& BlockadeOrder::clone() const {
+    return *new BlockadeOrder(*this);
+}
+
 /**
  * Validates the BlockadeOrder
  * @return
@@ -552,8 +575,9 @@ void BlockadeOrder::execute() {
             }
         }
         if (!neutralFound) {
-            auto * player = new Player(*gameEngine_, "Neutral");
+            auto *player = new Player(*gameEngine_, "Neutral");
             gameEngine_->getPlayers().push_back(player);
+            target_->owner(*player);
         }
     }
     Order::execute();
@@ -611,6 +635,12 @@ AirliftOrder::AirliftOrder(const AirliftOrder &order) :
  */
 AirliftOrder::~AirliftOrder() {
     delete armies_;
+}
+
+/// \brief Clones an AirliftOrder
+/// \return a clone
+Order& AirliftOrder::clone() const {
+    return *new AirliftOrder(*this);
 }
 
 /**
@@ -708,6 +738,12 @@ NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order) {
  * Destructor
  */
 NegotiateOrder::~NegotiateOrder() = default;
+
+/// \brief Clones an NegotiateOrder
+/// \return a clone
+Order& NegotiateOrder::clone() const {
+    return *new NegotiateOrder(*this);
+}
 
 /**
  * Validates the NegotiateOrder
@@ -816,8 +852,8 @@ OrdersList::~OrdersList() {
  * @param order
  * @return
  */
-OrdersList& OrdersList::addOrder(Order& order) {
-    orders_->push_back(&order); // Store the pointer to the Order
+OrdersList& OrdersList::addOrder(const Order& order) {
+    orders_->push_back(&order.clone()); // Store the pointer to the Order
     Notify(*this);
     return *this;
 }
@@ -870,7 +906,7 @@ OrdersList& OrdersList::executeOrders() {
  * Returns a the list of orders
  * @return
  */
-const std::vector<Order*> &OrdersList::getOrder() const {
+const std::vector<Order*> &OrdersList::orders() const {
     return *orders_;
 }
 

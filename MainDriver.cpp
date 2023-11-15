@@ -48,11 +48,13 @@ int main(const int argc, char* argv[]) {
         }
     } else if (argc == 2 && strcmp(argv[1], "-console") == 0) {
         CommandProcessor commandProcessor;
-        GameEngine engine = GameEngine(commandProcessor);
+        const Random random;
+        GameEngine engine = GameEngine(commandProcessor, random);
         engine.gameLoop();
     } else if (argc == 3 && strcmp(argv[1], "-file") == 0) {
         FileCommandProcessorAdapter fileCommandProcessorAdapter{argv[2]};
-        GameEngine engine = GameEngine(fileCommandProcessorAdapter);
+        const Random random;
+        GameEngine engine = GameEngine(fileCommandProcessorAdapter, random);
         engine.gameLoop();
     } else {
         std::cout << "Please provide a parameter to run the application." << std::endl;

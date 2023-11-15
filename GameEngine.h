@@ -30,6 +30,7 @@
  * The states form the structure of the setup and the game itself.
  */
 
+class IRandom;
 // Forward declaration.
 class CommandProcessor;
 class Player;
@@ -61,7 +62,7 @@ std::ostream &operator<<(std::ostream &os, GameState state);
 class GameEngine final : public ILoggable, public Subject
 {
 public:
-    explicit GameEngine(CommandProcessor &commandProcessor);
+    explicit GameEngine(CommandProcessor &commandProcessor, const IRandom &random);
     // Copy constructor
     GameEngine(const GameEngine &gameEngine);
     GameEngine &operator=(const GameEngine &gameEngine);
@@ -83,11 +84,13 @@ public:
     void gameOverPhase();
     [[nodiscard]] std::string stringToLog() const override;
     void transition(GameState newState);
+    [[nodiscard]] const IRandom &random() const;
 private:
     GameState *state_;
     GameState *previousState_;
     Map *map_;
     Deck *deck_;
+    const IRandom *random_;
     std::vector<Player *> *players_;
     void removeEliminatedPlayers() const;
     void checkWinningCondition();
@@ -187,16 +190,35 @@ public:
     QuitCommand &operator=(const QuitCommand &command);
 };
 
-class Random {
+class IRandom {
+public:
+    virtual ~IRandom() = default;
+    [[nodiscard]] virtual unsigned generate(unsigned from, unsigned to) const = 0;
+};
+
+class Random final : public IRandom {
 public:
     Random();
     Random(const Random& random) = delete;
-    ~Random() = default;
+    ~Random() override;
     Random &operator=(const Random &command) = delete;
-    unsigned generate(unsigned from, unsigned to);
+    [[nodiscard]] unsigned generate(unsigned from, unsigned to) const override;
 private:
-    std::random_device r;
-    std::default_random_engine e;
+    std::default_random_engine *eng;
+    std::uniform_int_distribution<unsigned> *u;
 };
+
+class FakeRandom final : public IRandom {
+public:
+    FakeRandom();
+    FakeRandom(const FakeRandom& random) = delete;
+    ~FakeRandom() override;
+    FakeRandom &operator=(const FakeRandom &command) = delete;
+    [[nodiscard]] unsigned generate(unsigned from, unsigned to) const override;
+private:
+    std::mt19937 *eng;
+    std::uniform_int_distribution<unsigned> *u;
+};
+
 
 #endif // COMP345_GAMEENGINE_H

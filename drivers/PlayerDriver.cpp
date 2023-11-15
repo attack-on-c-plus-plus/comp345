@@ -24,9 +24,9 @@
 void createMap(Map &map);
 
 void testPlayer() {
-
+    const FakeRandom random;
     CommandProcessor commandProcessor;
-    GameEngine gameEngine{commandProcessor};
+    GameEngine gameEngine{commandProcessor, random};
 
     // Territories + Player Relation Testing : "Player owns a collection of territories (see Part 1)"
     const std::string seperator(70, '=');
@@ -119,7 +119,7 @@ void testPlayer() {
 
     // Display the territories to defend
     std::cout << "Player " << player2.getName() << " (defending) territories:" << std::endl;
-    for (auto territory: defendTerritories) {
+    for (const auto territory: defendTerritories) {
         std::cout << *territory << std::endl;
     }
 
@@ -135,11 +135,6 @@ void testPlayer() {
 
     // Issue some orders
     player1.issueOrders();
-    player1.issueOrders();
-    player1.issueOrders();
-    player1.issueOrders();
-    player1.issueOrders();
-    player1.issueOrders();
 
     // Check the orders that were given
     std::cout << seperator << std::endl;
@@ -148,10 +143,11 @@ void testPlayer() {
 
     std::cout << player1.orderList() << std::endl;
 //-----------------------------------------------------------------------------------------------------------
-};
+}
 
 void createMap(Map &map) {
-    Continent c1{"c1", 1}, c2{"c2", 2};
+    const Continent c1{"c1", 1};
+    const Continent c2{"c2", 2};
     map.add(c1).add(c2);
     const Territory t1{"t1"}, t2{"t2"}, t3{"t3"};
     map.add(t1).add(t2).add(t3);

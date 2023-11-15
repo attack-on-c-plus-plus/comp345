@@ -36,6 +36,7 @@ public:
     // Copy constructor
     Order(const Order &order);
     ~Order() override;
+    [[nodiscard]] virtual Order &clone() const = 0;
     [[nodiscard]] virtual bool validate() = 0;
     virtual void execute();
     [[nodiscard]] virtual const std::string &description() const;
@@ -60,6 +61,7 @@ public:
     explicit DeployOrder(GameEngine &gameEngine, Player &player, Territory &target, unsigned armies);
     DeployOrder(const DeployOrder &order);
     ~DeployOrder() override;
+    [[nodiscard]] Order &clone() const override;
     [[nodiscard]] bool validate() override;
     void execute() override;
     DeployOrder &operator=(const DeployOrder&);
@@ -78,6 +80,7 @@ public:
     explicit AdvanceOrder(GameEngine &gameEngine, Player &player, Territory &source, Territory &target, unsigned armies);
     AdvanceOrder(const AdvanceOrder &order);
     ~AdvanceOrder() override;
+    [[nodiscard]] Order& clone() const override;
     [[nodiscard]] bool validate() override;
     void execute() override;
     AdvanceOrder &operator=(const AdvanceOrder&);
@@ -99,6 +102,7 @@ public:
     explicit BombOrder(GameEngine &gameEngine, Player &player, Territory &target);
     BombOrder(const BombOrder &order);
     ~BombOrder() override;
+    [[nodiscard]] Order& clone() const override;
     [[nodiscard]] bool validate() override;
     void execute() override;
     BombOrder &operator=(const BombOrder&);
@@ -117,6 +121,7 @@ public:
     explicit BlockadeOrder(GameEngine &gameEngine, Player &player, Territory &target);
     BlockadeOrder(const BlockadeOrder &order);
     ~BlockadeOrder() override;
+    [[nodiscard]] Order& clone() const override;
     [[nodiscard]] bool validate() override;
     void execute() override;
     BlockadeOrder &operator=(const BlockadeOrder&);
@@ -134,6 +139,7 @@ public:
     explicit AirliftOrder(GameEngine &gameEngine, Player &player, Territory &source, Territory &target, unsigned armies);
     AirliftOrder(const AirliftOrder &order);
     ~AirliftOrder() override;
+    [[nodiscard]] Order& clone() const override;
     [[nodiscard]] bool validate() override;
     void execute() override;
     AirliftOrder &operator=(const AirliftOrder&);
@@ -153,6 +159,7 @@ public:
     explicit NegotiateOrder(GameEngine &gameEngine, Player &player, Player &otherPlayer);
     NegotiateOrder(const NegotiateOrder &order);
     ~NegotiateOrder() override;
+    [[nodiscard]] Order& clone() const override;
     [[nodiscard]] bool validate() override;
     void execute() override;
     NegotiateOrder &operator=(const NegotiateOrder&);
@@ -170,11 +177,11 @@ public:
     OrdersList(const OrdersList&);
     ~OrdersList() override;
 
-    OrdersList& addOrder(Order &order);
+    OrdersList& addOrder(const Order &order);
     OrdersList& remove(int index);
     OrdersList& move(int from, int to);
     OrdersList& executeOrders();
-    [[nodiscard]]const std::vector<Order*> &getOrder() const;
+    [[nodiscard]]const std::vector<Order*> &orders() const;
     [[nodiscard]] std::string stringToLog() const override;
     OrdersList &operator=(const OrdersList&);
     friend std::ostream& operator<<(std::ostream& os, const OrdersList& ordersList);

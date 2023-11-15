@@ -22,8 +22,9 @@
 
 void testCards() {
     const std::string seperator(70, '=');
-    auto *processor = new CommandProcessor();
-    GameEngine engine{*processor};
+    const FakeRandom random;
+    CommandProcessor processor;
+    GameEngine engine{processor, random};
     Player player{engine, "Bob"};
     Territory territory{};
     std::cout << seperator << std::endl;
@@ -41,7 +42,7 @@ void testCards() {
 
     // Creates an empty deck of cards
     // And adds the created cards to the deck
-    Deck gameDeck{};
+    Deck gameDeck{random};
     gameDeck.add(CardType::bomb);
     gameDeck.add(CardType::reinforcement);
     gameDeck.add(CardType::blockade);
@@ -71,15 +72,14 @@ void testCards() {
     std::cout << seperator << std::endl;
     std::cout << "Playing the Cards from the hand" << std::endl;
     std::cout << seperator << std::endl;
-
     // Revised solution
     while (!playerHand.empty()) {
-        std::cout << playerHand << std::flush;
-        Random rnd;
-        const auto random = rnd.generate(0, playerHand.size() - 1);
+        std::cout << playerHand << std::endl;
 
-        const auto& cardSelected = playerHand.card(random);
-        std::cout << "Playing " << cardSelected << " at index " << random << std::endl;
+        const auto index = random.generate(0, playerHand.size() - 1);
+
+        const auto& cardSelected = playerHand.card(index);
+        std::cout << "Playing " << cardSelected << " at index " << index << std::endl;
         gameDeck.discard(cardSelected.play(player, territory,engine), playerHand);
         std::cout << std::endl;
     }
@@ -90,6 +90,4 @@ void testCards() {
     std::cout << seperator << std::endl;
 
     std::cout << gameDeck << std::endl;
-
-    delete processor;
 }

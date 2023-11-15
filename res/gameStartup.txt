@@ -1,16 +1,12 @@
-loadmap maps/valid/3D.map
+loadmap maps/valid/Simple.map
 validatemap
 addplayer Bob
 addplayer Sue
-addplayer Steve
-addplayer Yasmine
 gamestart
 replay
-loadmap maps/valid/3D.map
+loadmap maps/valid/Simple.map
 validatemap
 addplayer Bob
 addplayer Sue
-addplayer Steve
-addplayer Yasmine
 gamestart
 quit

@@ -13,6 +13,8 @@
 #include "GameEngine.h"
 
 #include <algorithm>
+#include <cassert>
+#include <climits>
 #include <filesystem>
 #include <iostream>
 #include <random>
@@ -27,12 +29,14 @@
 /**
  * Main constructor for the GameEngine object
  * @param commandProcessor
+ * @param random
  */
-GameEngine::GameEngine(CommandProcessor&commandProcessor) : state_{new GameState(GameState::start)},
+GameEngine::GameEngine(CommandProcessor &commandProcessor, const IRandom &random) : state_{new GameState(GameState::start)},
     previousState_{new GameState(GameState::start)}, map_{new Map} {
     commandProcessor_ = &commandProcessor;
     players_ = new std::vector<Player *>();
-    deck_ = new Deck(24);
+    deck_ = new Deck(random, 24);
+    random_ = &random;
 }
 
 /**
@@ -44,6 +48,7 @@ GameEngine::GameEngine(const GameEngine &gameEngine) : Subject(gameEngine), stat
     commandProcessor_ = gameEngine.commandProcessor_;
     players_ = new std::vector(*gameEngine.players_);
     deck_ = new Deck(*gameEngine.deck_);
+    random_ = gameEngine.random_;
 }
 
 /**
@@ -197,6 +202,10 @@ void GameEngine::transition(const GameState newState) {
     *previousState_ = *state_;
     *state_ = newState;
     Notify(*this);
+}
+
+const IRandom& GameEngine::random() const {
+    return *random_;
 }
 
 /**
@@ -613,11 +622,40 @@ void QuitCommand::execute() {
     gameEngine_->transition(GameState::gameOver);
 }
 
+/**
+ * \brief
+ */
 Random::Random() {
-    e = std::default_random_engine(r());
+    eng = new std::default_random_engine[1];
+    std::random_device r{};
+    std::default_random_engine e(r());
+    eng[0] = e;
+    u = new std::uniform_int_distribution<unsigned>(0, UINT_MAX);
 }
 
-unsigned Random::generate(const unsigned from, const unsigned to) {
-    std::uniform_int_distribution u(from, to);
-    return u(e);
+Random::~Random() {
+    delete [] eng;
+    delete u;
+}
+
+unsigned Random::generate(const unsigned from, const unsigned to) const {
+    assert(from <= to);
+    return (*u)(eng[0]) % (to - from + 1) + from;
+}
+
+FakeRandom::FakeRandom() {
+    eng = new std::mt19937[1];
+    std::mt19937 e{123};
+    eng[0] = e;
+    u = new std::uniform_int_distribution<unsigned>(0, UINT_MAX);
+}
+
+FakeRandom::~FakeRandom() {
+    delete [] eng;
+    delete u;
+}
+
+unsigned FakeRandom::generate(const unsigned from, const unsigned to) const {
+    assert(from <= to);
+    return (*u)(eng[0]) % (to - from + 1) + from;
 }
