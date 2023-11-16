@@ -362,7 +362,7 @@ void Map::depthFirstSearchTerritory(std::vector<bool> &visited, size_t &count, c
  */
 std::vector<const Territory*> Map::territories(const Player &p) const {
     auto byPlayer = [p](const Territory *territory)
-    { return territory->isOwned() && territory->owner().getName() == p.getName(); };
+    { return territory->isOwned() && territory->owner().name() == p.name(); };
     std::vector<const Territory*> t{};
     for (const auto& item: *territories_ | std::views::filter(byPlayer)) {
         t.push_back(item);

@@ -222,7 +222,7 @@ void GameEngine::executeOrdersPhase() const {
 
     // execute player orders
     for (const auto player: *players_) {
-        if (player->getTerritories().empty()) // if player has no territories skip turn
+        if (player->territories().empty()) // if player has no territories skip turn
             continue;
         player->orderList().executeOrders();
         player->removeNegotiators();
@@ -249,7 +249,7 @@ void GameEngine::checkWinningCondition() {
 void GameEngine::removeEliminatedPlayers() const {
     // remove players which have no territories
     for (auto it = players_->begin(); it != players_->end(); ++it) {
-        if ((*it)->getTerritories().empty()) {
+        if ((*it)->territories().empty()) {
             delete *it;
             players_->erase(it);
             --it;
@@ -459,8 +459,8 @@ void ValidateMapCommand::execute() {
     gameEngine_->transition(GameState::mapValidated);
 }
 
-AddPlayerCommand::AddPlayerCommand(GameEngine&gameEngine, const std::string&playerName) : Command(gameEngine,
-    "AddPlayer"), playerName_{new std::string(playerName)} {
+AddPlayerCommand::AddPlayerCommand(GameEngine&gameEngine, const std::string&playerName, const Strategy strategy) : Command(gameEngine,
+    "AddPlayer"), playerName_{new std::string(playerName)}, strategy_{new Strategy(strategy)} {
 }
 
 AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand&addPlayer) = default;
@@ -490,7 +490,7 @@ bool AddPlayerCommand::validate() {
 
 void AddPlayerCommand::execute() {
     if (!validate()) return;
-    gameEngine_->getPlayers().push_back(new Player(*gameEngine_, *playerName_));
+    gameEngine_->getPlayers().push_back(new Player(*gameEngine_, *playerName_, *strategy_));
     saveEffect("Player \"" + *playerName_ + "\" added.");
     gameEngine_->transition(GameState::playersAdded);
 }
@@ -537,7 +537,7 @@ void GameStartCommand::execute() {
     for (const auto i: gameEngine_->getPlayers()) {
         i->draw();
         i->draw();
-        os << "\n" << i->getName() << " drew " << i->getHand();
+        os << "\n" << i->name() << " drew " << i->hand();
     }
     saveEffect(os.str());
     gameEngine_->transition(GameState::assignReinforcements);
@@ -549,7 +549,7 @@ void GameStartCommand::setPlayerTurnOrder(std::ostream &os) const {
     std::ranges::shuffle(gameEngine_->getPlayers(), e);
     os << "Turn Order: ";
     for (const auto p: gameEngine_->getPlayers()) {
-        os << p->getName() << " ";
+        os << p->name() << " ";
     }
 }
 
@@ -561,7 +561,7 @@ void GameStartCommand::assignTerritories(std::vector<Territory *> &territories, 
             const auto territory = territories[random];
             it->add(*territory);
             territories.erase(territories.begin() + random);
-            os << "\t" << territory->name() << " to " << it->getName() << std::endl;
+            os << "\t" << territory->name() << " to " << it->name() << std::endl;
             if (territories.empty())
                 break;
         }

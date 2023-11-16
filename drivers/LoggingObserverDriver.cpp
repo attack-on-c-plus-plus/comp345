@@ -32,8 +32,8 @@ void testLoggingObserver() {
     FakeRandom random;
     CommandProcessor commandProcessor;
     GameEngine engine{commandProcessor, random};
-    Player player1{engine, "Joe"};
-    Player player2{engine, "Jane"};
+    Player player1{engine, "Joe", Strategy::Human};
+    Player player2{engine, "Jane", Strategy::Human};
     auto &map = engine.map();
     createMap(map);
 
@@ -115,7 +115,7 @@ void testLoggingObserver() {
     validateMapCommand.attach(logObserver);
     validateMapCommand.validate();
 
-    AddPlayerCommand addPlayerCommand{engine, "Bob"};
+    AddPlayerCommand addPlayerCommand{engine, "Bob", Strategy::Human};
     addPlayerCommand.attach(logObserver);
     addPlayerCommand.validate();
 

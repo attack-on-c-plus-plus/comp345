@@ -33,8 +33,8 @@ void testOrderList()
     CommandProcessor commandProcessor;
     GameEngine engine{commandProcessor, random};
 
-    Player player1{engine, "player1"};
-    Player player2{engine, "player2"};
+    Player player1{engine, "player1", Strategy::Human};
+    Player player2{engine, "player2", Strategy::Human};
 
     auto &map = engine.map();
     createMap(map);
@@ -101,8 +101,8 @@ void testOrderExecution()
     CommandProcessor commandProcessor;
     GameEngine engine{commandProcessor, random};
 
-    Player player1{engine, "player1"};
-    Player player2{engine, "player2"};
+    Player player1{engine, "player1", Strategy::Human};
+    Player player2{engine, "player2", Strategy::Human};
 
     engine.getPlayers().push_back(&player1);
     engine.getPlayers().push_back(&player2);
@@ -224,7 +224,7 @@ void testOrderExecution()
     std::cout << seperator << std::endl;
     std::cout <<"Players 1 Hand:" << std::endl;
     std::cout << seperator << std::endl;
-    for (const auto card : player1.getHand().cards()) { std::cout << *card << std::endl; }
+    for (const auto card : player1.hand().cards()) { std::cout << *card << std::endl; }
 
     std::cout << seperator << std::endl;
     std::cout<<"* Case where attacker attacks defender territory (with more troops) *" << std::endl;
@@ -253,7 +253,7 @@ void testOrderExecution()
     ordersList.remove(0);
 
     std::cout <<"Players 1 Hand:" << std::endl;
-    for (const auto card : player1.getHand().cards()) { std::cout << *card << std::endl; }
+    for (const auto card : player1.hand().cards()) { std::cout << *card << std::endl; }
 
     //------------------------------------------------------------------------------------------------------------------
     //                                               Negotiate

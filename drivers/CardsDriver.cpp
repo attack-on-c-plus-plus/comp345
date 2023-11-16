@@ -25,7 +25,7 @@ void testCards() {
     const FakeRandom random;
     CommandProcessor processor;
     GameEngine engine{processor, random};
-    Player player{engine, "Bob"};
+    Player player{engine, "Bob", Strategy::Human};
     Territory territory{};
     std::cout << seperator << std::endl;
     std::cout << "Testing the implementation of Cards" << std::endl;

@@ -17,8 +17,10 @@
 #include <vector>
 
 #include "Orders.h"
+#include "PlayerStrategies.h"
 
 // forward declaration
+enum class Strategy;
 class Map;
 class Territory;
 class OrdersList;
@@ -32,36 +34,35 @@ class CommandProcessor;
 class Player {
 public:
     //Constructor
-    explicit Player(GameEngine &gameEngine, const std::string &name);
-    explicit Player(GameEngine &gameEngine, const std::string &name, CommandProcessor &commandProcessor);
+    explicit Player(GameEngine &gameEngine, const std::string &name, Strategy strategy);
     Player(const Player &player);
     //Destructor
     ~Player();
     //Methods
-    [[nodiscard]] std::string getName() const;
-    void changeName(const std::string &newName);
-    [[nodiscard]] std::vector<const Territory *> toAttack() const;
-    [[nodiscard]] bool isDeploying() const;
-    [[nodiscard]] bool isIssuingOrders() const;
-    [[nodiscard]] std::vector<const Territory *> toDefend() const;
-    void issueOrders();
-    void issueOrder();
-    [[nodiscard]] OrdersList &orderList() const;
-    // Add methods to manage the player's territory
-    void add(Territory &territory) const;
-    [[nodiscard]] const std::vector<Territory *> &getTerritories() const;
-    [[nodiscard]] const std::vector<const Player *> &getCantAttack() const;
-    void addNegotiator(const Player &negotiator) const;
-    void removeNegotiators() const;
-    // Add methods to manage the player's hand of cards
-    void draw() const;
-    void play(const Card &card, Territory &target);
-    [[nodiscard]] const Hand &getHand() const;
-    [[nodiscard]] const unsigned reinforcementPool() const;
     Player &operator=(const Player &player);
     bool operator==(const Player &player) const;
+    [[nodiscard]] std::string name() const;
+    void name(const std::string &newName);
+    [[nodiscard]] bool isDeploying() const;
+    [[nodiscard]] bool isIssuingOrders() const;
+    [[nodiscard]] unsigned reinforcementPool() const;
+    [[nodiscard]] Strategy strategy() const;
+    [[nodiscard]] OrdersList &orderList() const;
+    [[nodiscard]] const Hand &hand() const;
+    [[nodiscard]] const std::vector<Territory *> &territories() const;
+    [[nodiscard]] std::vector<const Territory *> toAttack() const;
+    [[nodiscard]] std::vector<const Territory *> toDefend() const;
+    [[nodiscard]] const std::vector<const Player *> &cantAttack() const;
+    void issueOrders() const;
+    void issueOrder() const;
+    void add(Territory &territory) const;
+    void addNegotiator(const Player &negotiator) const;
+    void removeNegotiators() const;
+    void draw() const;
+    void play(const Card &card, Territory &target);
     void fillReinforcementPool() const;
     void deploy(unsigned armies) const;
+    void doneOrders() const;
 private:
     std::string *name_;
     std::vector<Territory *> *territories_;
@@ -72,9 +73,11 @@ private:
     bool *ordersComplete_;
     Hand *hand_;
     GameEngine *gameEngine_;
-    CommandProcessor *commandProcessor_;
+    Strategy* strategy_;
+    PlayerStrategy* playerStrategy_;
     [[nodiscard]] unsigned int continentBonusArmies() const;
     [[nodiscard]] unsigned int territoryBonusArmies() const;
+    PlayerStrategy* createStrategy(Strategy strategy);
     friend std::ostream &operator<<(std::ostream &os, const Player &player);
 };
 
