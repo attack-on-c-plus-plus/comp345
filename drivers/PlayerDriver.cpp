@@ -34,8 +34,8 @@ void testPlayer() {
     std::cout << "Displaying Territories + Player Relation Testing" << std::endl;
     std::cout << seperator << std::endl;
 
-    Player player1(gameEngine, "Sally");
-    const Player player2(gameEngine, "Bob");
+    Player player1(gameEngine, "Sally", Strategy::Human);
+    const Player player2(gameEngine, "Bob", Strategy::Human);
 
     auto &map = gameEngine.map();
     createMap(map);
@@ -49,8 +49,8 @@ void testPlayer() {
     std::cout << "Player Information:" << std::endl;
     std::cout << seperator << std::endl;
 
-    std::cout << "Player \"" << player1.getName() << "\" has the following Territories:" << std::endl;
-    for (const auto ownedTerritories = player1.getTerritories(); const auto territory: ownedTerritories) {
+    std::cout << "Player \"" << player1.name() << "\" has the following Territories:" << std::endl;
+    for (const auto ownedTerritories = player1.territories(); const auto territory: ownedTerritories) {
         std::cout << "\tTerritory: " << *territory << std::endl;
     }
 
@@ -71,7 +71,7 @@ void testPlayer() {
     player1.draw();
 
     // Get the player's hand and display the cards
-    const Hand hand = player1.getHand();
+    const Hand hand = player1.hand();
     std::cout << "\nPlayer's Hand:" << std::endl;
     for (unsigned int i = 0; i < hand.size(); i++) {
         std::cout << "Card " << i + 1 << ": " << hand.card(i) << std::endl;
@@ -91,9 +91,9 @@ void testPlayer() {
     std::cout << "Player Information:" << std::endl;
     std::cout << seperator << std::endl;
 
-    std::cout << "Player " << player1.getName() << "\" Has the following Territories:"
+    std::cout << "Player " << player1.name() << "\" Has the following Territories:"
               << std::endl;
-    for (const auto ownedTerritories2 = player1.getTerritories(); const auto territory: ownedTerritories2) {
+    for (const auto ownedTerritories2 = player1.territories(); const auto territory: ownedTerritories2) {
         std::cout << "\tTerritory: " << *territory << std::endl;
     }
 
@@ -101,16 +101,16 @@ void testPlayer() {
     std::cout << seperator << std::endl;
     std::cout << "Player Information:" << std::endl;
     std::cout << seperator << std::endl;
-    std::cout << "Player " << player2.getName() << "\" Has the following Territories:"
+    std::cout << "Player " << player2.name() << "\" Has the following Territories:"
               << std::endl;
-    for (const auto& ownedTerritories3 = player2.getTerritories(); const auto territory: ownedTerritories3) {
+    for (const auto& ownedTerritories3 = player2.territories(); const auto territory: ownedTerritories3) {
         std::cout << "\tTerritory: " << *territory << std::endl;
     }
 
     const std::vector<const Territory *> attackTerritories = player1.toAttack();
 
     // Display the territories to attack
-    std::cout << "Player " << player1.getName() << " (attacking) territories:" << std::endl;
+    std::cout << "Player " << player1.name() << " (attacking) territories:" << std::endl;
     for (const auto territory: attackTerritories) {
         std::cout << *territory << std::endl;
     }
@@ -118,7 +118,7 @@ void testPlayer() {
     const std::vector<const Territory *> defendTerritories = player2.toDefend();
 
     // Display the territories to defend
-    std::cout << "Player " << player2.getName() << " (defending) territories:" << std::endl;
+    std::cout << "Player " << player2.name() << " (defending) territories:" << std::endl;
     for (const auto territory: defendTerritories) {
         std::cout << *territory << std::endl;
     }
@@ -138,7 +138,7 @@ void testPlayer() {
 
     // Check the orders that were given
     std::cout << seperator << std::endl;
-    std::cout << "Orders executed: Player Name is " << player1.getName() << std::endl;
+    std::cout << "Orders executed: Player Name is " << player1.name() << std::endl;
     std::cout << seperator << std::endl;
 
     std::cout << player1.orderList() << std::endl;

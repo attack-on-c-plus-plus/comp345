@@ -96,12 +96,12 @@ std::string Order::stringToLog() const {
 std::ostream &Order::printTo(std::ostream &os) const {
     if(!effect_->empty())
     {
-        os <<"("<<player_->getName() <<") - "<< *effect_;
+        os <<"("<<player_->name() <<") - "<< *effect_;
     }
 
     else
     {
-        os << *description_ << "(" << player_->getName() << ") - ";
+        os << *description_ << "(" << player_->name() << ") - ";
     }
     return os;
 }
@@ -163,7 +163,7 @@ bool DeployOrder::validate() {
     }
     if (*armies_ > 0 && *armies_ <= player_->reinforcementPool()) {
 
-        if (target_->owner().getName() == player_->getName()) {
+        if (target_->owner().name() == player_->name()) {
             *effect_ = "Succesfully deployed armies to target territory!";
             return true;
         }
@@ -262,7 +262,7 @@ bool AdvanceOrder::validate() {
         return false;
     }
 
-    for(const auto negotiators = player_->getCantAttack(); auto enemy : negotiators)
+    for(const auto negotiators = player_->cantAttack(); auto enemy : negotiators)
     {
         if (*enemy == target_->owner())
         {
@@ -284,7 +284,7 @@ bool AdvanceOrder::validate() {
     }
 
     // Get the player's adjacent territories
-    const auto playerTerritories = player_->getTerritories();
+    const auto playerTerritories = player_->territories();
 
     // If target territory is not adjacent to the territory owned by the player
     // issuing the order, order is invalid
@@ -298,7 +298,7 @@ bool AdvanceOrder::validate() {
     }
 
     if(isValid){
-        const auto name = player_->getName();
+        const auto name = player_->name();
         *effect_ = name + "Successfully played AdvanceOrder!";
         return true;
     }
@@ -314,21 +314,21 @@ void AdvanceOrder::execute() {
     if (validate()) {
 
         //if player issuing order owns target and source territory
-        if(source_->owner().getName() == target_->owner().getName())
+        if(source_->owner().name() == target_->owner().name())
         {
             //If AdvanceOrder is valid, armies in source territory are reduced and armies in target territory are increased
             source_->removeArmies(*armies_);
             target_->addArmies(*armies_);
 
             //Update the effect string to describe the action
-            *effect_ = player_->getName() + "succesfully Advanced " + std::to_string(*armies_) + " armies from territory "
+            *effect_ = player_->name() + "succesfully Advanced " + std::to_string(*armies_) + " armies from territory "
                     + source_->name() + " to territory " + target_->name() + ".";
         }
 
         //if player issuing order owns source territory but doesn't own target territory
         //ATTACK
         unsigned originalAttackers=*armies_;
-        if(source_->owner().getName() != target_->owner().getName()){
+        if(source_->owner().name() != target_->owner().name()){
             unsigned remainingAttackers = *armies_; // used of attackers win
             std::cout << " --> Initiating attack!" << std::endl;
 
@@ -362,18 +362,18 @@ void AdvanceOrder::execute() {
                 player_->draw();
                 source_->removeArmies(originalAttackers);
 
-                std::cout << " --> Attackers won! " + player_->getName() + " now owns the target territory."  << std::endl;
+                std::cout << " --> Attackers won! " + player_->name() + " now owns the target territory."  << std::endl;
             }
             //Defenders won
             else {
                 //remove armies sent from source territory
                 source_->removeArmies(originalAttackers);
-                std::cout << " --> Defenders won! " + player_->getName() + " lost the battle for " +  target_->name() + "..." << std::endl;
+                std::cout << " --> Defenders won! " + player_->name() + " lost the battle for " +  target_->name() + "..." << std::endl;
             }
         }
 
         //Update the effect string to describe the action
-        *effect_ = player_->getName() + " Advanced " + std::to_string(*armies_) + " armies from territory "
+        *effect_ = player_->name() + " Advanced " + std::to_string(*armies_) + " armies from territory "
         + source_->name() + " to territory " + target_->name() + ".";
     }
     Order::execute();
@@ -456,7 +456,7 @@ bool BombOrder::validate() {
 
     // If target territory is not adjacent to the territory owned by the player
     // issuing the order, order is invalid
-    for (const auto playerTerritories = player_->getTerritories(); const auto territory : playerTerritories) {
+    for (const auto playerTerritories = player_->territories(); const auto territory : playerTerritories) {
         if(auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
             std::ranges::find(adjacentTerritories, target_) != adjacentTerritories.end()) {
             isValid = true;
@@ -568,14 +568,14 @@ void BlockadeOrder::execute() {
 
         bool neutralFound = false;
         for (const Player *player : gameEngine_->getPlayers()) {
-            if (player->getName() == "Neutral") {
+            if (player->name() == "Neutral") {
                 target_->owner(*player);
                 neutralFound = true;
                 break;
             }
         }
         if (!neutralFound) {
-            auto *player = new Player(*gameEngine_, "Neutral");
+            auto *player = new Player(*gameEngine_, "Neutral", Strategy::Neutral);
             gameEngine_->getPlayers().push_back(player);
             target_->owner(*player);
         }
@@ -660,7 +660,7 @@ bool AirliftOrder::validate() {
     }
 
     //If the source or target territory does not belong to the player that issued the order, the order is invalid
-    if (source_->owner().getName() != target_->owner().getName() && player_->getName() != source_->owner().getName()) {
+    if (source_->owner().name() != target_->owner().name() && player_->name() != source_->owner().name()) {
         *effect_ = "Failed to play AirliftOrder: " + target_->name() + " doesn't own the source and target territories!";
         return false;
     }
@@ -774,7 +774,7 @@ bool NegotiateOrder::validate() {
 
     // check if player has a negotiate card ?
     if (playerExists) {
-        for (const std::vector<const Card *> ourHand = player_->getHand().cards(); auto *card: ourHand) {
+        for (const std::vector<const Card *> ourHand = player_->hand().cards(); auto *card: ourHand) {
             if (card->type() == CardType::diplomacy) return true;
         }
         return false;
@@ -791,7 +791,7 @@ void NegotiateOrder::execute() {
         player_->addNegotiator(*otherPlayer_);
         otherPlayer_->addNegotiator(*player_);
         // Update the effect string to describe the action
-        *effect_ = "Initiated negotiation with player " + otherPlayer_->getName() + ".";
+        *effect_ = "Initiated negotiation with player " + otherPlayer_->name() + ".";
     }
     Order::execute();
 }
@@ -812,7 +812,7 @@ NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order) {
 std::ostream &NegotiateOrder::printTo(std::ostream &os) const {
     if(effect_->empty())
     {
-        return Order::printTo(os) << "with " << otherPlayer_->getName();
+        return Order::printTo(os) << "with " << otherPlayer_->name();
     }
     return Order::printTo(os);
 }

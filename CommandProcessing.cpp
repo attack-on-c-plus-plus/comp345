@@ -26,25 +26,34 @@
 /**
  * Commands available to the command processor
  */
-std::unique_ptr<std::map<CommandType, std::string>> CommandProcessor::commands = std::make_unique<std::map<CommandType, std::string>>(
-        std::map<CommandType, std::string> {
-                {CommandType::loadmap,      "loadmap"},
-                {CommandType::validatemap,  "validatemap"},
-                {CommandType::addplayer,    "addplayer"},
-                {CommandType::gamestart,    "gamestart"},
-                {CommandType::replay,       "replay"},
-                {CommandType::quit,         "quit"}
+std::unique_ptr<std::map<std::string, CommandType>> CommandProcessor::commands = std::make_unique<std::map<std::string, CommandType>>(
+        std::map<std::string, CommandType> {
+                { "loadmap", CommandType::loadmap},
+                { "validatemap", CommandType::validatemap},
+                { "addplayer", CommandType::addplayer},
+                { "gamestart", CommandType::gamestart},
+                { "replay", CommandType::replay},
+                { "quit", CommandType::quit}
         });
 
-std::unique_ptr<std::map<OrderType, std::string>> CommandProcessor::orders = std::make_unique<std::map<OrderType, std::string>>(
-    std::map<OrderType, std::string> {
-        {OrderType::deploy,     "deploy"},
-        {OrderType::advance,    "advance"},
-        {OrderType::bomb,       "bomb"},
-        {OrderType::blockade,   "blockade"},
-        {OrderType::airlift,    "airlift"},
-        {OrderType::negotiate,  "negotiate"},
-        {OrderType::end,        "end"}
+std::unique_ptr<std::map<std::string, OrderType>> CommandProcessor::orders = std::make_unique<std::map<std::string, OrderType>>(
+    std::map<std::string, OrderType> {
+        {"deploy", OrderType::deploy },
+        {"advance", OrderType::advance },
+        {"bomb", OrderType::bomb },
+        {"blockade", OrderType::blockade },
+        {"airlift", OrderType::airlift },
+        {"negotiate", OrderType::negotiate },
+        {"end", OrderType::end }
+        });
+
+std::unique_ptr<std::map<std::string, Strategy>> CommandProcessor::strategies = std::make_unique<std::map<std::string, Strategy>>(
+        std::map<std::string, Strategy> {
+            {"neutral",     Strategy::Neutral    },
+            {"cheater",     Strategy::Cheater    },
+            {"human",       Strategy::Human      },
+            {"aggressive",  Strategy::Aggressive },
+            {"benevolent",  Strategy::Benevolent  }
         });
 
 /**
@@ -108,12 +117,13 @@ Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
         std::cout << "Enter command (current game state: " << gameEngine << ")" << std::endl;
         std::string commandStr;
         std::cin >> commandStr;
-        std::string parameter;
+        std::string parameters;
         if (std::cin.peek() == ' ') {
             std::cin.get();
-            getline(std::cin, parameter);
+            getline(std::cin, parameters);
         }
-        command = createCommand(gameEngine, commandStr, parameter);
+        std::stringstream parameterStream{parameters};
+        command = createCommand(gameEngine, commandStr, parameterStream);
         if (!command) std::cout << "Invalid command" << std::endl;
     }
     return *command;
@@ -127,93 +137,108 @@ Order* CommandProcessor::readOrder(GameEngine& gameEngine, Player &player) {
         if (gameEngine.state() == GameState::assignReinforcements)
             std::cout << "(available reinforcements: " << player.reinforcementPool() << ")";
         if (gameEngine.state() == GameState::issueOrders)
-            std::cout << "(cards available: " << player.getHand() << ")";
+            std::cout << "(cards available: " << player.hand() << ")";
         std::cout << std::endl;
-        std::string commandStr;
-        std::cin >> commandStr;
+        std::string orderStr;
+        std::cin >> orderStr;
         std::string parameters;
         if (std::cin.peek() == ' ') {
             std::cin.get();
             getline(std::cin, parameters);
         }
         std::stringstream parameterStream{parameters};
-        std::ranges::transform(commandStr, commandStr.begin(), tolower);
-        if (commandStr == orders->at(OrderType::end)) break;
-        order = createOrder(gameEngine, player, commandStr, parameterStream);
+        std::ranges::transform(orderStr, orderStr.begin(), tolower);
+        if (!orders->contains(orderStr)) {std::cout << "Invalid order. " << orderStr << std::endl; continue;}
+        if (orders->at(orderStr) == OrderType::end) break;
+        order = createOrder(gameEngine, player, orderStr, parameterStream);
         if (!order) std::cout << "Invalid order" << std::endl;
     }
     return order;
 }
 
 Command *
-CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter) {
+CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr, std::istream &parameters) {
     Command *command = nullptr;
     std::ranges::transform(commandStr, commandStr.begin(), tolower);
-    if (commandStr == commands->at(CommandType::loadmap)) {
-        command = new LoadMapCommand{gameEngine, parameter};
+    if (!commands->contains(commandStr)) std::cout << "Invalid command. " << commandStr << std::endl;
+    else {
+        switch (commands->at(commandStr)) {
+            case CommandType::loadmap: {
+                std::string filename;
+                parameters >> filename;
+                command = new LoadMapCommand{gameEngine, filename};
+                break;
+            }
+            case CommandType::validatemap:
+                command = new ValidateMapCommand{gameEngine};
+                break;
+            case CommandType::addplayer: {
+                std::string strategy;
+                parameters >> strategy;
+                std::string name;
+                if (parameters.peek() == ' ') {
+                    parameters.get();
+                    getline(parameters, name);
+                }
+                getline(parameters, name);
+                command = new AddPlayerCommand{gameEngine, name, strategies->at(strategy)};
+                break;
+            }
+            case CommandType::gamestart:
+                command = new GameStartCommand{gameEngine};
+                break;
+            case CommandType::replay:
+                command = new ReplayCommand{gameEngine};
+                break;
+            case CommandType::quit:
+                command = new QuitCommand{gameEngine};
+                break;
+        }
     }
-    else if (commandStr == commands->at(CommandType::validatemap)) {
-        command = new ValidateMapCommand{gameEngine};
-    }
-    else if (commandStr == commands->at(CommandType::addplayer)) {
-        command = new AddPlayerCommand{gameEngine, parameter};
-    }
-    else if (commandStr == commands->at(CommandType::gamestart)) {
-        command = new GameStartCommand{gameEngine};
-    }
-    else if (commandStr == commands->at(CommandType::replay)) {
-        command = new ReplayCommand{gameEngine};
-    }
-    else if (commandStr == commands->at(CommandType::quit)) {
-        command = new QuitCommand{gameEngine};
-    }
-    else { std::cout << "Invalid command. " << commandStr << std::endl; }
     return command;
 }
 
 Order *CommandProcessor::createOrder(GameEngine& gameEngine, Player &player, const std::string& orderStr,
     std::istream &parameters) {
     Order *order = nullptr;
-    if (orderStr == orders->at(OrderType::deploy)) {
-        unsigned territoryId, armies;
-        parameters >> territoryId;
-        parameters >> armies;
-        order = new DeployOrder(gameEngine, player, gameEngine.map().territory(territoryId), armies);
-    }
-    else if (orderStr == orders->at(OrderType::advance))
-    {
-        unsigned targetTerritoriesId,sourceTerritoriesId, armies;
-        parameters >> sourceTerritoriesId;
-        parameters >> targetTerritoriesId;
-        parameters >> armies;
-        order = new AdvanceOrder(gameEngine,player,gameEngine.map().territory(sourceTerritoriesId),gameEngine.map().territory(targetTerritoriesId),armies);
-    }
-    else if (orderStr == orders->at(OrderType::airlift))
-    {
-        unsigned targetTerritoriesId,sourceTerritoriesId, armies;
-        parameters >> sourceTerritoriesId;
-        parameters >> targetTerritoriesId;
-        parameters >> armies;
-        order = new AirliftOrder(gameEngine,player,gameEngine.map().territory(sourceTerritoriesId),gameEngine.map().territory(targetTerritoriesId),armies);
-    }
+    unsigned targetTerritoriesId, sourceTerritoriesId, armies;
+    switch (orders->at(orderStr)) {
+        case OrderType::deploy:
+            parameters >> targetTerritoriesId;
+            parameters >> armies;
+            order = new DeployOrder(gameEngine, player, gameEngine.map().territory(targetTerritoriesId), armies);
+            break;
+        case OrderType::advance:
+            parameters >> sourceTerritoriesId;
+            parameters >> targetTerritoriesId;
+            parameters >> armies;
+            order = new AdvanceOrder(gameEngine, player, gameEngine.map().territory(sourceTerritoriesId),
+                                     gameEngine.map().territory(targetTerritoriesId), armies);
+            break;
+        case OrderType::bomb:
+            parameters >> targetTerritoriesId;
+            order = new BombOrder(gameEngine, player, gameEngine.map().territory(targetTerritoriesId));
+            break;
+        case OrderType::blockade:
+            parameters >> targetTerritoriesId;
+            order = new BlockadeOrder(gameEngine, player, gameEngine.map().territory(targetTerritoriesId));
+            break;
+        case OrderType::airlift:
+            parameters >> sourceTerritoriesId;
+            parameters >> targetTerritoriesId;
+            parameters >> armies;
+            order = new AirliftOrder(gameEngine, player, gameEngine.map().territory(sourceTerritoriesId),
+                                     gameEngine.map().territory(targetTerritoriesId), armies);
+            break;
+        case OrderType::negotiate:
+            unsigned otherPlayerId;
+            parameters >> otherPlayerId;
+            order = new NegotiateOrder(gameEngine, player, *gameEngine.getPlayers().at(otherPlayerId));
+            break;
+        case OrderType::end:
+            break;
 
-    else if (orderStr == orders->at(OrderType::blockade))
-    {
-        unsigned targetTerritoriesId;
-        parameters >> targetTerritoriesId;
-        order = new BlockadeOrder(gameEngine,player,gameEngine.map().territory(targetTerritoriesId));
     }
-    else if (orderStr == orders->at(OrderType::bomb)) {
-        unsigned targetTerritoriesId;
-        parameters >> targetTerritoriesId;
-        order = new BombOrder(gameEngine,player,gameEngine.map().territory(targetTerritoriesId));
-    }
-    else if (orderStr == orders->at(OrderType::negotiate)) {
-        unsigned otherPlayerId;
-        parameters >> otherPlayerId;
-        order = new NegotiateOrder(gameEngine,player,*gameEngine.getPlayers().at(otherPlayerId));
-    }
-    else { std::cout << "Invalid command. " << orderStr << std::endl; }
     return order;
 }
 
@@ -286,12 +311,13 @@ Command &FileCommandProcessorAdapter::readCommand(GameEngine &gameEngine) {
 
         std::string commandStr;
         s >> commandStr;
-        std::string parameter;
+        std::string parameters;
         if (s.peek() == ' ') {
             s.get();
-            getline(s, parameter);
+            getline(s, parameters);
         }
-        c = createCommand(gameEngine, commandStr, parameter);
+        std::stringstream parameterStream{parameters};
+        c = createCommand(gameEngine, commandStr, parameterStream);
     }
     return *c;
 }

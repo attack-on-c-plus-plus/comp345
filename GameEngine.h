@@ -30,6 +30,7 @@
  * The states form the structure of the setup and the game itself.
  */
 
+enum class Strategy;
 class IRandom;
 // Forward declaration.
 class CommandProcessor;
@@ -146,7 +147,7 @@ public:
 class AddPlayerCommand final : public Command
 {
 public:
-    explicit AddPlayerCommand(GameEngine &gameEngine, const std::string &playerName);
+    explicit AddPlayerCommand(GameEngine &gameEngine, const std::string &playerName, const Strategy strategy);
     AddPlayerCommand(const AddPlayerCommand &addPlayer);
     ~AddPlayerCommand() override;
     bool validate() override;
@@ -155,6 +156,7 @@ public:
 
 private:
     std::string *playerName_;
+    const Strategy* strategy_;
 };
 
 class GameStartCommand final : public Command

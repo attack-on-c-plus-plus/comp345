@@ -73,12 +73,13 @@ public:
     Order *getOrder(GameEngine &gameEngine, Player &player);
     [[nodiscard]] bool validate(Command &command) const;
     [[nodiscard]] std::string stringToLog() const override;
-    static std::unique_ptr<std::map<CommandType, std::string>> commands;
-    static std::unique_ptr<std::map<OrderType, std::string>> orders;
+    static std::unique_ptr<std::map<std::string, CommandType>> commands;
+    static std::unique_ptr<std::map<std::string, OrderType>> orders;
+    static std::unique_ptr<std::map<std::string, Strategy>> strategies;
 protected:
     [[nodiscard]] virtual Command &readCommand(GameEngine &gameEngine);
     [[nodiscard]] virtual Order *readOrder(GameEngine &gameEngine, Player &player);
-    static Command *createCommand(GameEngine &gameEngine, std::string &commandStr, const std::string &parameter);
+    static Command *createCommand(GameEngine &gameEngine, std::string &commandStr, std::istream &parameters);
     static Order *createOrder(GameEngine &gameEngine, Player &player, const std::string &orderStr, std::istream &parameters);
 private:
     void saveCommand(Command &command);

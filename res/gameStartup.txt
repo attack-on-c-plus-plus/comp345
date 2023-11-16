@@ -1,12 +1,12 @@
 loadmap maps/valid/Simple.map
 validatemap
-addplayer Bob
-addplayer Sue
+addplayer human Bob
+addplayer human Sue
 gamestart
 replay
 loadmap maps/valid/Simple.map
 validatemap
-addplayer Bob
-addplayer Sue
+addplayer human Bob
+addplayer human Sue
 gamestart
 quit
