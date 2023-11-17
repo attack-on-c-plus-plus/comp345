@@ -1,6 +1,14 @@
-//
-// Created by hsc on 15/11/23.
-//
+/**
+ ************************************
+ * COMP 345 Professor Hakim Mellah
+ ************************************
+ * @author Team 5 Attack on C++
+ * @author Daniel Soldera
+ * @author Carson Senthilkumar
+ * @author Joe El-Khoury
+ * @author Henri Stephane Carbon
+ * @author Haris Mahmood
+ */
 
 #include "PlayerStrategies.h"
 
@@ -9,18 +17,35 @@
 #include "Map.h"
 #include "Player.h"
 
+/**
+ * \brief Constructor
+ * \param player
+ * \param gameEngine
+ */
 PlayerStrategy::PlayerStrategy(Player& player, GameEngine& gameEngine) {
     player_ = &player;
     gameEngine_ = &gameEngine;
 }
 
+/**
+ * \brief Copy Constructor
+ * \param playerStrategy
+ */
 PlayerStrategy::PlayerStrategy(const PlayerStrategy& playerStrategy) {
     player_ = playerStrategy.player_;
     gameEngine_ = playerStrategy.gameEngine_;
 }
 
+/**
+ * \brief Destructor
+ */
 PlayerStrategy::~PlayerStrategy() = default;
 
+/**
+ * \brief operator= overload
+ * \param playerStrategy
+ * \return the assigned player strategy
+ */
 PlayerStrategy& PlayerStrategy::operator=(const PlayerStrategy& playerStrategy) {
     if (this != &playerStrategy) {
         // no need to delete player_
@@ -29,18 +54,35 @@ PlayerStrategy& PlayerStrategy::operator=(const PlayerStrategy& playerStrategy) 
     return *this;
 }
 
+/**
+ * \brief Constructor
+ * \param player
+ * \param gameEngine
+ */
 HumanPlayerStrategy::HumanPlayerStrategy(Player& player, GameEngine& gameEngine) : PlayerStrategy(player, gameEngine) {
     commandProcessor_ = new CommandProcessor();
 }
 
+/**
+ * \brief Copy Constructor
+ * \param humanPlayerStrategy
+ */
 HumanPlayerStrategy::HumanPlayerStrategy(const HumanPlayerStrategy& humanPlayerStrategy) : PlayerStrategy(humanPlayerStrategy) {
     commandProcessor_ = new CommandProcessor(*humanPlayerStrategy.commandProcessor_);
 }
 
+/**
+ * \brief Destructor
+ */
 HumanPlayerStrategy::~HumanPlayerStrategy() {
     delete commandProcessor_;
 }
 
+/**
+ * \brief operator= overload
+ * \param humanPlayerStrategy
+ * \return the assigned player strategy
+ */
 HumanPlayerStrategy& HumanPlayerStrategy::operator=(const HumanPlayerStrategy& humanPlayerStrategy) {
     if (this != &humanPlayerStrategy) {
         delete commandProcessor_;
@@ -50,6 +92,9 @@ HumanPlayerStrategy& HumanPlayerStrategy::operator=(const HumanPlayerStrategy& h
     return *this;
 }
 
+/**
+ * \brief Issues an order
+ */
 void HumanPlayerStrategy::issueOrder() {
     if (!(player_->isDeploying() || player_->isIssuingOrders())) return;
 
@@ -60,6 +105,10 @@ void HumanPlayerStrategy::issueOrder() {
     player_->doneOrders();
 }
 
+/**
+ * \brief Gives the territories that can be attacked
+ * \return the territories to attack
+ */
 std::vector<const Territory*> HumanPlayerStrategy::toAttack() const {
     std::vector<const Territory*> territoriesToAttack;
 
@@ -98,6 +147,10 @@ std::vector<const Territory*> HumanPlayerStrategy::toAttack() const {
     return territoriesToAttack;
 }
 
+/**
+ * \brief Gives the territories that need to be defended
+ * \return the territories to defend
+ */
 std::vector<const Territory*> HumanPlayerStrategy::toDefend() const {
     std::vector<const Territory *> territoriesToDefend;
 
@@ -124,9 +177,18 @@ std::vector<const Territory*> HumanPlayerStrategy::toDefend() const {
     return territoriesToDefend;
 }
 
+/**
+ * \brief Constructor
+ * \param player
+ * \param gameEngine
+ */
 NeutralPlayerStrategy::NeutralPlayerStrategy(Player& player, GameEngine& gameEngine) : PlayerStrategy(player, gameEngine) {
 }
 
+/**
+ * \brief Copy Constructor
+ * \param neutralPlayerStrategy
+ */
 NeutralPlayerStrategy::NeutralPlayerStrategy(const NeutralPlayerStrategy& neutralPlayerStrategy) = default;
 
 NeutralPlayerStrategy& NeutralPlayerStrategy::operator=(const NeutralPlayerStrategy& neutralPlayerStrategy) {
@@ -136,14 +198,25 @@ NeutralPlayerStrategy& NeutralPlayerStrategy::operator=(const NeutralPlayerStrat
     return *this;
 }
 
+/**
+ * \brief Issues an order
+ */
 void NeutralPlayerStrategy::issueOrder() {
     player_->doneOrders();
 }
 
+/**
+ * \brief Gives the territories that can be attacked
+ * \return the territories to attack
+ */
 std::vector<const Territory*> NeutralPlayerStrategy::toAttack() const {
     return {};
 }
 
+/**
+ * \brief Gives the territories that need to be defended
+ * \return the territories to defend
+ */
 std::vector<const Territory*> NeutralPlayerStrategy::toDefend() const {
     return {};
 }
