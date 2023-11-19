@@ -18,19 +18,25 @@
 #include <stdexcept>
 
 #include "GameEngine.h"
+#include "Map.h"
 #include "Orders.h"
+#include "Player.h"
 
 /**
  * Creates a new card
  * @param type The card type
  */
-Card::Card(const CardType type) : type_(new CardType(type)) {}
+Card::Card(const CardType type) : type_(new CardType(type)) {
+    owner_ = nullptr;
+}
 
 /**
  * Creates a new Card by copying the card type of the card to be copied.
  * @param cardToCopy The card to be copied.
  */
-Card::Card(const Card &cardToCopy) : type_{new CardType(*cardToCopy.type_)} {}
+Card::Card(const Card &cardToCopy) : type_{new CardType(*cardToCopy.type_)} {
+    owner_ = cardToCopy.owner_;
+}
 
 /**
  * Default Card destructor. Deletes the cardType pointer.
@@ -48,33 +54,74 @@ CardType Card::type() const {
 }
 
 /**
- * Creates a special order
+ * Play card
  */
-const Card &Card::play(Player& player, Territory& territory, GameEngine &gameEngine) const {
+Card& Card::play(std::istream&is) {
     // Check the card type. For each case, play an order
+    unsigned targetId;
+
+    // get a reference to owner before releasing the card.
+    const auto owner = owner_;
+    // Clear the cards owner
+    owner_ = nullptr;
+    std::cout << "Played card " << *this << std::endl;
     switch(*this->type_) {
         case CardType::bomb: {
-            auto *order = new BombOrder(gameEngine, player, territory);
-            order->execute();
-            delete order;
+            std::cout << "Available bomb territories: " << std::endl;
+            for (const auto t: owner->toAttack()) {
+                std::cout << "\t" << *t << " { owner: " << t->owner() << ", armies: " << t->armyCount() << " }" << std::endl;
+            }
+            is >> targetId;
+            owner->orderList().addOrder(BombOrder{owner->gameEngine(), *owner, owner->gameEngine().map().territory(targetId)});
+            break;
         }
-            break;
-        case CardType::reinforcement: {}
-            break;
-            
         case CardType::blockade: {
-            auto *order = new BlockadeOrder(gameEngine, player, territory);
-            order->execute();
-            delete order;
+            std::cout << "Available blockade territories: " << std::endl;
+            for (const auto t: owner->territories()) {
+                std::cout << "\t" << *t << " { armies: " << t->armyCount() << " }" << std::endl;
+            }
+            is >> targetId;
+            owner->orderList().addOrder(BlockadeOrder{owner->gameEngine(), *owner, owner->gameEngine().map().territory(targetId)});
+            break;
         }
+        case CardType::airlift: {
+            unsigned armies;
+            unsigned sourceId;
+            std::cout << "Available airlift source territories: " << std::endl;
+            for (const auto t: owner->territories()) {
+                std::cout << "\t" << *t << " { armies: " << t->armyCount() << " }" << std::endl;
+            }
+            is >> sourceId;
+            Territory &source = owner->gameEngine().map().territory(sourceId);
+            std::cout << "Available airlift target territories: " << std::endl;
+            for (const auto t: owner->territories()) {
+                std::cout << "\t" << *t << " { armies: " << t->armyCount() << " }" << std::endl;
+            }
+            is >> targetId;
+            std::cout << "Armies: (available: " << source.armyCount() << ")" << std::endl;
+            is >> armies;
+            owner->orderList().addOrder(AirliftOrder{owner->gameEngine(), *owner, source, owner->gameEngine().map().territory(targetId), armies});
             break;
-        case CardType::airlift: {}
+        }
+        case CardType::diplomacy: {
+            unsigned playerId;
+            std::cout << "Available airlift source territories: " << std::endl;
+            for (int i = 0; i < owner->gameEngine().players().size(); ++i) {
+                std::cout << "\t" << i << ": " << owner->gameEngine().players().player(i) << std::endl;
+            }
+            is >> playerId;
+            owner->orderList().addOrder(NegotiateOrder{owner->gameEngine(), *owner, owner->gameEngine().players().player(playerId)});
             break;
-        case CardType::diplomacy: {}
-            break;
+        }
+        default: {
+            throw std::out_of_range("invalid card type");
+        }
     }
-    std::cout << "Played card " << *this << std::endl;
     return *this;
+}
+
+void Card::owner(const Player& player) {
+    owner_ = &player;
 }
 
 /**
@@ -139,7 +186,7 @@ std::ostream &operator<<(std::ostream &os, const Card &card) {
  */
 Deck::Deck(const IRandom &random, const unsigned int size) {
     random_ = &random;
-    cards_ = new std::vector<const Card *>();
+    cards_ = new std::vector<Card *>();
     cards_->reserve(size);
     for (int i = 0; i < size; ++i)
     {
@@ -170,7 +217,7 @@ Deck::Deck(const IRandom &random, const unsigned int size) {
  */
 Deck::Deck(const IRandom &random, const std::vector<Card> &cardDeck) {
     random_ = &random;
-    cards_ = new std::vector<const Card *>();
+    cards_ = new std::vector<Card *>();
     for (const auto &c: cardDeck) {
         cards_->push_back(new Card(c.type()));
     }
@@ -182,7 +229,7 @@ Deck::Deck(const IRandom &random, const std::vector<Card> &cardDeck) {
  */
 Deck::Deck(const Deck &deckToCopy) {
     random_ = deckToCopy.random_;
-    cards_ = new std::vector<const Card *>();
+    cards_ = new std::vector<Card *>();
     for (const auto c: *deckToCopy.cards_) {
         cards_->push_back(new Card(c->type()));
     }
@@ -232,8 +279,9 @@ Deck &Deck::draw(const Hand &hand) {
         throw std::out_of_range("No more cards in the deck");
     }
     const auto index = random_->generate(0, cards_->size() - 1);
-
-    hand.cards_->push_back(cards_->at(index));
+    auto *card = cards_->at(index);
+    card->owner(hand.player());
+    hand.cards_->push_back(card);
     cards_->erase(cards_->begin() + index);
 
     return *this;
@@ -285,7 +333,7 @@ bool Deck::empty() const {
  * Gets the underlying cards in the deck
  * @return
  */
-const std::vector<const Card *> &Deck::cards() const {
+const std::vector<Card *> &Deck::cards() const {
     return *cards_;
 }
 
@@ -302,7 +350,7 @@ Deck &Deck::operator=(const Deck &deck) {
         for (const auto c: *cards_) delete c;
         cards_->clear();
         delete cards_;
-        cards_ = new std::vector<const Card *>();
+        cards_ = new std::vector<Card *>();
         for (const auto &c: *deck.cards_) {
             add(c->type());
         }
@@ -326,19 +374,23 @@ std::ostream &operator<<(std::ostream &os, const Deck &deck) {
 
 /**
  * Creates a hand object of a specific size
+ * @param player
  * @param size: The number of cards a hand can hold initially.
  */
-Hand::Hand(const unsigned int size) :
-        cards_{new std::vector<const Card *>()} {
+Hand::Hand(const Player &player, const unsigned int size) :
+        cards_{new std::vector<Card *>()} {
+    player_ = &player;
     cards_->reserve(size);
 }
 
 /**
  * Creates a hand object by providing an existing card collection
+ * @param player
  * @param cardCollection The card collection.
  */
-Hand::Hand(const std::vector<Card> &cardCollection) {
-    cards_ = new std::vector<const Card *>();
+Hand::Hand(const Player &player, const std::vector<Card> &cardCollection) {
+    player_ = &player;
+    cards_ = new std::vector<Card *>();
     for (const auto &c: cardCollection) {
         cards_->push_back(new Card(c));
     }
@@ -349,7 +401,8 @@ Hand::Hand(const std::vector<Card> &cardCollection) {
  * @param handToCopy The hand to be copied.
  */
 Hand::Hand(const Hand &handToCopy) {
-    cards_ = new std::vector<const Card *>();
+    player_ = handToCopy.player_;
+    cards_ = new std::vector<Card *>();
     for (const auto &c: *handToCopy.cards_) {
         cards_->push_back(new Card(*c));
     }
@@ -360,9 +413,6 @@ Hand::Hand(const Hand &handToCopy) {
  */
 Hand::~Hand() {
     for (const auto c: *cards_) delete c;
-    cards_->clear();
-    delete cards_;
-    cards_ = new std::vector<const Card *>();
     delete cards_;
 }
 
@@ -397,7 +447,7 @@ Hand &Hand::remove(const Card &card) {
  * @param index The index of the selected card from the player's card collection.
  * @return The selected card
  */
-const Card &Hand::card(const size_t index) const {
+Card &Hand::card(const size_t index) const {
     return *cards_->at(index);
 }
 
@@ -409,6 +459,14 @@ size_t Hand::size() const {
     return cards_->size();
 }
 
+bool Hand::has(CardType type) const {
+    auto has_type = [type](const Card* c) { return c->type() == type; };
+
+    if (const auto it = std::ranges::find_if(*cards_, has_type); it != cards_->end())
+        return true;
+    return false;
+}
+
 /**
  * Gets if a deck is empty
  * @return true if empty; false otherwise
@@ -417,11 +475,15 @@ bool Hand::empty() const {
     return cards_->empty();
 }
 
+const Player& Hand::player() const {
+    return *player_;
+}
+
 /**
  * Gets the underlying cards in the deck
  * @return
  */
-const std::vector<const Card *> &Hand::cards() const {
+const std::vector<Card *> &Hand::cards() const {
     return *cards_;
 }
 
@@ -438,7 +500,7 @@ Hand &Hand::operator=(const Hand &hand) {
         for (const auto c: *cards_) delete c;
         cards_->clear();
         delete cards_;
-        cards_ = new std::vector<const Card *>(hand.cards_->size());
+        cards_ = new std::vector<Card *>(hand.cards_->size());
         for (const auto &c: *hand.cards_) {
             add(*c);
         }

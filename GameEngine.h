@@ -30,6 +30,7 @@
  * The states form the structure of the setup and the game itself.
  */
 
+class Players;
 enum class Strategy;
 class IRandom;
 // Forward declaration.
@@ -65,17 +66,18 @@ class GameEngine final : public ILoggable, public Subject
 public:
     explicit GameEngine(CommandProcessor &commandProcessor, const IRandom &random);
     // Copy constructor
-    GameEngine(const GameEngine &gameEngine);
-    GameEngine &operator=(const GameEngine &gameEngine);
+    GameEngine(const GameEngine &gameEngine) = delete;
+    GameEngine &operator=(const GameEngine &gameEngine) = delete;
     // Destructor
     ~GameEngine() override;
     // transaction going to be the object's main method that handles state transitions based on a command given to it.
     void gameLoop();
     [[nodiscard]] GameState state() const;
+    [[nodiscard]] GameState previousState() const;
     [[nodiscard]] bool gameOver() const;
     [[nodiscard]] Map &map() const;
-    [[nodiscard]] std::vector<Player *> &getPlayers() const;
-    [[nodiscard]] Deck &getDeck() const;
+    [[nodiscard]] Players& players() const;
+    [[nodiscard]] Deck &deck() const;
     void map(Map &map);
     void startup();
     void mainGameLoop();
@@ -92,9 +94,7 @@ private:
     Map *map_;
     Deck *deck_;
     const IRandom *random_;
-    std::vector<Player *> *players_;
-    void removeEliminatedPlayers() const;
-    void checkWinningCondition();
+    Players *players_;
     CommandProcessor *commandProcessor_;
     void resetGameElements();
     friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);

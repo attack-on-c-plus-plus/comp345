@@ -14,9 +14,11 @@
 #define COMP345_COMMANDPROCESSING_H
 
 #include <map>
+#include <map>
 #include <memory>
 #include <vector>
 
+#include "Cards.h"
 #include "LoggingObserver.h"
 #include "Player.h"
 
@@ -64,13 +66,16 @@ enum class OrderType {
  */
 class CommandProcessor : public ILoggable, public Subject {
 public:
+    static std::unique_ptr<std::map<std::string, CardType>> cards;
+
     CommandProcessor();
     CommandProcessor(const CommandProcessor& commandProcessor);
     CommandProcessor &operator=(const CommandProcessor &commandProcessor);
     // Destructor
     ~CommandProcessor() override;
     Command &getCommand(GameEngine &gameEngine);
-    Order *getOrder(GameEngine &gameEngine, Player &player);
+
+    void getOrder(GameEngine&gameEngine, Player&player);
     [[nodiscard]] bool validate(Command &command) const;
     [[nodiscard]] std::string stringToLog() const override;
     static std::unique_ptr<std::map<std::string, CommandType>> commands;
@@ -78,7 +83,7 @@ public:
     static std::unique_ptr<std::map<std::string, Strategy>> strategies;
 protected:
     [[nodiscard]] virtual Command &readCommand(GameEngine &gameEngine);
-    [[nodiscard]] virtual Order *readOrder(GameEngine &gameEngine, Player &player);
+    virtual void readOrder(GameEngine&gameEngine, Player&player);
     static Command *createCommand(GameEngine &gameEngine, std::string &commandStr, std::istream &parameters);
     static Order *createOrder(GameEngine &gameEngine, Player &player, const std::string &orderStr, std::istream &parameters);
 private:

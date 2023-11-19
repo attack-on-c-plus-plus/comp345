@@ -104,8 +104,8 @@ void testOrderExecution()
     Player player1{engine, "player1", Strategy::Human};
     Player player2{engine, "player2", Strategy::Human};
 
-    engine.getPlayers().push_back(&player1);
-    engine.getPlayers().push_back(&player2);
+    auto b = engine.players().add(player1);
+    b = engine.players().add(player2);
 
     auto &map = engine.map();
     createMap(map);
@@ -339,11 +339,8 @@ void testOrderExecution()
     std::cout << seperator << std::endl;
     std::cout <<"After:" << std::endl;
     std::cout << seperator << std::endl;
-    for (const auto t : engine.map().territories())
-    {
+    for (const auto t : engine.map().territories()) {
         std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
     }
-
-    engine.getPlayers().clear();
 }
 

@@ -48,17 +48,17 @@ void testGameStartup() {
     std::cout << "Testing game startup: file mode" << std::endl;
     std::cout << seperator << std::endl;
     FileCommandProcessorAdapter fileCommandProcessorAdapter("res/gameStartup.txt");
-    engine = GameEngine(fileCommandProcessorAdapter, random);
-    engine.startup();
+    GameEngine engine2{fileCommandProcessorAdapter, random};
+    engine2.startup();
     // force win condition
-    engine.transition(GameState::win);
-    engine.gameOverPhase();
+    engine2.transition(GameState::win);
+    engine2.gameOverPhase();
 
     // replay
-    engine.startup();
+    engine2.startup();
     // force win condition
-    engine.transition(GameState::win);
-    engine.gameOverPhase();
+    engine2.transition(GameState::win);
+    engine2.gameOverPhase();
 }
 
 void testMainGameLoop() {

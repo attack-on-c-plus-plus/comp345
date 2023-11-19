@@ -13,9 +13,12 @@
 #ifndef COMP345_PLAYER_H
 #define COMP345_PLAYER_H
 
+#include <set>
 #include <string>
 #include <vector>
+#include <bits/stl_map.h>
 
+#include "Cards.h"
 #include "Orders.h"
 #include "PlayerStrategies.h"
 
@@ -43,12 +46,11 @@ public:
     bool operator==(const Player &player) const;
     [[nodiscard]] std::string name() const;
     void name(const std::string &newName);
-    [[nodiscard]] bool isDeploying() const;
-    [[nodiscard]] bool isIssuingOrders() const;
     [[nodiscard]] unsigned reinforcementPool() const;
     [[nodiscard]] Strategy strategy() const;
     [[nodiscard]] OrdersList &orderList() const;
     [[nodiscard]] const Hand &hand() const;
+    [[nodiscard]] const GameEngine &gameEngine() const;
     [[nodiscard]] const std::vector<Territory *> &territories() const;
     [[nodiscard]] std::vector<const Territory *> toAttack() const;
     [[nodiscard]] std::vector<const Territory *> toDefend() const;
@@ -56,13 +58,15 @@ public:
     void issueOrders() const;
     void issueOrder() const;
     void add(Territory &territory) const;
+    void remove(const Territory& territory) const;
     void addNegotiator(const Player &negotiator) const;
     void removeNegotiators() const;
     void draw() const;
-    void play(const Card &card, Territory &target);
+    void play(CardType cardType, std::istream &is) const;
     void fillReinforcementPool() const;
     void deploy(unsigned armies) const;
     void doneOrders() const;
+    [[nodiscard]] unsigned availableReinforcements() const;
 private:
     std::string *name_;
     std::vector<Territory *> *territories_;
@@ -81,5 +85,27 @@ private:
     friend std::ostream &operator<<(std::ostream &os, const Player &player);
 };
 
+class Players {
+public:
+    explicit Players(GameEngine &gameEngine);
+    Players(const Players &players) = delete;
+    virtual ~Players();
+    Players &operator=(const Players &players) = delete;
+    virtual void setPlayOrder();
+    [[nodiscard]] bool add(const Player&player) const;
+    [[nodiscard]] Player& neutral() const;
+    [[nodiscard]] bool has(const Player& player) const;
+    [[nodiscard]] Player& player(unsigned id) const;
+    void issueOrders() const;
+    void executeOrders() const;
+    void reinforcement() const;
+    [[nodiscard]] bool hasMinimum() const;
+    [[nodiscard]] bool hasMaximum() const;
+    void init(std::ostream&os) const;
+    [[nodiscard]] size_t size() const;
+private:
+    GameEngine *gameEngine_;
+    std::vector<Player *> *players_;
+};
 
 #endif //COMP345_PLAYER_H

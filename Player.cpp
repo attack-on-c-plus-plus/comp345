@@ -13,6 +13,8 @@
 #include "Player.h"
 
 #include <algorithm>
+#include <cassert>
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -28,7 +30,7 @@
  */
 Player::Player(GameEngine&gameEngine, const std::string&name, const Strategy strategy) : name_{new std::string(name)},
     ordersList_{new OrdersList()}, territories_{new std::vector<Territory *>},
-    hand_{new Hand()}, reinforcementPool_{new unsigned(50)}, cantTarget_{new std::vector<const Player *>},
+    hand_{new Hand(*this)}, reinforcementPool_{new unsigned(50)}, cantTarget_{new std::vector<const Player *>},
     deployComplete_{new bool(false)}, ordersComplete_{new bool(false)}, strategy_{new Strategy(strategy)} {
     gameEngine_ = &gameEngine;
     playerStrategy_ = createStrategy(strategy);
@@ -37,13 +39,13 @@ Player::Player(GameEngine&gameEngine, const std::string&name, const Strategy str
 /**
  * Copy Constructor
  */
-Player::Player(const Player&player) : name_{new std::string(*player.name_)}, ordersList_{player.ordersList_},
-                                      territories_{new std::vector(*player.territories_)},
-                                      reinforcementPool_{new unsigned(*player.reinforcementPool_)},
-                                      cantTarget_{new std::vector(*player.cantTarget_)}, hand_{new Hand(*player.hand_)},
+Player::Player(const Player& player) : name_{new std::string(*player.name_)}, territories_{new std::vector(*player.territories_)},
+                                      reinforcementPool_{new unsigned(*player.reinforcementPool_)}, ordersList_{new OrdersList(*player.ordersList_)},
+                                      cantTarget_{new std::vector(*player.cantTarget_)},
                                       deployComplete_{new bool(*player.deployComplete_)},
                                       ordersComplete_{new bool(*player.ordersComplete_)},
                                       strategy_{new Strategy(*player.strategy_)} {
+    hand_ = new Hand(*player.hand_);
     gameEngine_ = player.gameEngine_;
     playerStrategy_ = createStrategy(*player.strategy_);
 }
@@ -64,7 +66,7 @@ Player::~Player() {
     delete strategy_;
 }
 
-Player& Player::operator=(const Player&player) {
+Player& Player::operator=(const Player& player) {
     if (this != &player) {
         // This is used in case we are re-assigning to ourselves i.e. f = f;
         // We need to clean up the current pointers because destructor won't be called.
@@ -79,8 +81,8 @@ Player& Player::operator=(const Player&player) {
         delete playerStrategy_;
         delete strategy_;
         name_ = new std::string(*player.name_);
-        ordersList_ = new OrdersList(*player.ordersList_),
-                territories_ = new std::vector(*player.territories_);
+        ordersList_ = new OrdersList(*player.ordersList_);
+        territories_ = new std::vector(*player.territories_);
         reinforcementPool_ = new unsigned(*player.reinforcementPool_);
         cantTarget_ = new std::vector(*player.cantTarget_);
         hand_ = new Hand(*player.hand_);
@@ -107,14 +109,6 @@ void Player::name(const std::string& newName) {
     name_ = new std::string(newName);
 }
 
-bool Player::isDeploying() const {
-    return gameEngine_->state() == GameState::assignReinforcements && !*deployComplete_;
-}
-
-bool Player::isIssuingOrders() const {
-    return gameEngine_->state() == GameState::issueOrders && !*ordersComplete_;
-}
-
 unsigned Player::reinforcementPool() const {
     return *reinforcementPool_;
 }
@@ -129,6 +123,10 @@ OrdersList& Player::orderList() const {
 
 const Hand& Player::hand() const {
     return *hand_;
+}
+
+const GameEngine& Player::gameEngine() const {
+    return *gameEngine_;
 }
 
 const std::vector<Territory *>& Player::territories() const {
@@ -152,7 +150,7 @@ const std::vector<const Player *>& Player::cantAttack() const {
  */
 void Player::issueOrders() const {
     // get the command from the command line
-    while (isDeploying() || isIssuingOrders()) {
+    while (!orderList().done()) {
         issueOrder();
     }
 }
@@ -161,8 +159,7 @@ void Player::issueOrders() const {
  * \brief Issues one order
  */
 void Player::issueOrder() const {
-    if (!(isDeploying() || isIssuingOrders())) return;
-
+    if (orderList().done()) return;
     playerStrategy_->issueOrder();
 }
 
@@ -175,6 +172,11 @@ void Player::add(Territory&territory) const {
     territory.owner(*this);
 }
 
+void Player::remove(const Territory& territory) const {
+    if (const auto it = std::ranges::find(*territories_, &territory); it != territories_->end())
+        territories_->erase(it);
+}
+
 void Player::addNegotiator(const Player& negotiator) const {
     cantTarget_->push_back(&negotiator);
 }
@@ -184,13 +186,15 @@ void Player::removeNegotiators() const {
 }
 
 void Player::draw() const {
-    gameEngine_->getDeck().draw(*hand_);
+    gameEngine_->deck().draw(*hand_);
 }
 
-void Player::play(const Card&card, Territory&target) {
-    // Implement logic to play the card
-    // Right now, I'll create a custom territory class
-    gameEngine_->getDeck().discard(card.play(*this, target, *gameEngine_), *hand_);
+void Player::play(const CardType cardType, std::istream &is) const {
+    // Get the card in the hand
+    auto hasType = [cardType](const Card* card) { return card->type() == cardType; };
+    if (const auto iterator = std::ranges::find_if(hand_->cards(), hasType); iterator != hand_->cards().end()) {
+        gameEngine_->deck().discard((*iterator)->play(is), *hand_);
+    }
 }
 
 void Player::fillReinforcementPool() const {
@@ -203,15 +207,15 @@ void Player::deploy(const unsigned armies) const {
     *reinforcementPool_ -= armies;
 }
 
-void Player::doneOrders() const {
-    if (gameEngine_->state() == GameState::assignReinforcements) {
-        *deployComplete_ = true;
-        *ordersComplete_ = false;
-    }
-    if (gameEngine_->state() == GameState::issueOrders) {
-        *deployComplete_ = false;
-        *ordersComplete_ = true;
-    }
+unsigned Player::availableReinforcements() const {
+    auto deployed = [](const int accumulator, const DeployOrder* d) {
+        return d->armies() > d->player().reinforcementPool() ? accumulator : accumulator + d->armies();
+    };
+    auto isDeployOrder = [](const Order *d) { return dynamic_cast<const DeployOrder *>(d) != nullptr; };
+    auto deploy = [](const Order *o) { return dynamic_cast<const DeployOrder *>(o); };
+    auto filtered = ordersList_->orders() | std::views::filter(isDeployOrder) | std::views::transform(deploy);
+    const int used = std::accumulate(filtered.begin(), filtered.end(), 0, deployed);
+    return used <= reinforcementPool() ? reinforcementPool() - used : 0;
 }
 
 unsigned int Player::continentBonusArmies() const {
@@ -255,7 +259,139 @@ PlayerStrategy* Player::createStrategy(const Strategy strategy) {
     return playerStrategy;
 }
 
-std::ostream& operator<<(std::ostream&os, const Player&player) {
+std::ostream& operator<<(std::ostream&os, const Player& player) {
     os << *player.name_;
     return os;
+}
+
+Players::Players(GameEngine& gameEngine) : players_(new std::vector<Player*>()) {
+    gameEngine_ = &gameEngine;
+    players_->reserve(20); // reserve extra so it does shift in memory
+}
+
+Players::~Players() {
+    for (const auto p : *players_)
+        delete p;
+    delete players_;
+}
+
+void Players::setPlayOrder() {
+    std::random_device r;
+    std::default_random_engine e(r());
+    std::ranges::shuffle(*players_, e);
+}
+
+/**
+ * \brief Adds a player if no player with the same name exist
+ * \param player the player to add
+ * \return true if added; false otherwise
+ */
+bool Players::add(const Player &player) const {
+    // find is player exist with same name
+    if (const auto it = std::ranges::find_if(*players_, [player](const Player* p) { return player.name() == p->name(); }); it != players_->end())
+        return false;
+
+    players_->push_back(new Player(*gameEngine_, player.name(), player.strategy()));
+    return true;
+}
+
+Player& Players::neutral() const {
+    auto is_neutral = [](const Player* p) { return p->strategy() == Strategy::Neutral; };
+
+    if (const auto it = std::ranges::find_if(*players_, is_neutral); it != players_->end())
+        return **it;
+
+    const auto neutral = new Player(*gameEngine_, "Neutral", Strategy::Neutral);
+    players_->push_back(neutral);
+    return *neutral;
+}
+
+bool Players::has(const Player& player) const {
+    return std::ranges::find(*players_, &player) != players_->end();
+}
+
+Player& Players::player(const unsigned id) const {
+    return *players_->at(id);
+}
+
+void Players::issueOrders() const {
+    while (std::ranges::count_if(*players_, [](const Player *p) { return !p->orderList().done(); }) > 0)
+    {
+        for (const auto player : *players_) {
+            // Only ask players who are still issuing orders
+            if (!player->orderList().done()) {
+                gameEngine_->map().print();
+                player->issueOrder();
+            }
+        }
+    }
+}
+
+void Players::executeOrders() const {
+    for (auto player_iterator = players_->begin(); player_iterator != players_->end(); ++player_iterator) {
+        (*player_iterator)->orderList().executeOrders();
+        (*player_iterator)->removeNegotiators();
+        if ((*player_iterator)->territories().empty()) {
+            // player has no more territories remove them from the game
+            delete *player_iterator;
+            players_->erase(player_iterator);
+            --player_iterator;
+        }
+    }
+    // If one player is left, they win
+    if (players_->size() == 1)
+        gameEngine_->transition(GameState::win);
+    // Order execution complete, go back to deployment phase
+    else
+        gameEngine_->transition(GameState::assignReinforcements);
+}
+
+void Players::reinforcement() const {
+    for (const auto player: *players_) {
+        if (gameEngine_->previousState() != GameState::playersAdded) player->fillReinforcementPool();
+        player->issueOrders();
+        player->orderList().executeOrders();
+    }
+}
+
+bool Players::hasMinimum() const {
+    return players_->size() >= 2;
+}
+
+bool Players::hasMaximum() const {
+    return players_->size() >= 6;
+}
+
+void Players::init(std::ostream&os) const {
+    // create a copy
+    std::vector territories{gameEngine_->map().territories()};
+    os << "Assigned Territories:" << std::endl;
+    while (!territories.empty()) {
+        for (const auto &it: *players_) {
+            Random rnd; const auto random = rnd.generate(0, territories.size() - 1);
+            const auto territory = territories[random];
+            it->add(*territory);
+            territories.erase(territories.begin() + random);
+            os << "\t" << territory->name() << " to " << it->name() << std::endl;
+            if (territories.empty())
+                break;
+        }
+    }
+
+    gameEngine_->players().setPlayOrder();
+    os << "Turn Order: ";
+    for (const auto p: *players_) {
+        os << p->name() << " ";
+    }
+
+    // This lets each player draw 2 cards
+    for (const auto i: *players_) {
+        i->draw();
+        i->draw();
+        os << "\n" << i->name() << " drew " << i->hand();
+    }
+}
+
+size_t Players::size() const {
+    return players_->size();
 }
