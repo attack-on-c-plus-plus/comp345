@@ -276,9 +276,7 @@ Players::~Players() {
 }
 
 void Players::setPlayOrder() {
-    std::random_device r;
-    std::default_random_engine e(r());
-    std::ranges::shuffle(*players_, e);
+    gameEngine_->random().setPlayOrder(*players_);
 }
 
 /**
@@ -368,7 +366,7 @@ void Players::init(std::ostream&os) const {
     os << "Assigned Territories:" << std::endl;
     while (!territories.empty()) {
         for (const auto &it: *players_) {
-            Random rnd; const auto random = rnd.generate(0, territories.size() - 1);
+            const auto random = gameEngine_->random().generate(0, territories.size() - 1);
             const auto territory = territories[random];
             it->add(*territory);
             territories.erase(territories.begin() + random);

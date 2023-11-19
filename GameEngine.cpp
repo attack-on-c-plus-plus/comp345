@@ -506,6 +506,10 @@ Random::~Random() {
     delete u;
 }
 
+void Random::setPlayOrder(std::vector<Player*>& players) const {
+    std::ranges::shuffle(players, eng[0]);
+}
+
 unsigned Random::generate(const unsigned from, const unsigned to) const {
     assert(from <= to);
     return (*u)(eng[0]) % (to - from + 1) + from;
@@ -521,6 +525,10 @@ FakeRandom::FakeRandom() {
 FakeRandom::~FakeRandom() {
     delete [] eng;
     delete u;
+}
+
+void FakeRandom::setPlayOrder(std::vector<Player*>& players) const {
+    std::ranges::shuffle(players, eng[0]);
 }
 
 unsigned FakeRandom::generate(const unsigned from, const unsigned to) const {

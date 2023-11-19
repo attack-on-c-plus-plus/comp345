@@ -168,8 +168,6 @@ public:
     bool validate() override;
     void execute() override;
     GameStartCommand &operator=(const GameStartCommand &command);
-    void assignTerritories(std::vector<Territory *> &territories, std::ostream &os) const;
-    void setPlayerTurnOrder(std::ostream &os) const;
 };
 class ReplayCommand final : public Command
 {
@@ -196,6 +194,7 @@ class IRandom {
 public:
     virtual ~IRandom() = default;
     [[nodiscard]] virtual unsigned generate(unsigned from, unsigned to) const = 0;
+    virtual void setPlayOrder(std::vector<Player*>& players) const = 0;
 };
 
 class Random final : public IRandom {
@@ -204,6 +203,7 @@ public:
     Random(const Random& random) = delete;
     ~Random() override;
     Random &operator=(const Random &command) = delete;
+    void setPlayOrder(std::vector<Player*>& players) const override;
     [[nodiscard]] unsigned generate(unsigned from, unsigned to) const override;
 private:
     std::default_random_engine *eng;
@@ -216,6 +216,7 @@ public:
     FakeRandom(const FakeRandom& random) = delete;
     ~FakeRandom() override;
     FakeRandom &operator=(const FakeRandom &command) = delete;
+    void setPlayOrder(std::vector<Player*>& players) const override;
     [[nodiscard]] unsigned generate(unsigned from, unsigned to) const override;
 private:
     std::mt19937 *eng;
