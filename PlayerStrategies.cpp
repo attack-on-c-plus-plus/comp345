@@ -221,3 +221,52 @@ std::vector<const Territory*> NeutralPlayerStrategy::toDefend() const {
     return {};
 }
 
+/**
+ * \brief Constructor
+ * \param player
+ * \param gameEngine
+ */
+BenevolentPlayerStrategy::BenevolentPlayerStrategy(Player &player, GameEngine &gameEngine) : PlayerStrategy(player, gameEngine)
+{
+}
+
+/**
+ * \brief Copy Constructor
+ * \param benevolentPlayerStrategy
+ */
+BenevolentPlayerStrategy::BenevolentPlayerStrategy(const BenevolentPlayerStrategy &benevolentPlayerStrategy) = default;
+
+BenevolentPlayerStrategy &BenevolentPlayerStrategy::operator=(const BenevolentPlayerStrategy &benevolentPlayerStrategy)
+{
+    if (this == &benevolentPlayerStrategy)
+    {
+        PlayerStrategy::operator=(benevolentPlayerStrategy);
+    }
+    return *this;
+}
+
+/**
+ * \brief Issues an order
+ */
+void BenevolentPlayerStrategy::issueOrder()
+{
+}
+
+/**
+ * \brief Gives the territories that can be attacked
+ * \return the territories to attack
+ */
+std::vector<const Territory *> BenevolentPlayerStrategy::toAttack() const
+{
+    return {};
+}
+
+/**
+ * \brief Gives the territories that need to be defended
+ * \return the territories to defend
+ * TODO
+ */
+std::vector<const Territory *> BenevolentPlayerStrategy::toDefend() const
+{
+    return {};
+}
