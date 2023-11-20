@@ -365,12 +365,12 @@ void AdvanceOrder::execute() {
                     if (const unsigned result1 = gameEngine_->random().generate(1, 10);
                         result1 <= 6 && targetTerritory_->armyCount() >= 1) {
                         targetTerritory_->removeArmies(1);
-                        }
+                    }
                 }
                 // Each defending army unit has 70% chances of killing one attacking army unit
                 for (int i = 0; i < targetArmies; i++) {
                     if (const unsigned result2 = gameEngine_->random().generate(1, 10); result2 <= 7 && *armies_ >= 1) {
-                        *armies_--;
+                        (*armies_)--;
                     }
                 }
             }
