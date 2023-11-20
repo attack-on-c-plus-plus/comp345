@@ -105,9 +105,11 @@ Card& Card::play(std::istream&is) {
         }
         case CardType::diplomacy: {
             unsigned playerId;
-            std::cout << "Available airlift source territories: " << std::endl;
+            std::cout << "Available players: " << std::endl;
             for (int i = 0; i < owner->gameEngine().players().size(); ++i) {
-                std::cout << "\t" << i << ": " << owner->gameEngine().players().player(i) << std::endl;
+                auto player = owner->gameEngine().players().player(i);
+                if (owner == &player || player.strategy() == Strategy::Neutral) continue;
+                std::cout << "\t" << i << ": " << player << std::endl;
             }
             is >> playerId;
             owner->orderList().addOrder(NegotiateOrder{owner->gameEngine(), *owner, owner->gameEngine().players().player(playerId)});
