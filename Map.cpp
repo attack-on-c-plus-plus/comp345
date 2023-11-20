@@ -217,8 +217,12 @@ std::vector<const Territory*> Map::adjacencies(const Territory &territory) const
 }
 
 void Map::print() const {
-    for (const auto t : *territories_) {
-        std::cout << *t << " owned by " << t->owner() << " has " << t->armyCount() << " armies" << std::endl;
+    std::cout << "Map: " << *name_ << std::endl;
+    for (const auto c : *continents_) {
+        std::cout << *c << std::endl;
+        for (const auto t : adjacencies(*c)) {
+            std::cout << "\t" << *t << " { owner: " << t->owner() << ", armies: " << t->armyCount() << " }" << std::endl;
+        }
     }
 }
 
@@ -558,7 +562,7 @@ std::istream &operator>>(std::istream &is, const Territory &territory) {
  * @return
  */
 std::ostream &operator<<(std::ostream &os, const Territory &territory) {
-    os << "Id: " << std::to_string(territory.id_->value()) << " Name: " << *territory.name_;
+    os << territory.id_->value() << ": Territory " << *territory.name_;
     return os;
 }
 
@@ -663,7 +667,7 @@ std::istream &operator>>(std::istream &is, const Continent &continent) {
  * @return the output stream
  */
 std::ostream &operator<<(std::ostream &os, const Continent &continent) {
-    os << "Id: " << std::to_string(continent.id_->value()) << " Name: " << *continent.name_;
+    os << "Continent: " << *continent.name_;
     return os;
 }
 

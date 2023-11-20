@@ -34,21 +34,9 @@
 GameEngine::GameEngine(CommandProcessor &commandProcessor, const IRandom &random) : state_{new GameState(GameState::start)},
     previousState_{new GameState(GameState::start)}, map_{new Map} {
     commandProcessor_ = &commandProcessor;
-    players_ = new std::vector<Player *>();
+    players_ = new Players(*this);
     deck_ = new Deck(random, 24);
     random_ = &random;
-}
-
-/**
- * Copy constructor
- * @param gameEngine
- */
-GameEngine::GameEngine(const GameEngine &gameEngine) : Subject(gameEngine), state_{new GameState(*gameEngine.state_)},
-    previousState_{new GameState(*gameEngine.previousState_)}, map_{new Map(*gameEngine.map_)} {
-    commandProcessor_ = gameEngine.commandProcessor_;
-    players_ = new std::vector(*gameEngine.players_);
-    deck_ = new Deck(*gameEngine.deck_);
-    random_ = gameEngine.random_;
 }
 
 /**
@@ -58,41 +46,8 @@ GameEngine::~GameEngine() {
     delete state_;
     delete previousState_;
     delete map_;
-    // Delete each object in vector
-    for (const auto p: *players_) {
-        delete p;
-    }
-    players_->clear();
     delete players_;
     delete deck_;
-}
-
-/**
- * Operator= overload
- * @param gameEngine
- * @return
- */
-GameEngine& GameEngine::operator=(const GameEngine&gameEngine) {
-    if (this != &gameEngine) {
-        // This is used in case we are re-assigning to ourselves i.e. f = f;
-        // We need to clean up the current pointers because destructor won't be called.
-        delete state_;
-        delete previousState_;
-        delete map_;
-        for (const auto p: *players_) {
-            delete p;
-        }
-        players_->clear();
-        delete players_;
-        delete deck_;
-        state_ = new GameState(*gameEngine.state_);
-        previousState_ = new GameState(*gameEngine.previousState_);
-        players_ = new std::vector(*gameEngine.players_);
-        map_ = new Map(*gameEngine.map_);
-        commandProcessor_ = gameEngine.commandProcessor_;
-        deck_ = new Deck(*gameEngine.deck_);
-    }
-    return *this;
 }
 
 /**GameEngine *gameEngine_;
@@ -101,6 +56,10 @@ GameEngine& GameEngine::operator=(const GameEngine&gameEngine) {
  */
 GameState GameEngine::state() const {
     return *state_;
+}
+
+GameState GameEngine::previousState() const {
+    return *previousState_;
 }
 
 /*
@@ -120,14 +79,14 @@ void GameEngine::map(Map&map) {
 /**
  * Gets the vector containing the players
  */
-std::vector<Player *>& GameEngine::getPlayers() const {
+Players& GameEngine::players() const {
     return *players_;
 }
 
 /**
  * Gets the Deck
  */
-Deck& GameEngine::getDeck() const {
+Deck& GameEngine::deck() const {
     return *deck_;
 }
 
@@ -159,13 +118,9 @@ void GameEngine::startup() {
 
 void GameEngine::resetGameElements() {
     delete map_;
-    for (const auto p: *players_) {
-        delete p;
-    }
-    players_->clear();
     delete players_;
     map_ = new Map();
-    players_ = new std::vector<Player *>();
+    players_ = new Players(*this);
 }
 
 void GameEngine::mainGameLoop() {
@@ -173,8 +128,6 @@ void GameEngine::mainGameLoop() {
         reinforcementPhase();
         issuingOrderPhase();
         executeOrdersPhase();
-        removeEliminatedPlayers();
-        checkWinningCondition();
     }
     gameOverPhase();
 }
@@ -190,7 +143,7 @@ std::string GameEngine::stringToLog() const {
     std::stringstream s;
     s << "| Game Engine new state: " << *this;
     if (*state_ == GameState::win)
-        s << " player " << players_->at(0) << " wins!";
+        s << " player " << players_->player(0) << " wins!";
     return s.str();
 }
 
@@ -220,41 +173,7 @@ void GameEngine::executeOrdersPhase() const {
     std::cout << "Execute Order Phase" << std::endl;
     std::cout << seperator << std::endl;
 
-    // execute player orders
-    for (const auto player: *players_) {
-        if (player->territories().empty()) // if player has no territories skip turn
-            continue;
-        player->orderList().executeOrders();
-        player->removeNegotiators();
-    }
-}
-
-/**
- * Check if game is won
- */
-void GameEngine::checkWinningCondition() {
-    // Only 1 player left the game is over
-    if (*state_ != GameState::executeOrders)
-        return; // Game engine is in the wrong state
-    if (players_->size() == 1) {
-        transition(GameState::win);
-    }
-
-    transition(GameState::assignReinforcements);
-}
-
-/**
- * Removes eliminated players
- */
-void GameEngine::removeEliminatedPlayers() const {
-    // remove players which have no territories
-    for (auto it = players_->begin(); it != players_->end(); ++it) {
-        if ((*it)->territories().empty()) {
-            delete *it;
-            players_->erase(it);
-            --it;
-        }
-    }
+    players_->executeOrders();
 }
 
 /**
@@ -268,11 +187,7 @@ void GameEngine::reinforcementPhase() {
     std::cout << "Reinforcement Phase" << std::endl;
     std::cout << seperator << std::endl;
     map_->print();
-    for (const auto player: *players_) {
-        if (*previousState_ != GameState::playersAdded) player->fillReinforcementPool();
-        player->issueOrders();
-        player->orderList().executeOrders();
-    }
+    players_->reinforcement();
 
     transition(GameState::issueOrders);
 }
@@ -288,18 +203,7 @@ void GameEngine::issuingOrderPhase() {
     std::cout << seperator << std::endl;
     std::cout << "Issuing Order Phase" << std::endl;
     std::cout << seperator << std::endl;
-
-    while (std::ranges::count_if(*players_, [](const Player *p) { return p->isIssuingOrders(); }) > 0)
-    {
-        for (const auto player : *players_) {
-            // Only ask players who are still issuing orders
-            if (player->isIssuingOrders()) {
-                map_->print();
-                player->issueOrder();
-            }
-        }
-    }
-
+    players_->issueOrders();
     transition(GameState::executeOrders);
 }
 
@@ -481,7 +385,7 @@ AddPlayerCommand& AddPlayerCommand::operator=(const AddPlayerCommand&command) {
 bool AddPlayerCommand::validate() {
     if (gameEngine_->state() == GameState::mapValidated || gameEngine_->state() == GameState::playersAdded)
         return true;
-    if (gameEngine_->getPlayers().size() >= 6) {
+    if (gameEngine_->players().hasMaximum()) {
         saveEffect("Maximum of 6 players already reached.");
         return false;
     }
@@ -490,7 +394,10 @@ bool AddPlayerCommand::validate() {
 
 void AddPlayerCommand::execute() {
     if (!validate()) return;
-    gameEngine_->getPlayers().push_back(new Player(*gameEngine_, *playerName_, *strategy_));
+    if (Player p(*gameEngine_, *playerName_, *strategy_); !gameEngine_->players().add(p)) {
+        saveEffect("Player \"" + *playerName_ + "\" already in game. Not added.");
+        return;
+    }
     saveEffect("Player \"" + *playerName_ + "\" added.");
     gameEngine_->transition(GameState::playersAdded);
 }
@@ -511,11 +418,11 @@ GameStartCommand& GameStartCommand::operator=(const GameStartCommand&command) {
 }
 
 bool GameStartCommand::validate() {
-    if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size() >= 2)
+    if (gameEngine_->state() == GameState::playersAdded && gameEngine_->players().hasMinimum())
         return true;
     std::stringstream s;
     s << "Command \"" << *description_ << "\" not valid in state \"" << *gameEngine_ << "\".";
-    if (gameEngine_->state() == GameState::playersAdded && gameEngine_->getPlayers().size() < 2)
+    if (gameEngine_->state() == GameState::playersAdded && !gameEngine_->players().hasMinimum())
         s << " You need at least 2 players.";
     saveEffect(s.str());
     return false;
@@ -523,49 +430,10 @@ bool GameStartCommand::validate() {
 
 void GameStartCommand::execute() {
     if (!validate()) return;
-
     std::stringstream os;
-
-    // create a copy
-    std::vector<Territory *> territories{gameEngine_->map().territories()};
-    assignTerritories(territories, os);
-
-    setPlayerTurnOrder(os);
-
-    // This lets each player draw 2 cards
-    Deck ourDeck = gameEngine_->getDeck();
-    for (const auto i: gameEngine_->getPlayers()) {
-        i->draw();
-        i->draw();
-        os << "\n" << i->name() << " drew " << i->hand();
-    }
+    gameEngine_->players().init(os);
     saveEffect(os.str());
     gameEngine_->transition(GameState::assignReinforcements);
-}
-
-void GameStartCommand::setPlayerTurnOrder(std::ostream &os) const {
-    std::random_device r;
-    std::default_random_engine e(r());
-    std::ranges::shuffle(gameEngine_->getPlayers(), e);
-    os << "Turn Order: ";
-    for (const auto p: gameEngine_->getPlayers()) {
-        os << p->name() << " ";
-    }
-}
-
-void GameStartCommand::assignTerritories(std::vector<Territory *> &territories, std::ostream&os) const {
-    os << "Assigned Territories:" << std::endl;
-    while (!territories.empty()) {
-        for (const auto &it: gameEngine_->getPlayers()) {
-            Random rnd; const auto random = rnd.generate(0, territories.size() - 1);
-            const auto territory = territories[random];
-            it->add(*territory);
-            territories.erase(territories.begin() + random);
-            os << "\t" << territory->name() << " to " << it->name() << std::endl;
-            if (territories.empty())
-                break;
-        }
-    }
 }
 
 ReplayCommand::ReplayCommand(GameEngine&gameEngine) : Command(gameEngine, "Play") {
@@ -638,6 +506,10 @@ Random::~Random() {
     delete u;
 }
 
+void Random::setPlayOrder(std::vector<Player*>& players) const {
+    std::ranges::shuffle(players, eng[0]);
+}
+
 unsigned Random::generate(const unsigned from, const unsigned to) const {
     assert(from <= to);
     return (*u)(eng[0]) % (to - from + 1) + from;
@@ -653,6 +525,10 @@ FakeRandom::FakeRandom() {
 FakeRandom::~FakeRandom() {
     delete [] eng;
     delete u;
+}
+
+void FakeRandom::setPlayOrder(std::vector<Player*>& players) const {
+    std::ranges::shuffle(players, eng[0]);
 }
 
 unsigned FakeRandom::generate(const unsigned from, const unsigned to) const {

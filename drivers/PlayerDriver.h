@@ -18,6 +18,7 @@
  * information.
  */
 void testPlayer();
+void testPlayers();
 
 
 #endif //PLAYERDRIVER_H
