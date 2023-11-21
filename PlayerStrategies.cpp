@@ -246,6 +246,35 @@ BenevolentPlayerStrategy &BenevolentPlayerStrategy::operator=(const BenevolentPl
  */
 void BenevolentPlayerStrategy::issueOrder()
 {
+    std::vector<const Territory *> targets = toDefend();
+    int i = 0;
+    int index = -1;
+    int armies = 100;
+
+    for (auto territory : targets)
+    {
+        int deployable = player_->availableReinforcements();
+        if (territory->armyCount() < armies)
+        {
+            armies = territory->armyCount();
+            if (deployable > 10)
+            {
+                unsigned deploy = 10;
+                player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, deploy));
+            }
+            else
+            {
+                if (deployable > 0)
+                {
+                    player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, player_->availableReinforcements()));
+                }
+            }
+        }
+    }
+
+    // Add an end order, to signify the end of orders
+    player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    return;
 }
 
 /**
@@ -260,9 +289,33 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toAttack() const
 /**
  * \brief Gives the territories that need to be defended
  * \return the territories to defend
- * TODO
  */
 std::vector<const Territory *> BenevolentPlayerStrategy::toDefend() const
 {
-    return {};
+    std::vector<const Territory *> territoriesToDefend;
+
+    // Iterate through the player's territories
+    for (const auto territory : player_->territories())
+    {
+        // Get the adjacent territories of the current territory
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+
+        // Check if any adjacent territory is not owned by the player
+        bool needsDefense = false;
+        for (const auto adjacentTerritory : adjacentTerritories)
+        {
+            if (adjacentTerritory->owner().name() != player_->name())
+            {
+                needsDefense = true;
+                break; // At least one adjacent territory is not owned by the player
+            }
+        }
+
+        if (needsDefense)
+        {
+            // Add the current territory to the list of territories to defend
+            territoriesToDefend.push_back(territory);
+        }
+    }
+    return territoriesToDefend;
 }
