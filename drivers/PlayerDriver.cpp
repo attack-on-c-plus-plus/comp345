@@ -12,6 +12,7 @@
 
 #include "PlayerDriver.h"
 
+#include <cassert>
 #include <iostream>
 
 #include "../Cards.h"
@@ -34,7 +35,7 @@ void testPlayer() {
     std::cout << "Displaying Territories + Player Relation Testing" << std::endl;
     std::cout << seperator << std::endl;
 
-    Player player1(gameEngine, "Sally", Strategy::Human);
+    const Player player1(gameEngine, "Sally", Strategy::Human);
     const Player player2(gameEngine, "Bob", Strategy::Human);
 
     auto &map = gameEngine.map();
@@ -50,7 +51,7 @@ void testPlayer() {
     std::cout << seperator << std::endl;
 
     std::cout << "Player \"" << player1.name() << "\" has the following Territories:" << std::endl;
-    for (const auto ownedTerritories = player1.territories(); const auto territory: ownedTerritories) {
+    for (const auto& ownedTerritories = player1.territories(); const auto territory: ownedTerritories) {
         std::cout << "\tTerritory: " << *territory << std::endl;
     }
 
@@ -61,7 +62,7 @@ void testPlayer() {
     std::cout << seperator << std::endl;
 
     // Create a deck and add some cards to it
-    gameEngine.getDeck().add(CardType::bomb)
+    gameEngine.deck().add(CardType::bomb)
         .add(CardType::airlift)
         .add(CardType::blockade);
 
@@ -71,7 +72,7 @@ void testPlayer() {
     player1.draw();
 
     // Get the player's hand and display the cards
-    const Hand hand = player1.hand();
+    const Hand& hand = player1.hand();
     std::cout << "\nPlayer's Hand:" << std::endl;
     for (unsigned int i = 0; i < hand.size(); i++) {
         std::cout << "Card " << i + 1 << ": " << hand.card(i) << std::endl;
@@ -93,7 +94,7 @@ void testPlayer() {
 
     std::cout << "Player " << player1.name() << "\" Has the following Territories:"
               << std::endl;
-    for (const auto ownedTerritories2 = player1.territories(); const auto territory: ownedTerritories2) {
+    for (const auto& ownedTerritories2 = player1.territories(); const auto territory: ownedTerritories2) {
         std::cout << "\tTerritory: " << *territory << std::endl;
     }
 
@@ -144,6 +145,25 @@ void testPlayer() {
     std::cout << player1.orderList() << std::endl;
 //-----------------------------------------------------------------------------------------------------------
 }
+
+void testPlayers() {
+    CommandProcessor commandProcessor{};
+    const FakeRandom fakeRandom;
+    GameEngine gameEngine{commandProcessor, fakeRandom};
+    const Players players{gameEngine};
+
+    const Player p1{gameEngine, "Bob", Strategy::Human};
+    const Player p2{gameEngine, "Bob", Strategy::Neutral};
+    const Player p3{gameEngine, "Bob", Strategy::Aggressive};
+    const Player p4{gameEngine, "Jane", Strategy::Aggressive};
+
+    std::cout << std::boolalpha;
+    std::cout << players.add(p1) << std::endl;
+    std::cout << players.add(p2) << std::endl;
+    std::cout << players.add(p3) << std::endl;
+    std::cout << players.add(p4) << std::endl;
+}
+
 
 void createMap(Map &map) {
     const Continent c1{"c1", 1};

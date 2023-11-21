@@ -57,7 +57,7 @@ void testCards() {
     std::cout << seperator << std::endl;
 
     // Creates a Hand by drawing cards from the deck
-    Hand playerHand{};
+    Hand playerHand = player.hand();
     while(!gameDeck.empty()) {
         std::cout << playerHand << std::endl;
         std::cout << gameDeck << std::endl;
@@ -73,14 +73,16 @@ void testCards() {
     std::cout << "Playing the Cards from the hand" << std::endl;
     std::cout << seperator << std::endl;
     // Revised solution
+
     while (!playerHand.empty()) {
         std::cout << playerHand << std::endl;
 
         const auto index = random.generate(0, playerHand.size() - 1);
-
-        const auto& cardSelected = playerHand.card(index);
+        auto& cardSelected = playerHand.card(index);
         std::cout << "Playing " << cardSelected << " at index " << index << std::endl;
-        gameDeck.discard(cardSelected.play(player, territory,engine), playerHand);
+        const auto order = &cardSelected.play(std::cin);
+        std::cout << order << std::endl;
+        gameDeck.discard(cardSelected, playerHand);
         std::cout << std::endl;
     }
 

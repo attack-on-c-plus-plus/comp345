@@ -28,8 +28,10 @@ int main(const int argc, char* argv[]) {
     if ((argc == 2 || argc == 3) && strcmp(argv[1], "-test") == 0) {
         if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "map") == 0)
             testLoadMaps();
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "player") == 0)
-            testPlayer();
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "player") == 0) {
+            //testPlayer();
+            testPlayers();
+        }
         if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "order") == 0) {
             testOrderList();
             testOrderExecution();

@@ -96,13 +96,8 @@ HumanPlayerStrategy& HumanPlayerStrategy::operator=(const HumanPlayerStrategy& h
  * \brief Issues an order
  */
 void HumanPlayerStrategy::issueOrder() {
-    if (!(player_->isDeploying() || player_->isIssuingOrders())) return;
-
-    if (const Order *order = commandProcessor_->getOrder(*gameEngine_, *player_)) {
-        player_->orderList().addOrder(*order);
-        return;
-    }
-    player_->doneOrders();
+    if (player_->orderList().done()) return;
+    commandProcessor_->getOrder(*gameEngine_, *player_);
 }
 
 /**
@@ -202,7 +197,8 @@ NeutralPlayerStrategy& NeutralPlayerStrategy::operator=(const NeutralPlayerStrat
  * \brief Issues an order
  */
 void NeutralPlayerStrategy::issueOrder() {
-    player_->doneOrders();
+    // Add an end order, Neutral player does not issue orders
+    player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
 }
 
 /**

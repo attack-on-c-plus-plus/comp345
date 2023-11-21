@@ -40,11 +40,16 @@ std::unique_ptr<std::map<std::string, OrderType>> CommandProcessor::orders = std
     std::map<std::string, OrderType> {
         {"deploy", OrderType::deploy },
         {"advance", OrderType::advance },
-        {"bomb", OrderType::bomb },
-        {"blockade", OrderType::blockade },
-        {"airlift", OrderType::airlift },
-        {"negotiate", OrderType::negotiate },
         {"end", OrderType::end }
+        });
+
+std::unique_ptr<std::map<std::string, CardType>> CommandProcessor::cards = std::make_unique<std::map<std::string, CardType>>(
+    std::map<std::string, CardType> {
+        {"bomb", CardType::bomb },
+        {"blockade", CardType::blockade },
+        {"airlift", CardType::airlift },
+        {"negotiate", CardType::diplomacy },
+        {"reinforce", CardType::reinforcement }
         });
 
 std::unique_ptr<std::map<std::string, Strategy>> CommandProcessor::strategies = std::make_unique<std::map<std::string, Strategy>>(
@@ -129,31 +134,65 @@ Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
     return *command;
 }
 
-Order* CommandProcessor::readOrder(GameEngine& gameEngine, Player &player) {
-    Order *order = nullptr;
-
-    while (!order) {
+void CommandProcessor::readOrder(GameEngine&gameEngine, Player&player) {
+    bool validOrder = false;
+    while (!validOrder) {
         std::cout << player << " Enter order (type \"end\" when done) ";
-        if (gameEngine.state() == GameState::assignReinforcements)
-            std::cout << "(available reinforcements: " << player.reinforcementPool() << ")";
         if (gameEngine.state() == GameState::issueOrders)
             std::cout << "(cards available: " << player.hand() << ")";
         std::cout << std::endl;
         std::string orderStr;
         std::cin >> orderStr;
-        std::string parameters;
-        if (std::cin.peek() == ' ') {
-            std::cin.get();
-            getline(std::cin, parameters);
-        }
-        std::stringstream parameterStream{parameters};
         std::ranges::transform(orderStr, orderStr.begin(), tolower);
-        if (!orders->contains(orderStr)) {std::cout << "Invalid order. " << orderStr << std::endl; continue;}
-        if (orders->at(orderStr) == OrderType::end) break;
-        order = createOrder(gameEngine, player, orderStr, parameterStream);
-        if (!order) std::cout << "Invalid order" << std::endl;
+        if (orders->contains(orderStr)) {
+            validOrder = true;
+            unsigned targetId, armies;
+            switch (orders->at(orderStr)) {
+                case OrderType::deploy: {
+                    std::cout << "Available deploy territories: " << std::endl;
+                    for (const auto t: player.toDefend()) {
+                        std::cout << "\t" << *t << " { armies: " << t->armyCount() << " }" << std::endl;
+                    }
+                    std::cin >> targetId;
+                    std::cout << "Armies: (available: " << player.availableReinforcements() << ")" << std::endl;
+                    std::cin >> armies;
+                    player.orderList().addOrder(DeployOrder(gameEngine, player, gameEngine.map().territory(targetId), armies));
+                    break;
+                }
+                case OrderType::advance: {
+                    unsigned sourceId;
+                    std::cout << "Available source territories: " << std::endl;
+                    for (const auto t: player.territories()) {
+                        std::cout << "\t" << *t << " { armies: " << t->armyCount() << " }" << std::endl;
+                    }
+                    std::cin >> sourceId;
+                    Territory &source = gameEngine.map().territory(sourceId);
+                    std::cout << "Available target territories: " << std::endl;
+                    for (const auto t: gameEngine.map().adjacencies(source)) {
+                        std::cout << "\t" << *t << " { owner: " << t->owner() << ", armies " << t->armyCount() << " }" << std::endl;
+                    }
+                    std::cin >> targetId;
+                    std::cout << "Armies: (available: " << source.armyCount() << ")" << std::endl;
+                    std::cin >> armies;
+                    player.orderList().addOrder(AdvanceOrder(gameEngine, player, source, gameEngine.map().territory(targetId), armies));
+                    break;
+                }
+                case OrderType::end: {
+                    player.orderList().addOrder(EndOrder(gameEngine, player));
+                    break;
+                }
+                default:
+                    throw std::out_of_range("invalid order");
+            }
+        } else if (cards->contains(orderStr) && player.hand().has(cards->at(orderStr))) {
+            validOrder = true;
+            player.play(cards->at(orderStr), std::cin);
+        } else {
+            std::cout << "Invalid order: " << orderStr << std::endl;
+        }
+
     }
-    return order;
+
 }
 
 Command *
@@ -215,29 +254,11 @@ Order *CommandProcessor::createOrder(GameEngine& gameEngine, Player &player, con
             order = new AdvanceOrder(gameEngine, player, gameEngine.map().territory(sourceTerritoriesId),
                                      gameEngine.map().territory(targetTerritoriesId), armies);
             break;
-        case OrderType::bomb:
-            parameters >> targetTerritoriesId;
-            order = new BombOrder(gameEngine, player, gameEngine.map().territory(targetTerritoriesId));
-            break;
-        case OrderType::blockade:
-            parameters >> targetTerritoriesId;
-            order = new BlockadeOrder(gameEngine, player, gameEngine.map().territory(targetTerritoriesId));
-            break;
-        case OrderType::airlift:
-            parameters >> sourceTerritoriesId;
-            parameters >> targetTerritoriesId;
-            parameters >> armies;
-            order = new AirliftOrder(gameEngine, player, gameEngine.map().territory(sourceTerritoriesId),
-                                     gameEngine.map().territory(targetTerritoriesId), armies);
-            break;
-        case OrderType::negotiate:
-            unsigned otherPlayerId;
-            parameters >> otherPlayerId;
-            order = new NegotiateOrder(gameEngine, player, *gameEngine.getPlayers().at(otherPlayerId));
-            break;
         case OrderType::end:
+            order = new EndOrder(gameEngine, player);
             break;
-
+        default:
+            throw std::out_of_range("invalid order");
     }
     return order;
 }
@@ -259,8 +280,8 @@ Command &CommandProcessor::getCommand(GameEngine &gameEngine) {
  * @param player
  * @return
  */
-Order *CommandProcessor::getOrder(GameEngine &gameEngine, Player &player) {
-    return readOrder(gameEngine, player);
+void CommandProcessor::getOrder(GameEngine&gameEngine, Player&player) {
+    readOrder(gameEngine, player);
 
 }
 

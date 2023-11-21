@@ -21,6 +21,7 @@
  * Cards.h includes groups of classes that implements a deck and a hand of Warzone cards.
  */
 
+class Order;
 class IRandom;
 class Player;
 class Territory;
@@ -46,12 +47,14 @@ public:
     Card(const Card&);
     ~Card();
     [[nodiscard]] CardType type() const;
-    [[nodiscard]] const Card &play(Player& player, Territory& territory, GameEngine &gameEngine) const;
+    [[nodiscard]] Card& play(std::istream& is);
+    void owner(const Player& player);
     bool operator==(const Card& card) const;
     Card &operator=(const Card&);
     friend std::ostream &operator<<(std::ostream &os, const Card &card);
 private:
     CardType *type_;
+    const Player* owner_;
 };
 
 /**
@@ -70,12 +73,12 @@ public:
     Deck &discard(const Card &card, const Hand& fromHand);
     [[nodiscard]] bool empty() const;
     [[nodiscard]] size_t size() const;
-    [[nodiscard]] const std::vector<const Card*> &cards() const;
+    [[nodiscard]] const std::vector<Card*> &cards() const;
     [[nodiscard]] const Card &card(size_t index) const;
     Deck &operator=(const Deck&);
 private:
     const IRandom *random_;
-    std::vector<const Card*> *cards_;
+    std::vector<Card*> *cards_;
     friend std::ostream &operator<<(std::ostream &os, const Deck &deck);
 };
 
@@ -85,19 +88,22 @@ private:
  */
 class Hand {
 public:
-    explicit Hand(unsigned size = 0);
-    explicit Hand(const std::vector<Card>& cardCollection);
+    explicit Hand(const Player &player, unsigned size = 0);
+    explicit Hand(const Player &player, const std::vector<Card>& cardCollection);
     Hand(const Hand&);
     ~Hand();
     Hand &add(const Card &card);
     Hand &remove(const Card &card);
-    [[nodiscard]] const Card &card(size_t index) const;
+    [[nodiscard]] Card &card(size_t index) const;
     [[nodiscard]] bool empty() const;
-    [[nodiscard]] const std::vector<const Card*> &cards() const;
+    [[nodiscard]] const Player& player() const;
+    [[nodiscard]] const std::vector<Card*> &cards() const;
     [[nodiscard]] size_t size() const;
+    [[nodiscard]] bool has(CardType type) const;
     Hand &operator=(const Hand&);
 private:
-    std::vector<const Card*> *cards_;
+    const Player *player_; // weak ptr
+    std::vector<Card*> *cards_;
     friend Deck &Deck::draw(const Hand &hand);
     friend Deck &Deck::discard(const Card &card, const Hand& fromHand);
     friend std::ostream &operator<<(std::ostream &os, const Hand &hand);
