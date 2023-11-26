@@ -17,10 +17,8 @@
 #include <string>
 #include <vector>
 
-#include "Cards.h"
-#include "Orders.h"
-#include "PlayerStrategies.h"
-
+class PlayerStrategy;
+enum class CardType;
 // forward declaration
 enum class Strategy;
 class Map;
@@ -64,7 +62,6 @@ public:
     void play(CardType cardType, std::istream &is) const;
     void fillReinforcementPool() const;
     void deploy(unsigned armies) const;
-    void doneOrders() const;
     [[nodiscard]] unsigned availableReinforcements() const;
 private:
     std::string *name_;
@@ -88,9 +85,9 @@ class Players {
 public:
     explicit Players(GameEngine &gameEngine);
     Players(const Players &players) = delete;
-    virtual ~Players();
+    ~Players();
     Players &operator=(const Players &players) = delete;
-    virtual void setPlayOrder();
+    void setPlayOrder() const;
     [[nodiscard]] bool add(const Player&player) const;
     [[nodiscard]] Player& neutral() const;
     [[nodiscard]] bool has(const Player& player) const;
@@ -102,9 +99,13 @@ public:
     [[nodiscard]] bool hasMaximum() const;
     void init(std::ostream&os) const;
     [[nodiscard]] size_t size() const;
+    [[nodiscard]] std::string winner() const;
+
 private:
     GameEngine *gameEngine_;
+    unsigned *currentTurn_;
     std::vector<Player *> *players_;
+    friend std::ostream &operator<<(std::ostream &os, const Players &players);
 };
 
 #endif //COMP345_PLAYER_H

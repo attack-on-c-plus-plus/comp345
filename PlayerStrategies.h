@@ -70,4 +70,6 @@ public:
     [[nodiscard]] std::vector<const Territory*> toDefend() const override;
 };
 
+std::string toString(Strategy strategy);
+
 #endif //PLAYERSTRATEGIES_H

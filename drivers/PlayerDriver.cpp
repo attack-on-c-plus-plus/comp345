@@ -12,7 +12,6 @@
 
 #include "PlayerDriver.h"
 
-#include <cassert>
 #include <iostream>
 
 #include "../Cards.h"
@@ -21,6 +20,7 @@
 #include "../Map.h"
 #include "../Orders.h"
 #include "../Player.h"
+#include "../PlayerStrategies.h"
 
 void createMap(Map &map);
 

@@ -29,9 +29,9 @@
  * Parameterized Constructor
  */
 Player::Player(GameEngine&gameEngine, const std::string&name, const Strategy strategy) : name_{new std::string(name)},
-    ordersList_{new OrdersList()}, territories_{new std::vector<Territory *>},
-    hand_{new Hand(*this)}, reinforcementPool_{new unsigned(50)}, cantTarget_{new std::vector<const Player *>},
-    deployComplete_{new bool(false)}, ordersComplete_{new bool(false)}, strategy_{new Strategy(strategy)} {
+    territories_{new std::vector<Territory *>}, ordersList_{new OrdersList()},
+    cantTarget_{new std::vector<const Player *>}, reinforcementPool_{new unsigned(50)}, deployComplete_{new bool(false)},
+    ordersComplete_{new bool(false)}, hand_{new Hand(*this)}, strategy_{new Strategy(strategy)} {
     gameEngine_ = &gameEngine;
     playerStrategy_ = createStrategy(strategy);
 }
@@ -40,8 +40,8 @@ Player::Player(GameEngine&gameEngine, const std::string&name, const Strategy str
  * Copy Constructor
  */
 Player::Player(const Player& player) : name_{new std::string(*player.name_)}, territories_{new std::vector(*player.territories_)},
-                                      reinforcementPool_{new unsigned(*player.reinforcementPool_)}, ordersList_{new OrdersList(*player.ordersList_)},
-                                      cantTarget_{new std::vector(*player.cantTarget_)},
+                                      ordersList_{new OrdersList(*player.ordersList_)}, cantTarget_{new std::vector(*player.cantTarget_)},
+                                      reinforcementPool_{new unsigned(*player.reinforcementPool_)},
                                       deployComplete_{new bool(*player.deployComplete_)},
                                       ordersComplete_{new bool(*player.ordersComplete_)},
                                       strategy_{new Strategy(*player.strategy_)} {
@@ -266,6 +266,7 @@ std::ostream& operator<<(std::ostream&os, const Player& player) {
 
 Players::Players(GameEngine& gameEngine) : players_(new std::vector<Player*>()) {
     gameEngine_ = &gameEngine;
+    currentTurn_ = new unsigned(1);
     players_->reserve(20); // reserve extra so it does shift in memory
 }
 
@@ -273,9 +274,10 @@ Players::~Players() {
     for (const auto p : *players_)
         delete p;
     delete players_;
+    delete currentTurn_;
 }
 
-void Players::setPlayOrder() {
+void Players::setPlayOrder() const {
     gameEngine_->random().setPlayOrder(*players_);
 }
 
@@ -337,11 +339,12 @@ void Players::executeOrders() const {
         }
     }
     // If one player is left, they win
-    if (players_->size() == 1)
+    if (players_->size() == 1 || (gameEngine_->maxTurns().has_value() && *currentTurn_ == gameEngine_->maxTurns().value()))
         gameEngine_->transition(GameState::win);
     // Order execution complete, go back to deployment phase
     else
         gameEngine_->transition(GameState::assignReinforcements);
+    (*currentTurn_)++;
 }
 
 void Players::reinforcement() const {
@@ -392,4 +395,26 @@ void Players::init(std::ostream&os) const {
 
 size_t Players::size() const {
     return players_->size();
+}
+
+std::string Players::winner() const {
+    if (players_->size() == 1) return players_->at(0)->name();
+    auto players = *players_;
+    // Sort players in descending order by territory owned
+    std::ranges::sort(players,
+        [](const Player *a, const Player *b){ return a->territories().size() > b->territories().size(); });
+
+    // if top two players have same amount, we have a draw
+    if (players.at(0)->territories().size() == players.at(1)->territories().size())
+        return "Draw";
+
+    // otherwise top player is the winner
+    return players.at(0)->name();
+}
+
+std::ostream& operator<<(std::ostream&os, const Players& players) {
+    for (const auto player: *players.players_) {
+        os << *player << " ";
+    }
+    return os;
 }
