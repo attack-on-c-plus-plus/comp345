@@ -72,6 +72,7 @@ public:
 
 class BenevolentPlayerStrategy final : public PlayerStrategy
 {
+public:
     explicit BenevolentPlayerStrategy(Player &player, GameEngine &gameEngine);
     BenevolentPlayerStrategy(const BenevolentPlayerStrategy &benevolentPlayerStrategy);
     ~BenevolentPlayerStrategy() override = default;

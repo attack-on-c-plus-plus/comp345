@@ -247,18 +247,13 @@ BenevolentPlayerStrategy &BenevolentPlayerStrategy::operator=(const BenevolentPl
 void BenevolentPlayerStrategy::issueOrder()
 {
     std::vector<const Territory *> targets = toDefend();
-    int i = 0;
-    int index = -1;
-    int armies = 100;
 
     for (auto territory : targets)
     {
-        int deployable = player_->availableReinforcements();
-        if (territory->armyCount() <= armies)
-        {
-            armies = territory->armyCount();
+        unsigned int deployable = player_->availableReinforcements();
+
             Territory terry = *territory;
-            if (deployable > 10 && deployable != 0)
+            if (deployable > 10)
             {
                 unsigned deploy = 10;
 
@@ -271,38 +266,29 @@ void BenevolentPlayerStrategy::issueOrder()
                     player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, terry, player_->availableReinforcements()));
                 }
             }
-        }
     }
 
     // Card Orders
     const std::vector<Card *> myHand = player_->hand().cards();
 
-    bool playNegotiate, playAirlift = false;
+    bool playNegotiate = false;
 
     for (auto card : myHand)
     {
-        if (card->type() == CardType::airlift)
-        {
-            playAirlift = true;
-        }
         if (card->type() == CardType::diplomacy)
         {
             playNegotiate = true;
         }
     }
 
-    if (playAirlift)
-    {
-        player_->orderList().addOrder(AirliftOrder(gameEngine_, player_, ));
-    }
+    auto attacker = toAttack();
 
     if (playNegotiate)
     {
-        player_->orderList().addOrder(NegotiateOrder(gameEngine_, player_, ));
+        player_->orderList().addOrder(NegotiateOrder(*gameEngine_, *player_, attacker[0]->owner()));
     }
     // Add an end order, to signify the end of orders
     player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
-    return;
 }
 
 /**
@@ -311,7 +297,48 @@ void BenevolentPlayerStrategy::issueOrder()
  */
 std::vector<const Territory *> BenevolentPlayerStrategy::toAttack() const
 {
-    return {};
+    std::vector<const Territory *> territoriesToAttack;
+
+    // Iterate through the player's territories
+    for (const auto myTerritory : player_->territories())
+    {
+        // Check if adjacent territories are owned by other players
+        for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory : territories)
+        {
+            if (&territory->owner() != player_)
+            {
+                // Check that owner is not on cantAttack list because of negotiate order
+                bool canAttack = true;
+                for (const auto player : player_->cantAttack())
+                {
+                    if (&territory->owner() == &*player)
+                    {
+                        canAttack = false;
+                        break;
+                    }
+                }
+
+                // Check if adjacentTerritory is not already in territoriesToAttack
+                bool isUnique = true;
+                for (const auto attackTerritory : territoriesToAttack)
+                {
+                    if (attackTerritory->name() == territory->name())
+                    {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                // If it's unique, add it to the list of territories to attack
+                if (isUnique && canAttack)
+                {
+                    territoriesToAttack.push_back(territory);
+                }
+            }
+        }
+    }
+    std::sort(territoriesToAttack.begin(), territoriesToAttack.end(), [](const Territory *a, const Territory *b)
+              { return a->armyCount() > b->armyCount(); });
+    return territoriesToAttack;
 }
 
 /**
@@ -345,5 +372,7 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toDefend() const
             territoriesToDefend.push_back(territory);
         }
     }
+    std::sort(territoriesToDefend.begin(), territoriesToDefend.end(), [](const Territory *a, const Territory *b)
+              { return a->armyCount() < b->armyCount(); });
     return territoriesToDefend;
 }
