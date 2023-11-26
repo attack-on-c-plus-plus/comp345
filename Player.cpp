@@ -13,7 +13,6 @@
 #include "Player.h"
 
 #include <algorithm>
-#include <cassert>
 #include <ranges>
 #include <string>
 #include <vector>
@@ -252,8 +251,7 @@ PlayerStrategy* Player::createStrategy(const Strategy strategy) {
             playerStrategy = new NeutralPlayerStrategy(*this, *gameEngine_);
             break;
         case Strategy::Benevolent:
-            // TODO: Add benevolent
-            playerStrategy = new NeutralPlayerStrategy(*this, *gameEngine_);
+            playerStrategy = new BenevolentPlayerStrategy(*this, *gameEngine_);
             break;
     }
     return playerStrategy;
