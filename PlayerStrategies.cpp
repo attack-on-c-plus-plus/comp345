@@ -254,24 +254,52 @@ void BenevolentPlayerStrategy::issueOrder()
     for (auto territory : targets)
     {
         int deployable = player_->availableReinforcements();
-        if (territory->armyCount() < armies)
+        if (territory->armyCount() <= armies)
         {
             armies = territory->armyCount();
-            if (deployable > 10)
+            Territory terry = *territory;
+            if (deployable > 10 && deployable != 0)
             {
                 unsigned deploy = 10;
-                player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, deploy));
+
+                player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, terry, deploy));
             }
             else
             {
                 if (deployable > 0)
                 {
-                    player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, player_->availableReinforcements()));
+                    player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, terry, player_->availableReinforcements()));
                 }
             }
         }
     }
 
+    // Card Orders
+    const std::vector<Card *> myHand = player_->hand().cards();
+
+    bool playNegotiate, playAirlift = false;
+
+    for (auto card : myHand)
+    {
+        if (card->type() == CardType::airlift)
+        {
+            playAirlift = true;
+        }
+        if (card->type() == CardType::diplomacy)
+        {
+            playNegotiate = true;
+        }
+    }
+
+    if (playAirlift)
+    {
+        player_->orderList().addOrder(AirliftOrder(gameEngine_, player_, ));
+    }
+
+    if (playNegotiate)
+    {
+        player_->orderList().addOrder(NegotiateOrder(gameEngine_, player_, ));
+    }
     // Add an end order, to signify the end of orders
     player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
     return;
