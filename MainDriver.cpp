@@ -23,6 +23,7 @@
 #include "drivers/MapDriver.h"
 #include "drivers/OrdersDriver.h"
 #include "drivers/PlayerDriver.h"
+#include "drivers/TournamentDriver.h"
 
 int main(const int argc, char* argv[]) {
     if ((argc == 2 || argc == 3) && strcmp(argv[1], "-test") == 0) {
@@ -47,6 +48,9 @@ int main(const int argc, char* argv[]) {
         }
         if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "gamemainloop") == 0) {
             testMainGameLoop();
+        }
+        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "tournament") == 0) {
+            testTournament();
         }
     } else if (argc == 2 && strcmp(argv[1], "-console") == 0) {
         CommandProcessor commandProcessor;

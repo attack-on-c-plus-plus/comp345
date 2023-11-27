@@ -19,6 +19,7 @@
 #include "../Map.h"
 #include "../Orders.h"
 #include "../Player.h"
+#include "../PlayerStrategies.h"
 #include "../Cards.h"
 
 void createMap(Map &map);

@@ -43,6 +43,7 @@ class QuitCommand;
  * Command types that are available
  */
 enum class CommandType {
+    tournament,
     loadmap,
     validatemap,
     addplayer,
@@ -76,7 +77,7 @@ public:
     Command &getCommand(GameEngine &gameEngine);
 
     void getOrder(GameEngine&gameEngine, Player&player);
-    [[nodiscard]] bool validate(Command &command) const;
+    [[nodiscard]] static bool validate(Command &command);
     [[nodiscard]] std::string stringToLog() const override;
     static std::unique_ptr<std::map<std::string, CommandType>> commands;
     static std::unique_ptr<std::map<std::string, OrderType>> orders;
@@ -85,7 +86,7 @@ protected:
     [[nodiscard]] virtual Command &readCommand(GameEngine &gameEngine);
     virtual void readOrder(GameEngine&gameEngine, Player&player);
     static Command *createCommand(GameEngine &gameEngine, std::string &commandStr, std::istream &parameters);
-    static Order *createOrder(GameEngine &gameEngine, Player &player, const std::string &orderStr, std::istream &parameters);
+    static Order *createOrder(const GameEngine &gameEngine, Player &player, const std::string &orderStr, std::istream &parameters);
 private:
     void saveCommand(Command &command);
     std::vector<Command *> *commands_;

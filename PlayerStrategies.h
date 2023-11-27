@@ -70,6 +70,8 @@ public:
     [[nodiscard]] std::vector<const Territory*> toDefend() const override;
 };
 
+std::string toString(Strategy strategy);
+
 class BenevolentPlayerStrategy final : public PlayerStrategy
 {
 public:

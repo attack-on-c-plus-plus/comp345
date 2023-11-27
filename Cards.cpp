@@ -21,6 +21,7 @@
 #include "Map.h"
 #include "Orders.h"
 #include "Player.h"
+#include "PlayerStrategies.h"
 
 /**
  * Creates a new card
