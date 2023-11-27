@@ -217,3 +217,13 @@ std::vector<const Territory*> NeutralPlayerStrategy::toDefend() const {
     return {};
 }
 
+CheaterPlayerStrategy::CheaterPlayerStrategy(Player &player, GameEngine &gameEngine) : PlayerStrategy(player,gameEngine) {}
+
+CheaterPlayerStrategy &CheaterPlayerStrategy::operator=(const CheaterPlayerStrategy &cheaterPlayerStrategy) {
+    if (this == &cheaterPlayerStrategy) {
+        PlayerStrategy::operator=(cheaterPlayerStrategy);
+    }
+    return *this;
+}
+
+CheaterPlayerStrategy::CheaterPlayerStrategy(const CheaterPlayerStrategy &cheaterPlayerStrategy) = default;

@@ -70,4 +70,15 @@ public:
     [[nodiscard]] std::vector<const Territory*> toDefend() const override;
 };
 
+class CheaterPlayerStrategy final : public PlayerStrategy {
+public:
+    explicit CheaterPlayerStrategy(Player& player, GameEngine& gameEngine);
+    CheaterPlayerStrategy(const CheaterPlayerStrategy& cheaterPlayerStrategy);
+    ~CheaterPlayerStrategy() override = default;
+    CheaterPlayerStrategy &operator=(const CheaterPlayerStrategy& cheaterPlayerStrategy);
+    void issueOrder() override;
+    [[nodiscard]] std::vector<const Territory*> toAttack() const override;
+    [[nodiscard]] std::vector<const Territory*> toDefend() const override;
+};
+
 #endif //PLAYERSTRATEGIES_H
