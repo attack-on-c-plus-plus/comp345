@@ -13,7 +13,9 @@
 #ifndef COMP345_GAMEENGINE_H
 #define COMP345_GAMEENGINE_H
 
+#include <optional>
 #include <random>
+#include <set>
 #include <string>
 
 #include "LoggingObserver.h"
@@ -30,15 +32,19 @@
  * The states form the structure of the setup and the game itself.
  */
 
+// Forward declaration.
+class PlayerStrategy;
 class Players;
 enum class Strategy;
 class IRandom;
-// Forward declaration.
 class CommandProcessor;
 class Player;
 class Map;
 class Deck;
 class Territory;
+
+constexpr int mapNameWidth = 20;
+constexpr int strategyWidth = 12;
 
 // This is the enum used to define all possible states the engine can be in.
 enum class GameState
@@ -88,6 +94,9 @@ public:
     [[nodiscard]] std::string stringToLog() const override;
     void transition(GameState newState);
     [[nodiscard]] const IRandom &random() const;
+    [[nodiscard]] std::optional<unsigned> maxTurns() const;
+    void maxTurns(unsigned turns) const;
+    void resetGameElements();
 private:
     GameState *state_;
     GameState *previousState_;
@@ -96,7 +105,7 @@ private:
     const IRandom *random_;
     Players *players_;
     CommandProcessor *commandProcessor_;
-    void resetGameElements();
+    std::optional<unsigned> *maxTurns_;
     friend std::ostream &operator<<(std::ostream &os, const GameEngine &gameEngine);
 };
 
@@ -147,7 +156,7 @@ public:
 class AddPlayerCommand final : public Command
 {
 public:
-    explicit AddPlayerCommand(GameEngine &gameEngine, const std::string &playerName, const Strategy strategy);
+    explicit AddPlayerCommand(GameEngine &gameEngine, const std::string &playerName, Strategy strategy);
     AddPlayerCommand(const AddPlayerCommand &addPlayer);
     ~AddPlayerCommand() override;
     bool validate() override;
@@ -179,6 +188,7 @@ public:
     void execute() override;
     ReplayCommand &operator=(const ReplayCommand &command);
 };
+
 class QuitCommand final : public Command
 {
 public:
@@ -188,6 +198,28 @@ public:
     bool validate() override;
     void execute() override;
     QuitCommand &operator=(const QuitCommand &command);
+};
+
+class TournamentCommand final : public Command
+{
+public:
+    explicit TournamentCommand(GameEngine& gameEngine, const std::vector<std::string> &maps, const std::set<Strategy> &players, unsigned games, unsigned rounds);
+    TournamentCommand(const TournamentCommand &tournament);
+    ~TournamentCommand() override;
+    bool validate() override;
+    void execute() override;
+    TournamentCommand &operator=(const TournamentCommand &command);
+private:
+    std::vector<std::string> *mapFiles_;
+    std::set<Strategy> *strategies_;
+    [[nodiscard]] std::string generateResults(const std::vector<std::vector<std::string>>&winners,
+                                const std::vector<std::string>&maps) const;
+    static void createTable(std::stringstream&ss, const std::vector<std::string>&maps,
+                            const std::vector<std::vector<std::string>>&winners, unsigned games);
+    static void createTableHeader(std::stringstream&ss, unsigned games);
+    static void createRowDelimiter(std::stringstream&ss, unsigned games);
+    unsigned *games_;
+    unsigned *turns_;
 };
 
 class IRandom {

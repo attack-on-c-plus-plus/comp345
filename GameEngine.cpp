@@ -23,8 +23,8 @@
 #include "Cards.h"
 #include "CommandProcessing.h"
 #include "Map.h"
-#include "Orders.h"
 #include "Player.h"
+#include "PlayerStrategies.h"
 
 /**
  * Main constructor for the GameEngine object
@@ -37,6 +37,7 @@ GameEngine::GameEngine(CommandProcessor &commandProcessor, const IRandom &random
     players_ = new Players(*this);
     deck_ = new Deck(random, 24);
     random_ = &random;
+    maxTurns_ = new std::optional<unsigned>();
 }
 
 /**
@@ -48,7 +49,10 @@ GameEngine::~GameEngine() {
     delete map_;
     delete players_;
     delete deck_;
+    delete maxTurns_;
 }
+constexpr int width = 12;
+    constexpr int mapWidth = 20;
 
 /**GameEngine *gameEngine_;
  * Gets the current game state
@@ -104,6 +108,7 @@ void GameEngine::gameLoop() {
         startup();
         std::cout << "Playing game" << std::endl;
         mainGameLoop();
+        gameOverPhase();
     }
 }
 
@@ -129,7 +134,6 @@ void GameEngine::mainGameLoop() {
         issuingOrderPhase();
         executeOrdersPhase();
     }
-    gameOverPhase();
 }
 
 void GameEngine::gameOverPhase() {
@@ -142,8 +146,9 @@ void GameEngine::gameOverPhase() {
 std::string GameEngine::stringToLog() const {
     std::stringstream s;
     s << "| Game Engine new state: " << *this;
-    if (*state_ == GameState::win)
-        s << " player " << players_->player(0) << " wins!";
+    if (*state_ == GameState::win) {
+        players_->size() == 1 ? s << " player " << *players_ << "wins!" : s << *players_ << "draw";
+    }
     return s.str();
 }
 
@@ -159,6 +164,14 @@ void GameEngine::transition(const GameState newState) {
 
 const IRandom& GameEngine::random() const {
     return *random_;
+}
+
+std::optional<unsigned> GameEngine::maxTurns() const {
+    return *maxTurns_;
+}
+
+void GameEngine::maxTurns(const unsigned turns) const {
+    *maxTurns_ = turns;
 }
 
 /**
@@ -394,7 +407,7 @@ bool AddPlayerCommand::validate() {
 
 void AddPlayerCommand::execute() {
     if (!validate()) return;
-    if (Player p(*gameEngine_, *playerName_, *strategy_); !gameEngine_->players().add(p)) {
+    if (const Player p(*gameEngine_, *playerName_, *strategy_); !gameEngine_->players().add(p)) {
         saveEffect("Player \"" + *playerName_ + "\" already in game. Not added.");
         return;
     }
@@ -477,6 +490,157 @@ QuitCommand& QuitCommand::operator=(const QuitCommand&command) {
     return *this;
 }
 
+TournamentCommand::TournamentCommand(GameEngine& gameEngine, const std::vector<std::string> &maps,
+    const std::set<Strategy> &players, const unsigned games, const unsigned rounds) :
+    Command(gameEngine, "Tournament"), mapFiles_{new std::vector(maps)},
+    strategies_{new std::set(players)}, games_{new unsigned(games)}, turns_{new unsigned(rounds)} {
+}
+
+TournamentCommand::TournamentCommand(const TournamentCommand& tournament)  : Command(tournament),
+    mapFiles_{new std::vector(*tournament.mapFiles_)}, strategies_{new std::set(*tournament.strategies_)},
+    games_{new unsigned(*tournament.games_)}, turns_{new unsigned(*tournament.turns_)} {
+
+}
+
+TournamentCommand::~TournamentCommand() {
+    delete mapFiles_;
+    delete strategies_;
+    delete games_;
+    delete turns_;
+}
+
+bool TournamentCommand::validate() {
+    if (mapFiles_->size() > 5 || mapFiles_->empty()) {
+        saveEffect("Invalid number of maps: " + std::to_string(mapFiles_->size()) + ". Only 1 to 5 maps can be used.");
+        return false;
+    }
+    if (strategies_->contains(Strategy::Human)) {
+        saveEffect("Invalid strategy: " + toString(Strategy::Human) + ". Only computer players strategies allowed.");
+        return false;
+    }
+    if (strategies_->size() < 2 || strategies_->size() > 4) {
+        saveEffect("Invalid number of computer players strategies: " + std::to_string(strategies_->size()) + ". Only 2 to 4 strategies can be used.");
+        return false;
+    }
+    if (*games_ < 1 || *games_ > 5) {
+        saveEffect("Invalid number of games: " + std::to_string(*games_) + ". Only 1 to 5 games can be played on each map.");
+        return false;
+    }
+    if (*turns_ < 10 || *turns_ > 50) {
+        saveEffect("Invalid number of turns: " + std::to_string(*turns_) + ". Only 10 to 50 turns for each game.");
+        return false;
+    }
+    if (gameEngine_->state() == GameState::start && *games_ > 0 && *turns_ > 0 && !mapFiles_->empty() && strategies_->size() >= 2) {
+        return true;
+    }
+    return Command::validate();
+}
+
+std::string TournamentCommand::generateResults(const std::vector<std::vector<std::string>> &winners,
+    const std::vector<std::string> &maps) const {
+    std::stringstream ss;
+    ss << "Tournament Results";
+    createTableHeader(ss, *games_);
+    createTable(ss, maps, winners, *games_);
+    return ss.str();
+}
+
+void TournamentCommand::execute() {
+    if (!validate()) return;
+    saveEffect("Running a tournament! (" + std::to_string(mapFiles_->size()) + " maps, " +
+        std::to_string(strategies_->size()) + " computer strategies, " + std::to_string(*games_) +
+        " games per map, " + std::to_string(*turns_) + " rounds per game maximum)");
+
+    // set max turns for engine
+    gameEngine_->maxTurns(*turns_);
+
+    std::vector<std::vector<std::string>> winners;
+    std::vector<std::string> maps;
+
+    // LoadMap and validate
+    for (int i = 0; i < mapFiles_->size(); ++i) {
+        std::vector<std::string> mapWinners;
+        winners.push_back(mapWinners);
+        // loop games
+        for (int j = 0; j < *games_; ++j) {
+            gameEngine_->resetGameElements();
+            LoadMapCommand loadMap{*gameEngine_, mapFiles_->at(i)};
+            if (!loadMap.validate()) {
+                saveEffect("Tournament failed! Bad map file \"" + mapFiles_->at(i) + "\"");
+                return;
+            }
+            loadMap.execute();
+            ValidateMapCommand validateMap{*gameEngine_};
+            if (!validateMap.validate()) {
+                saveEffect("Tournament failed! Bad map \"" + gameEngine_->map().name() + "\"");
+                return;
+            }
+            validateMap.execute();
+
+            // add players
+            for (const auto strategy: *strategies_) {
+                AddPlayerCommand addPlayer{*gameEngine_, toString(strategy), strategy};
+                addPlayer.execute();
+            }
+            GameStartCommand start{*gameEngine_};
+            start.execute();
+
+            // start game loop
+            gameEngine_->mainGameLoop();
+
+            // determine the winner
+            winners[i].push_back(gameEngine_->players().winner());
+
+            ReplayCommand replay{*gameEngine_};
+            replay.execute();
+        }
+        maps.push_back(gameEngine_->map().name());
+    }
+    saveEffect(generateResults(winners, maps));
+}
+
+TournamentCommand& TournamentCommand::operator=(const TournamentCommand& command) {
+    if (this != &command) {
+        Command::operator=(command);
+        delete mapFiles_;
+        delete strategies_;
+        delete games_;
+        delete turns_;
+        mapFiles_ = new std::vector(*command.mapFiles_);
+        strategies_ = new std::set(*command.strategies_);
+        games_ = new unsigned(*command.games_);
+        turns_ = new unsigned(*command.turns_);
+    }
+    return *this;
+}
+
+void TournamentCommand::createTable(std::stringstream&ss, const std::vector<std::string>&maps,
+                                    const std::vector<std::vector<std::string>>&winners, const unsigned games) {
+    for (int i = 0; i < winners.size(); ++i) {
+        ss << std::endl;
+        ss << "|" << std::right << std::setw(mapNameWidth) << std::setfill(' ') << (maps[i] + " ") << "|";
+        for (const auto& winner: winners[i]) {
+            ss << std::left << std::setw(strategyWidth) << std::setfill(' ') << (" " + winner) << "|";
+        }
+        createRowDelimiter(ss, games);
+    }
+}
+
+void TournamentCommand::createTableHeader(std::stringstream&ss, const unsigned games) {
+    createRowDelimiter(ss, games);
+    ss << std::endl << "|" << std::setw(mapNameWidth) << std::setfill(' ') << " " << "|";
+    for (int i = 1; i <= games; ++i)
+        ss << std::left << std::setw(strategyWidth) << std::setfill(' ') << (" Game " + std::to_string(i)) << "|";
+    createRowDelimiter(ss, games);
+}
+
+void TournamentCommand::createRowDelimiter(std::stringstream&ss, const unsigned games) {
+    // Create row delimeter
+    ss  << std::endl << "+" << std::string(mapNameWidth, '-') << "+";
+    for (int i = 0; i < games; ++i)
+        ss << std::string(strategyWidth, '-') << "+";
+}
+
 bool QuitCommand::validate() {
     if (gameEngine_->state() == GameState::win)
         return true;
@@ -496,7 +660,7 @@ void QuitCommand::execute() {
 Random::Random() {
     eng = new std::default_random_engine[1];
     std::random_device r{};
-    std::default_random_engine e(r());
+    const std::default_random_engine e(r());
     eng[0] = e;
     u = new std::uniform_int_distribution<unsigned>(0, UINT_MAX);
 }
@@ -517,7 +681,7 @@ unsigned Random::generate(const unsigned from, const unsigned to) const {
 
 FakeRandom::FakeRandom() {
     eng = new std::mt19937[1];
-    std::mt19937 e{123};
+    const std::mt19937 e{123};
     eng[0] = e;
     u = new std::uniform_int_distribution<unsigned>(0, UINT_MAX);
 }

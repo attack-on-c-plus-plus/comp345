@@ -12,9 +12,11 @@
 
 #include "CommandProcessing.h"
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <regex>
 #include <sstream>
 
 #include "Cards.h"
@@ -22,20 +24,25 @@
 #include "Map.h"
 #include "Orders.h"
 #include "Player.h"
+#include "PlayerStrategies.h"
 
 /**
  * Commands available to the command processor
  */
 std::unique_ptr<std::map<std::string, CommandType>> CommandProcessor::commands = std::make_unique<std::map<std::string, CommandType>>(
         std::map<std::string, CommandType> {
-                { "loadmap", CommandType::loadmap},
-                { "validatemap", CommandType::validatemap},
-                { "addplayer", CommandType::addplayer},
-                { "gamestart", CommandType::gamestart},
-                { "replay", CommandType::replay},
-                { "quit", CommandType::quit}
+            {"tournament", CommandType::tournament},
+            { "loadmap", CommandType::loadmap},
+            { "validatemap", CommandType::validatemap},
+            { "addplayer", CommandType::addplayer},
+            { "gamestart", CommandType::gamestart},
+            { "replay", CommandType::replay},
+            { "quit", CommandType::quit}
         });
 
+/**
+ * Orders available to the command processor
+ */
 std::unique_ptr<std::map<std::string, OrderType>> CommandProcessor::orders = std::make_unique<std::map<std::string, OrderType>>(
     std::map<std::string, OrderType> {
         {"deploy", OrderType::deploy },
@@ -43,6 +50,9 @@ std::unique_ptr<std::map<std::string, OrderType>> CommandProcessor::orders = std
         {"end", OrderType::end }
         });
 
+/**
+ * Cards available to the command processor
+ */
 std::unique_ptr<std::map<std::string, CardType>> CommandProcessor::cards = std::make_unique<std::map<std::string, CardType>>(
     std::map<std::string, CardType> {
         {"bomb", CardType::bomb },
@@ -52,6 +62,9 @@ std::unique_ptr<std::map<std::string, CardType>> CommandProcessor::cards = std::
         {"reinforce", CardType::reinforcement }
         });
 
+/**
+ * Strategies available to the command processor
+ */
 std::unique_ptr<std::map<std::string, Strategy>> CommandProcessor::strategies = std::make_unique<std::map<std::string, Strategy>>(
         std::map<std::string, Strategy> {
             {"neutral",     Strategy::Neutral    },
@@ -134,6 +147,11 @@ Command &CommandProcessor::readCommand(GameEngine &gameEngine) {
     return *command;
 }
 
+/**
+ * \brief Reads an order
+ * \param gameEngine
+ * \param player
+ */
 void CommandProcessor::readOrder(GameEngine&gameEngine, Player&player) {
     bool validOrder = false;
     while (!validOrder) {
@@ -195,6 +213,13 @@ void CommandProcessor::readOrder(GameEngine&gameEngine, Player&player) {
 
 }
 
+/**
+ * \brief Creates a command user input
+ * \param gameEngine the game engine
+ * \param commandStr the command string
+ * \param parameters the other parameters supplied
+ * \return
+ */
 Command *
 CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr, std::istream &parameters) {
     Command *command = nullptr;
@@ -202,6 +227,42 @@ CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr,
     if (!commands->contains(commandStr)) std::cout << "Invalid command. " << commandStr << std::endl;
     else {
         switch (commands->at(commandStr)) {
+            case CommandType::tournament: {
+                std::string tournamentParams;
+                getline(parameters, tournamentParams);
+
+                const std::regex tournament_regex(R"(-M (.+)-P ((?:(?:neutral|cheater|aggressive|benevolent)[[:blank:]])+)-G (\d+) -D (\d+))", std::regex_constants::icase);
+
+                std::vector<std::string> maps;
+                std::set<Strategy> players;
+                unsigned games = 0;
+                unsigned rounds = 0;
+
+                if (std::smatch tournament_match; std::regex_match(tournamentParams, tournament_match, tournament_regex))
+                {
+                    std::stringstream ss1(tournament_match[1].str());
+                    std::string tmp, newPart;
+                    while(std::getline(ss1, newPart, ' ')){
+                        if (!tmp.empty()) tmp.append(" ");
+                        tmp.append(newPart);
+                        if (std::filesystem::exists(tmp) && std::filesystem::is_regular_file(tmp)) {
+                            maps.push_back(tmp);
+                            tmp = "";
+                        } else if (tmp.find('.') != std::string::npos) {
+                            tmp = "";
+                        }
+                    }
+                    std::stringstream ss2(tournament_match[2].str());
+                    while(std::getline(ss2, tmp, ' ')){
+                        players.insert(strategies->at(tmp));
+                    }
+                    games = stoi(tournament_match[3].str());
+                    rounds = stoi(tournament_match[4].str());
+                }
+
+                command = new TournamentCommand{gameEngine, maps, players, games, rounds};
+                break;
+            }
             case CommandType::loadmap: {
                 std::string filename;
                 parameters >> filename;
@@ -237,9 +298,17 @@ CommandProcessor::createCommand(GameEngine &gameEngine, std::string &commandStr,
     return command;
 }
 
-Order *CommandProcessor::createOrder(GameEngine& gameEngine, Player &player, const std::string& orderStr,
-    std::istream &parameters) {
-    Order *order = nullptr;
+/**
+ * \brief Creates an irder from user input
+ * \param gameEngine the game engine
+ * \param player the player
+ * \param orderStr the order string
+ * \param parameters the other parameters supplied
+ * \return
+ */
+Order *CommandProcessor::createOrder(const GameEngine& gameEngine, Player &player, const std::string& orderStr,
+                                     std::istream &parameters) {
+    Order* order;
     unsigned targetTerritoriesId, sourceTerritoriesId, armies;
     switch (orders->at(orderStr)) {
         case OrderType::deploy:
@@ -290,7 +359,7 @@ void CommandProcessor::getOrder(GameEngine&gameEngine, Player&player) {
  * @param command
  * @return
  */
-bool CommandProcessor::validate(Command &command) const {
+bool CommandProcessor::validate(Command &command) {
     return command.validate();
 }
 
@@ -316,14 +385,26 @@ std::string CommandProcessor::stringToLog() const {
     return s.str();
 }
 
+/**
+ * \brief Constructor
+ * \param filename
+ */
 FileCommandProcessorAdapter::FileCommandProcessorAdapter(const std::string &filename) {
     fileLineReader_ = new FileLineReader(filename);
 }
 
+/**
+ * \brief Destructor
+ */
 FileCommandProcessorAdapter::~FileCommandProcessorAdapter() {
     delete fileLineReader_;
 }
 
+/**
+ * \brief Read a command
+ * \param gameEngine the game engine
+ * \return a command
+ */
 Command &FileCommandProcessorAdapter::readCommand(GameEngine &gameEngine) {
     Command *c = nullptr;
 
@@ -343,14 +424,26 @@ Command &FileCommandProcessorAdapter::readCommand(GameEngine &gameEngine) {
     return *c;
 }
 
+/**
+ * \brief Constructor
+ * \param filename
+ */
 FileLineReader::FileLineReader(const std::string &filename) {
     in_ = new std::ifstream(filename);
 }
 
+/**
+ * \brief Destructor
+ */
 FileLineReader::~FileLineReader() {
     delete in_;
 }
 
+/**
+ * \brief Reads a line from a file
+ * \param line the line read
+ * \return true if a line was read; false otherwise
+ */
 bool FileLineReader::readLineFromFile(std::string &line) const {
     return static_cast<bool>(getline(*in_, line));
 }

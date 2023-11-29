@@ -15,6 +15,7 @@
 #include "CommandProcessing.h"
 #include "GameEngine.h"
 #include "Map.h"
+#include "Orders.h"
 #include "Player.h"
 
 /**
@@ -215,6 +216,17 @@ std::vector<const Territory*> NeutralPlayerStrategy::toAttack() const {
  */
 std::vector<const Territory*> NeutralPlayerStrategy::toDefend() const {
     return {};
+}
+
+std::string toString(const Strategy strategy) {
+    switch (strategy) {
+        case Strategy::Neutral: return "Neutral";
+        case Strategy::Cheater: return "Cheater";
+        case Strategy::Human: return "Human";
+        case Strategy::Aggressive: return "Aggressive";
+        case Strategy::Benevolent: return "Benevolent";
+    }
+    return "";
 }
 
 /**

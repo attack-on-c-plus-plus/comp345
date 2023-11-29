@@ -19,13 +19,14 @@
 #include "../GameEngine.h"
 #include "../Map.h"
 #include "../Player.h"
+#include "../PlayerStrategies.h"
 
 void testCards() {
     const std::string seperator(70, '=');
     const FakeRandom random;
     CommandProcessor processor;
     GameEngine engine{processor, random};
-    Player player{engine, "Bob", Strategy::Human};
+    const Player player{engine, "Bob", Strategy::Human};
     Territory territory{};
     std::cout << seperator << std::endl;
     std::cout << "Testing the implementation of Cards" << std::endl;
