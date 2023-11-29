@@ -95,4 +95,6 @@ public:
     [[nodiscard]] std::vector<const Territory*> toDefend() const override;
 };
 
+bool comparePairs(const std::pair<int, const Territory*>& lhs, const std::pair<int, const Territory*> &rhs);
+
 #endif //PLAYERSTRATEGIES_H

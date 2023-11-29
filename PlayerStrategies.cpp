@@ -17,6 +17,8 @@
 #include "Map.h"
 #include "Orders.h"
 #include "Player.h"
+#include <utility>
+#include <algorithm>
 
 /**
  * \brief Constructor
@@ -453,4 +455,43 @@ std::vector<const Territory *> CheaterPlayerStrategy::toAttack() const {
     return territoriesToAttack;
 }
 
+/**
+ * The Cheater player automatically conquers all territories adjacent to him, 1 per turn
+ */
+void CheaterPlayerStrategy::issueOrder() {
+    // The cheater would, logically, try to select the territory with the
+    // most adjacent territories not belonging to him.
+    std::vector<const Territory *> territoriesToAttack = toAttack();
+    std::vector<std::pair<int, const Territory *>> adjacentCounter;
+    for (const auto territory : territoriesToAttack) {
+        // The game checks for adjacent territories of adjacent territories
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+        int nbOfAdjacentTerr = 0;
+        for (const auto adjacentTerritory : adjacentTerritories) {
+            // if the territory does not belong to the player, then add +1 to the counter
+            if (adjacentTerritory->name() != player_->name()) {
+                nbOfAdjacentTerr++;
+            }
+        }
+        adjacentCounter.emplace_back(nbOfAdjacentTerr, territory);
+    }
+    // Here, we check what is the territory that must be attacked in priority
+    // The one with the highest number of adjacent territories is prioritized
+    auto maxElement =
+            std::max_element(adjacentCounter.begin(), adjacentCounter.end(), comparePairs);
+
+    // TO DO
+    // Handle cases and territory attack
+}
+
 CheaterPlayerStrategy::CheaterPlayerStrategy(const CheaterPlayerStrategy &cheaterPlayerStrategy) = default;
+
+/**
+ * Function to compare pairs of <int, const Territory*> based on the first
+ * @param lhs : Integer
+ * @param rhs : A pointer to a constant territory
+ * @return If the lhs.first is less than rhs.first
+ */
+bool comparePairs(const std::pair<int, const Territory*>& lhs, const std::pair<int, const Territory*>& rhs) {
+    return lhs.first < rhs.first;
+}
