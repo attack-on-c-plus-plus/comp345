@@ -398,4 +398,59 @@ CheaterPlayerStrategy &CheaterPlayerStrategy::operator=(const CheaterPlayerStrat
     return *this;
 }
 
+/**
+ * Returns the territories to defend for the Cheater player
+ * @return A vector of pointers to territories
+ */
+std::vector<const Territory *> CheaterPlayerStrategy::toDefend() const {
+    std::vector<const Territory *> territoriesToDefend;
+    for (const auto territory : player_->territories()) {
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+        bool toDefend = false;
+        for (const auto adjacentTerritory : adjacentTerritories) {
+            if (adjacentTerritory->owner().name() != player_->name()) {
+                toDefend = true;
+                break;
+            }
+        }
+        if (toDefend) {
+            territoriesToDefend.push_back(territory);
+        }
+    }
+    return territoriesToDefend;
+}
+
+/**
+ * Returns the territories to attack for the Cheater player
+ * @return A vector of pointers to territories
+ */
+std::vector<const Territory *> CheaterPlayerStrategy::toAttack() const {
+    std::vector<const Territory *> territoriesToAttack;
+    for (const auto territory : player_->territories()) {
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+        for (const auto adjacentTerritory : adjacentTerritories) {
+            if (adjacentTerritory->owner() != *player_) {
+                bool toAttack = true;
+                for (const auto player : player_->cantAttack()) {
+                    if (adjacentTerritory->owner() == *player) {
+                        toAttack = false;
+                        break;
+                    }
+                }
+                bool isUnique = true;
+                for (const auto attackTerritory : adjacentTerritories) {
+                    if (attackTerritory->name() == territory->name()) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                if (isUnique && toAttack) {
+                    territoriesToAttack.push_back(adjacentTerritory);
+                }
+            }
+        }
+    }
+    return territoriesToAttack;
+}
+
 CheaterPlayerStrategy::CheaterPlayerStrategy(const CheaterPlayerStrategy &cheaterPlayerStrategy) = default;
