@@ -84,4 +84,17 @@ public:
     [[nodiscard]] std::vector<const Territory *> toDefend() const override;
 };
 
+
+class AggressivePlayerStrategy final : public PlayerStrategy
+{
+public:
+    explicit AggressivePlayerStrategy(Player &player, GameEngine &gameEngine);
+    AggressivePlayerStrategy(const AggressivePlayerStrategy &aggressivePlayerStrategy);
+    ~AggressivePlayerStrategy() override = default;
+    AggressivePlayerStrategy &operator=(const AggressivePlayerStrategy &aggressivePlayerStrategy);
+    void issueOrder() override;
+    bool strongest(Territory &territory);
+    [[nodiscard]] std::vector<const Territory *> toAttack() const override;
+    [[nodiscard]] std::vector<const Territory *> toDefend() const override;
+};
 #endif //PLAYERSTRATEGIES_H

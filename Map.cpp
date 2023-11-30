@@ -514,6 +514,26 @@ unsigned Territory::armyCount() const {
     return *armyCount_;
 }
 
+
+// a comparator for aggressive player:  A user defined binary predicate function that accepts two arguments
+// and returns true if the two arguments are in order and false otherwise.
+// It follows the strict weak ordering to order the elements.
+// This bool funtion does just that: compares the number of armies between 2 territories
+
+bool Territory::compStrongestArmies(const Territory* territory1, const Territory* territory2)
+{
+    return territory1->armyCount() > territory2->armyCount();
+}
+
+bool Territory::compWeakestArmies(const Territory* territory1, const Territory* territory2)
+{
+    return territory1->armyCount() < territory2->armyCount();
+}
+
+//std::vector<const Territory*> adjacencies(const Territory &territory) {
+//
+//}
+
 /**
  * Gets the id of a Territory
  * @return

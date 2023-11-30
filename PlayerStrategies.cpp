@@ -18,6 +18,8 @@
 #include "Orders.h"
 #include "Player.h"
 
+
+
 /**
  * \brief Constructor
  * \param player
@@ -387,4 +389,209 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toDefend() const
     std::sort(territoriesToDefend.begin(), territoriesToDefend.end(), [](const Territory *a, const Territory *b)
               { return a->armyCount() < b->armyCount(); });
     return territoriesToDefend;
+}
+
+
+/**
+ * \brief Constructor
+ * \param player
+ * \param gameEngine
+ */
+AggressivePlayerStrategy::AggressivePlayerStrategy(Player &player, GameEngine &gameEngine) : PlayerStrategy(player, gameEngine)
+{
+}
+
+/**
+ * \brief Copy Constructor
+ * \param benevolentPlayerStrategy
+ */
+AggressivePlayerStrategy::AggressivePlayerStrategy(const AggressivePlayerStrategy &aggressivePlayerStrategy) = default;
+
+/**
+ * \brief operator= overload
+ * \param AggressivePlayerStrategy
+ * \return the assigned player strategy
+ */
+AggressivePlayerStrategy &AggressivePlayerStrategy::operator=(const AggressivePlayerStrategy &aggressivePlayerStrategy)
+{
+    if (this == &aggressivePlayerStrategy)
+    {
+        PlayerStrategy::operator=(aggressivePlayerStrategy);
+    }
+    return *this;
+}
+
+
+void AggressivePlayerStrategy::issueOrder(){
+
+    // STEP 1: DEPLOY ALL TO STRONGEST OWNED TERRITORY : we will get the strongest terry of the player using the todefend function where it has the strongest terry at index 0
+    // STEP 2: ONCE DEPLOYABLE TROOPS ARE EMPTY, ADVANCE FROM STRONGEST TERRITORY TO ANY ADJACENT ENEMY TERRITORY: using the adjacent check from advanceorder.cpp, we can
+    // check first if the target is adjacent to strongest terry defined at step 1 and then advance
+    // WHERE SOURCE TERRY = STRONGEST TERRY AND TARGET TERRY = ANY ENEMY ADJACENT TERRY where source armies > then target armies (since an aggressive player's goal is to get the most territories)
+    // We will simulate and attack for each owned terry from todefend list on each adjacent enemy territory from toAttack list whilst double checking that the target is adjacent to source
+
+
+    std::vector<const Territory *> territoriesToAttack = toAttack();
+    Territory weakestTerritoryToAttack = *territoriesToAttack[0];
+
+    std::vector<const Territory *> territoriesToDefend = toDefend();
+    Territory strongestTerritory = *territoriesToDefend[0];
+
+    std::vector<const Territory *> territoriesToAdvance;
+
+    unsigned int deployableArmies = player_->availableReinforcements();
+    unsigned int armiesAvailable;
+    unsigned int armiesSent;
+    unsigned int armiesDefending;
+
+    //Deploy all armies to the strongest territory
+    //checks if player owns a territory first
+    if(!territoriesToDefend.empty())
+    {
+        //then checks if there are any armies left to deploy
+        if(deployableArmies>0)
+        {
+            //Create Deploy order where all armies left are deployed to the strongest territory
+            player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, strongestTerritory, deployableArmies));
+            //TODO: Do we have to remove these armies from reinforcement pool? it seems to be handled in availableReinforcements in player.cpp
+
+        }
+        else{
+            std::cout << " Player doesn't currently have any armies to deploy on strongest territory..." << std::endl;
+        }
+    }
+    else{
+        std::cout << " Player doesn't currently own any territories... " << std::endl;
+    }
+
+
+
+
+    //Advance armies from strongest territory to adjacent enemy territories
+    for (const auto myTerritory: territoriesToAttack) {
+        // Find which of these territories in the attack list are adjacent to the strongest territory
+        for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory: territories)
+        {
+            if (territory == territoriesToDefend[0])
+            {
+                territoriesToAdvance.push_back(territory);
+            }
+        }
+    }
+
+    // territoriesToAdvance now holds all enemy territories that are adjacent to the user's strongest territory.
+    // The list is also sorted by army count in ascending order since territoriesToAttack (aka toAttack) is sorted by army count in ascending order
+
+    //I can now advance from strongest territory to its adjacent enemy territories from easiest enemy to hardest
+    // what happens if the strongest territory beats all enemy territories...? the enemy territories of the strongest territory must adapt to this....
+    // do I have to create a function that takes a territory and returns all its adjacent enemy territories so that i can call this function for each advance attempt until the advance fails?
+
+    //this is how we can refresh the list of adjacent enemies :
+
+    for(int i = 0; i< territoriesToDefend.size(); i++) {
+        while(true) {
+            //Advance armies from strongest territory to adjacent enemy territories
+            for (const auto myTerritory: territoriesToAttack) {
+                // Find which of these territories in the attack list are adjacent to the strongest territory
+                for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory: territories) {
+                    if (territory == territoriesToDefend[i]) {
+                        territoriesToAdvance.push_back(territory);
+                    }
+                }
+            }
+            //THIS IMPLEMENTATION MAKES IT SO THE STRONGEST TERRITORY ADVACNES ON WEAKEST ENEMY TERRITORY AND THEN THE SECOND STRONGEST ADVANCES ON SECOND WEAKEST, ETC...
+            // WE WANT STRONGEST ATTACKS ALL ENEMY TERRITORIES ONE BY ONE?
+            // OR DO WE WANT STRONGEST TERRITORY ATTACKS STRONGEST ENEMY TERRITORY?
+
+            if ((territoriesToDefend[i]->armyCount() > 0) && (territoriesToAdvance[i]->owner() != *player_) && (Territory::compStrongestArmies(territoriesToDefend[i], territoriesToAttack[i])))
+            {
+                Territory terry1 = *territoriesToDefend[i];
+                Territory terry2 = *territoriesToAttack[i];
+                player_->orderList().addOrder(AdvanceOrder(*gameEngine_, *player_, terry1, terry2, territoriesToAttack[i]->armyCount()));
+
+            }
+            else{
+                break;
+            }
+
+        }
+    }
+
+
+
+
+}
+std::vector<const Territory *> AggressivePlayerStrategy::toAttack() const {
+
+    std::vector<const Territory *> adjacentTerritoriesToAttack_WeakestFirst;
+
+    // Filling up adjacentTerritoriesToAttack with enemy adjacent territories from weakest to strongest in army size
+    // Iterate through the player's territories
+    for (const auto myTerritory: player_->territories()) {
+        // Check if adjacent territories are owned by other players
+        for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory: territories) {
+            if (&territory->owner() != player_) {
+                // Check that owner is not on cantAttack list because of negotiate order
+                bool canAttack = true;
+                for (const auto player: player_->cantAttack()) {
+                    if (&territory->owner() == &*player) {
+                        canAttack = false;
+                        break;
+                    }
+                }
+
+                // Check if adjacentTerritory is not already in territoriesToAttack
+                bool isUnique = true;
+                for (const auto attackTerritory: adjacentTerritoriesToAttack_WeakestFirst) {
+                    if (attackTerritory->name() == territory->name()) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                // If it's unique, add it to the list of territories to attack
+                if (isUnique && canAttack) {
+                    adjacentTerritoriesToAttack_WeakestFirst.push_back(territory);
+                }
+            }
+        }
+    }
+
+    // sort all enemy adjacent territories from weakest to strongest in army size
+    std::sort(adjacentTerritoriesToAttack_WeakestFirst.begin(), adjacentTerritoriesToAttack_WeakestFirst.end(),Territory::compWeakestArmies);
+    return adjacentTerritoriesToAttack_WeakestFirst;
+
+}
+
+
+
+
+
+
+
+std::vector<const Territory *> AggressivePlayerStrategy::toDefend() const{
+   //toDefend holds all user owned territories for an aggressive player in descending order of army count
+
+    //territories owned by player
+    std::vector< const Territory *> territoriesToDefend_StrongestFirst;
+    std::vector<Territory *> territoriesToDefend = player_->territories();
+
+   if(territoriesToDefend.empty())
+   {
+
+       //sort player's territories from strongest to weakest (very useful for the issueOrder phase)
+       //sort in descending order of armies done using the comparator defined in map.cpp
+       std::stable_sort(territoriesToDefend.begin(), territoriesToDefend.end(), Territory::compStrongestArmies);
+
+       for(auto & i : territoriesToDefend){
+
+           territoriesToDefend_StrongestFirst.push_back(i);
+       }
+
+   }
+   else
+   {
+       std::cout << " Player doesn't currently have any territories to defend... " << std::endl;
+   }
+
+   return territoriesToDefend_StrongestFirst;
 }
