@@ -422,7 +422,7 @@ AggressivePlayerStrategy &AggressivePlayerStrategy::operator=(const AggressivePl
 }
 
 
-void AggressivePlayerStrategy::issueOrder(){
+void AggressivePlayerStrategy::issueOrder() {
 
     // STEP 1: DEPLOY ALL TO STRONGEST OWNED TERRITORY : we will get the strongest terry of the player using the todefend function where it has the strongest terry at index 0
     // STEP 2: ONCE DEPLOYABLE TROOPS ARE EMPTY, ADVANCE FROM STRONGEST TERRITORY TO ANY ADJACENT ENEMY TERRITORY: using the adjacent check from advanceorder.cpp, we can
@@ -438,6 +438,7 @@ void AggressivePlayerStrategy::issueOrder(){
     Territory strongestTerritory = *territoriesToDefend[0];
 
     std::vector<const Territory *> territoriesToAdvance;
+    std::vector<const Territory *> territoriesToBomb;
 
     unsigned int deployableArmies = player_->availableReinforcements();
     unsigned int armiesAvailable;
@@ -446,21 +447,18 @@ void AggressivePlayerStrategy::issueOrder(){
 
     //Deploy all armies to the strongest territory
     //checks if player owns a territory first
-    if(!territoriesToDefend.empty())
-    {
+    if (!territoriesToDefend.empty()) {
         //then checks if there are any armies left to deploy
-        if(deployableArmies>0)
-        {
+        if (deployableArmies > 0) {
             //Create Deploy order where all armies left are deployed to the strongest territory
             player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, strongestTerritory, deployableArmies));
             //TODO: Do we have to remove these armies from reinforcement pool? it seems to be handled in availableReinforcements in player.cpp
 
-        }
-        else{
+        } else {
             std::cout << " Player doesn't currently have any armies to deploy on strongest territory..." << std::endl;
         }
     }
-    else{
+    else {
         std::cout << " Player doesn't currently own any territories... " << std::endl;
     }
 
@@ -470,10 +468,8 @@ void AggressivePlayerStrategy::issueOrder(){
     //Advance armies from strongest territory to adjacent enemy territories
     for (const auto myTerritory: territoriesToAttack) {
         // Find which of these territories in the attack list are adjacent to the strongest territory
-        for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory: territories)
-        {
-            if (territory == territoriesToDefend[0])
-            {
+        for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory: territories) {
+            if (territory == territoriesToDefend[0]) {
                 territoriesToAdvance.push_back(territory);
             }
         }
@@ -488,36 +484,45 @@ void AggressivePlayerStrategy::issueOrder(){
 
     //this is how we can refresh the list of adjacent enemies :
 
-    for(int i = 0; i< territoriesToDefend.size(); i++) {
-        while(true) {
-            //Advance armies from strongest territory to adjacent enemy territories
-            for (const auto myTerritory: territoriesToAttack) {
-                // Find which of these territories in the attack list are adjacent to the strongest territory
-                for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory: territories) {
-                    if (territory == territoriesToDefend[i]) {
-                        territoriesToAdvance.push_back(territory);
-                    }
+    for (auto &i: territoriesToDefend) {
+
+        //Advance armies from strongest territory to adjacent enemy territories
+        for (const auto myTerritory: territoriesToAttack) {
+            // Find which of these territories in the attack list are adjacent to the strongest territory
+            for (auto territories = gameEngine_->map().adjacencies(*myTerritory); auto territory: territories) {
+                if (territory == i) {
+                    territoriesToAdvance.push_back(territory);
                 }
             }
-            //THIS IMPLEMENTATION MAKES IT SO THE STRONGEST TERRITORY ADVACNES ON WEAKEST ENEMY TERRITORY AND THEN THE SECOND STRONGEST ADVANCES ON SECOND WEAKEST, ETC...
-            // WE WANT STRONGEST ATTACKS ALL ENEMY TERRITORIES ONE BY ONE?
-            // OR DO WE WANT STRONGEST TERRITORY ATTACKS STRONGEST ENEMY TERRITORY?
-
-            if ((territoriesToDefend[i]->armyCount() > 0) && (territoriesToAdvance[i]->owner() != *player_) && (Territory::compStrongestArmies(territoriesToDefend[i], territoriesToAttack[i])))
-            {
-                Territory terry1 = *territoriesToDefend[i];
-                Territory terry2 = *territoriesToAttack[i];
-                player_->orderList().addOrder(AdvanceOrder(*gameEngine_, *player_, terry1, terry2, territoriesToAttack[i]->armyCount()));
-
-            }
-            else{
-                break;
-            }
-
         }
+        //THIS IMPLEMENTATION MAKES IT SO THE STRONGEST TERRITORY ADVACNES ON WEAKEST ENEMY TERRITORY AND THEN THE SECOND STRONGEST ADVANCES ON SECOND WEAKEST, ETC...
+        // WE WANT STRONGEST ATTACKS ALL ENEMY TERRITORIES ONE BY ONE?
+        // OR DO WE WANT STRONGEST TERRITORY ATTACKS STRONGEST ENEMY TERRITORY?
+        //UPDATE: The below for loop makes it so each enemy adjacent territory is attacked if possible
+        //Also note: I decided that it would make sense that the number of armies to advance must be greater than number of defending armies so: armies to advance = target armies + (source - target)/2 armies
+
+        for (auto &j: territoriesToAdvance) {
+            if ((i->armyCount() > 0) && (j->owner() != *player_) && (Territory::compStrongestArmies(i, j))) {
+                Territory source = *i;
+                Territory target = *j;
+                player_->orderList().addOrder(AdvanceOrder(*gameEngine_, *player_, source, target, ((j->armyCount()) + ((i->armyCount() - j->armyCount()) /2))));
+            }
+            else
+            {
+                // remaining territories to bomb
+                territoriesToBomb.push_back(j);
+            }
+        }
+
     }
 
-
+    //Now lets play the bomb card on remaining territories if possible 
+    for (auto &i: territoriesToBomb) {
+        if (player_->hand().has(CardType::bomb)) {
+            player_->orderList().addOrder(BombOrder(*gameEngine_, *player_, *i));
+            //TODO:do we need to know remove the bomb order from the player's hand?
+        }
+    }
 
 
 }
