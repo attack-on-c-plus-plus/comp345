@@ -240,8 +240,7 @@ PlayerStrategy* Player::createStrategy(const Strategy strategy) {
             playerStrategy = new NeutralPlayerStrategy(*this, *gameEngine_);
             break;
         case Strategy::Cheater:
-            // TODO: Add cheater
-            playerStrategy = new NeutralPlayerStrategy(*this, *gameEngine_);
+            playerStrategy = new CheaterPlayerStrategy(*this, *gameEngine_);
             break;
         case Strategy::Human:
             playerStrategy = new HumanPlayerStrategy(*this, *gameEngine_);
