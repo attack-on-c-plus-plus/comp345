@@ -22,6 +22,7 @@
 #include "GameEngine.h"
 #include "Map.h"
 #include "Player.h"
+#include "PlayerStrategies.h"
 
 // Implementation Order class
 
@@ -495,8 +496,13 @@ bool BombOrder::validate() {
  */
 void BombOrder::execute() {
     if (validate()) {
-        // Remove half the armies from the target territory:
-        targetTerritory_->removeArmies(targetTerritory_->armyCount()/2);
+        // If the player uses a Cheater strategy, all enemy soldiers
+        // are eliminated. Otherwise, half of them are eliminated
+        if (player_->strategy() == Strategy::Cheater) {
+            targetTerritory_->removeArmies(targetTerritory_->armyCount());
+        } else {
+            targetTerritory_->removeArmies(targetTerritory_->armyCount()/2);
+        }
         // Update the effect string to describe the action
         *effect_ = "Bombed territory " + targetTerritory_->name() + ".";
     }

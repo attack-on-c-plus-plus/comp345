@@ -462,12 +462,18 @@ void CheaterPlayerStrategy::issueOrder() {
     // The cheater would, logically, try to select the territory with the
     // most adjacent territories not belonging to him.
     std::vector<const Territory *> territoriesToAttack = toAttack();
+
+    // If there are no territories left to attack, then return
+    if (territoriesToAttack.empty()) {
+        return;
+    }
+
     std::vector<std::pair<int, const Territory *>> adjacentCounter;
-    for (const auto territory : territoriesToAttack) {
+    for (auto territory : territoriesToAttack) {
         // The game checks for adjacent territories of adjacent territories
         auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
         int nbOfAdjacentTerr = 0;
-        for (const auto adjacentTerritory : adjacentTerritories) {
+        for (auto adjacentTerritory : adjacentTerritories) {
             // if the territory does not belong to the player, then add +1 to the counter
             if (adjacentTerritory->name() != player_->name()) {
                 nbOfAdjacentTerr++;
@@ -477,11 +483,26 @@ void CheaterPlayerStrategy::issueOrder() {
     }
     // Here, we check what is the territory that must be attacked in priority
     // The one with the highest number of adjacent territories is prioritized
+
     auto maxElement =
             std::max_element(adjacentCounter.begin(), adjacentCounter.end(), comparePairs);
 
-    // TO DO
-    // Handle cases and territory attack
+    // Find the source territory of the player to advance their soldiers
+    Territory *srcTerry;
+    for (Territory * terry : player_->territories()) {
+        auto adjacentTerries = gameEngine_->map().adjacencies(*terry);
+        for (auto adjacentTerry : adjacentTerries) {
+            if (adjacentTerry == maxElement->second) {
+                srcTerry = terry;
+                break;
+            }
+        }
+    }
+
+    player_->orderList().addOrder(BombOrder(*gameEngine_, *player_, *maxElement->second));
+    player_->orderList().addOrder(AdvanceOrder(*gameEngine_, *player_,
+                                               *srcTerry, *maxElement->second, srcTerry->armyCount()/2));
+
 }
 
 CheaterPlayerStrategy::CheaterPlayerStrategy(const CheaterPlayerStrategy &cheaterPlayerStrategy) = default;
