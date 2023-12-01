@@ -496,13 +496,8 @@ bool BombOrder::validate() {
  */
 void BombOrder::execute() {
     if (validate()) {
-        // If the player uses a Cheater strategy, all enemy soldiers
-        // are eliminated. Otherwise, half of them are eliminated
-        if (player_->strategy() == Strategy::Cheater) {
-            targetTerritory_->removeArmies(targetTerritory_->armyCount());
-        } else {
-            targetTerritory_->removeArmies(targetTerritory_->armyCount()/2);
-        }
+        // Removes half of the army count
+        targetTerritory_->removeArmies(targetTerritory_->armyCount()/2);
         // Update the effect string to describe the action
         *effect_ = "Bombed territory " + targetTerritory_->name() + ".";
     }

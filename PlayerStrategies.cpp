@@ -428,19 +428,19 @@ std::vector<const Territory *> CheaterPlayerStrategy::toDefend() const {
  */
 std::vector<const Territory *> CheaterPlayerStrategy::toAttack() const {
     std::vector<const Territory *> territoriesToAttack;
-    for (const auto territory : player_->territories()) {
+    for (auto territory : player_->territories()) {
         auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
-        for (const auto adjacentTerritory : adjacentTerritories) {
+        for (auto adjacentTerritory : adjacentTerritories) {
             if (adjacentTerritory->owner() != *player_) {
                 bool toAttack = true;
-                for (const auto player : player_->cantAttack()) {
+                for (auto player : player_->cantAttack()) {
                     if (adjacentTerritory->owner() == *player) {
                         toAttack = false;
                         break;
                     }
                 }
                 bool isUnique = true;
-                for (const auto attackTerritory : adjacentTerritories) {
+                for (auto attackTerritory : adjacentTerritories) {
                     if (attackTerritory->name() == territory->name()) {
                         isUnique = false;
                         break;
@@ -468,40 +468,34 @@ void CheaterPlayerStrategy::issueOrder() {
         return;
     }
 
-    std::vector<std::pair<int, const Territory *>> adjacentCounter;
-    for (auto territory : territoriesToAttack) {
+    std::vector<std::pair<int, const Territory *>> * adjacentCounter;
+    for (const Territory * territory : territoriesToAttack) {
         // The game checks for adjacent territories of adjacent territories
         auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
         int nbOfAdjacentTerr = 0;
-        for (auto adjacentTerritory : adjacentTerritories) {
+        for (const Territory * adjacentTerritory : adjacentTerritories) {
             // if the territory does not belong to the player, then add +1 to the counter
             if (adjacentTerritory->name() != player_->name()) {
                 nbOfAdjacentTerr++;
             }
         }
-        adjacentCounter.emplace_back(nbOfAdjacentTerr, territory);
+        adjacentCounter->emplace_back(nbOfAdjacentTerr, territory);
     }
     // Here, we check what is the territory that must be attacked in priority
     // The one with the highest number of adjacent territories is prioritized
-
     auto maxElement =
-            std::max_element(adjacentCounter.begin(), adjacentCounter.end(), comparePairs);
+            std::max_element(adjacentCounter->begin(), adjacentCounter->end(), comparePairs);
 
-    // Find the source territory of the player to advance their soldiers
-    Territory *srcTerry;
-    for (Territory * terry : player_->territories()) {
-        auto adjacentTerries = gameEngine_->map().adjacencies(*terry);
-        for (auto adjacentTerry : adjacentTerries) {
-            if (adjacentTerry == maxElement->second) {
-                srcTerry = terry;
-                break;
-            }
+    Territory terryToAttack = *maxElement->second;
+
+    for (auto terry : gameEngine_->map().adjacencies(terryToAttack)) {
+        if (terry->owner() != *player_) {
+            terry->owner(*player_);
+            terry->removeArmies(terry->armyCount());
         }
     }
 
-    player_->orderList().addOrder(BombOrder(*gameEngine_, *player_, *maxElement->second));
-    player_->orderList().addOrder(AdvanceOrder(*gameEngine_, *player_,
-                                               *srcTerry, *maxElement->second, srcTerry->armyCount()/2));
+    player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
 
 }
 
