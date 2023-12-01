@@ -17,6 +17,8 @@
 #include "Map.h"
 #include "Orders.h"
 #include "Player.h"
+#include <utility>
+#include <algorithm>
 
 /**
  * \brief Constructor
@@ -387,4 +389,124 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toDefend() const
     std::sort(territoriesToDefend.begin(), territoriesToDefend.end(), [](const Territory *a, const Territory *b)
               { return a->armyCount() < b->armyCount(); });
     return territoriesToDefend;
+}
+
+CheaterPlayerStrategy::CheaterPlayerStrategy(Player &player, GameEngine &gameEngine) : PlayerStrategy(player,gameEngine) {}
+
+CheaterPlayerStrategy &CheaterPlayerStrategy::operator=(const CheaterPlayerStrategy &cheaterPlayerStrategy) {
+    if (this == &cheaterPlayerStrategy) {
+        PlayerStrategy::operator=(cheaterPlayerStrategy);
+    }
+    return *this;
+}
+
+/**
+ * Returns the territories to defend for the Cheater player
+ * @return A vector of pointers to territories
+ */
+std::vector<const Territory *> CheaterPlayerStrategy::toDefend() const {
+    std::vector<const Territory *> territoriesToDefend;
+    for (const auto territory : player_->territories()) {
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+        bool toDefend = false;
+        for (const auto adjacentTerritory : adjacentTerritories) {
+            if (adjacentTerritory->owner().name() != player_->name()) {
+                toDefend = true;
+                break;
+            }
+        }
+        if (toDefend) {
+            territoriesToDefend.push_back(territory);
+        }
+    }
+    return territoriesToDefend;
+}
+
+/**
+ * Returns the territories to attack for the Cheater player
+ * @return A vector of pointers to territories
+ */
+std::vector<const Territory *> CheaterPlayerStrategy::toAttack() const {
+    std::vector<const Territory *> territoriesToAttack;
+    for (auto territory : player_->territories()) {
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+        for (auto adjacentTerritory : adjacentTerritories) {
+            if (adjacentTerritory->owner() != *player_) {
+                bool toAttack = true;
+                for (auto player : player_->cantAttack()) {
+                    if (adjacentTerritory->owner() == *player) {
+                        toAttack = false;
+                        break;
+                    }
+                }
+                bool isUnique = true;
+                for (auto attackTerritory : adjacentTerritories) {
+                    if (attackTerritory->name() == territory->name()) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                if (isUnique && toAttack) {
+                    territoriesToAttack.push_back(adjacentTerritory);
+                }
+            }
+        }
+    }
+    return territoriesToAttack;
+}
+
+/**
+ * The Cheater player automatically conquers all territories adjacent to him, 1 per turn
+ */
+void CheaterPlayerStrategy::issueOrder() {
+    // The cheater would, logically, try to select the territory with the
+    // most adjacent territories not belonging to him.
+    std::vector<const Territory *> territoriesToAttack = toAttack();
+
+    // If there are no territories left to attack, then return
+    if (territoriesToAttack.empty()) {
+        return;
+    }
+
+    std::vector<std::pair<int, const Territory *>> * adjacentCounter;
+    for (const Territory * territory : territoriesToAttack) {
+        // The game checks for adjacent territories of adjacent territories
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+        int nbOfAdjacentTerr = 0;
+        for (const Territory * adjacentTerritory : adjacentTerritories) {
+            // if the territory does not belong to the player, then add +1 to the counter
+            if (adjacentTerritory->name() != player_->name()) {
+                nbOfAdjacentTerr++;
+            }
+        }
+        adjacentCounter->emplace_back(nbOfAdjacentTerr, territory);
+    }
+    // Here, we check what is the territory that must be attacked in priority
+    // The one with the highest number of adjacent territories is prioritized
+    auto maxElement =
+            std::max_element(adjacentCounter->begin(), adjacentCounter->end(), comparePairs);
+
+    Territory terryToAttack = *maxElement->second;
+
+    for (auto terry : gameEngine_->map().adjacencies(terryToAttack)) {
+        if (terry->owner() != *player_) {
+            terry->owner(*player_);
+            terry->removeArmies(terry->armyCount());
+        }
+    }
+
+    player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+
+}
+
+CheaterPlayerStrategy::CheaterPlayerStrategy(const CheaterPlayerStrategy &cheaterPlayerStrategy) = default;
+
+/**
+ * Function to compare pairs of <int, const Territory*> based on the first
+ * @param lhs : Integer
+ * @param rhs : A pointer to a constant territory
+ * @return If the lhs.first is less than rhs.first
+ */
+bool comparePairs(const std::pair<int, const Territory*>& lhs, const std::pair<int, const Territory*>& rhs) {
+    return lhs.first < rhs.first;
 }

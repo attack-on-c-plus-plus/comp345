@@ -208,8 +208,8 @@ std::vector<const Territory*> Map::adjacencies(const Continent &continent) const
  * @param territory
  * @return
  */
-std::vector<const Territory*> Map::adjacencies(const Territory &territory) const {
-    std::vector<const Territory*> adj{};
+std::vector<Territory*> Map::adjacencies(const Territory &territory) const {
+    std::vector<Territory*> adj{};
     for (const auto i: territoryEdges_->at(territory.id().value())) {
         adj.push_back(territories_->at(i));
     }

@@ -22,6 +22,7 @@
 #include "GameEngine.h"
 #include "Map.h"
 #include "Player.h"
+#include "PlayerStrategies.h"
 
 // Implementation Order class
 
@@ -495,7 +496,7 @@ bool BombOrder::validate() {
  */
 void BombOrder::execute() {
     if (validate()) {
-        // Remove half the armies from the target territory:
+        // Removes half of the army count
         targetTerritory_->removeArmies(targetTerritory_->armyCount()/2);
         // Update the effect string to describe the action
         *effect_ = "Bombed territory " + targetTerritory_->name() + ".";
