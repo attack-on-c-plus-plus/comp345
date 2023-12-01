@@ -58,7 +58,7 @@ public:
     [[nodiscard]] const std::vector<const Continent*> &continents() const;
     [[nodiscard]] std::vector<Territory *> &territories() const;
     [[nodiscard]] std::vector<const Territory*> adjacencies(const Continent &continent) const;
-    [[nodiscard]] std::vector<const Territory*> adjacencies(const Territory &territory) const;
+    [[nodiscard]] std::vector<Territory*> adjacencies(const Territory &territory) const;
     void print() const;
     Map &operator=(const Map&);
 private:
