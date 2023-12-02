@@ -136,7 +136,7 @@ std::vector<const Territory *> Player::toAttack() const {
     return playerStrategy_->toAttack();
 }
 
-std::vector<const Territory *> Player::toDefend() const {
+std::vector<Territory *> Player::toDefend() const {
     return playerStrategy_->toDefend();
 }
 

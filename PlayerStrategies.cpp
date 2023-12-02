@@ -149,8 +149,8 @@ std::vector<const Territory*> HumanPlayerStrategy::toAttack() const {
  * \brief Gives the territories that need to be defended
  * \return the territories to defend
  */
-std::vector<const Territory*> HumanPlayerStrategy::toDefend() const {
-    std::vector<const Territory *> territoriesToDefend;
+std::vector<Territory*> HumanPlayerStrategy::toDefend() const {
+    std::vector<Territory *> territoriesToDefend;
 
     // Iterate through the player's territories
     for (const auto territory: player_->territories()) {
@@ -200,8 +200,20 @@ NeutralPlayerStrategy& NeutralPlayerStrategy::operator=(const NeutralPlayerStrat
  * \brief Issues an order
  */
 void NeutralPlayerStrategy::issueOrder() {
-    // Add an end order, Neutral player does not issue orders
-    player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    if (gameEngine_->state() == GameState::assignReinforcements) {
+        // Deploy troops
+        const auto toDeploy = player_->availableReinforcements() / player_->territories().size();
+        auto remainder = player_->availableReinforcements() % player_->territories().size();
+
+        for (const auto territory: player_->territories()) {
+            player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, toDeploy + remainder));
+            if (remainder > 0) remainder--;
+        }
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    } else {
+        // Add an end order, Neutral player does not issue orders
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    }
 }
 
 /**
@@ -216,7 +228,7 @@ std::vector<const Territory*> NeutralPlayerStrategy::toAttack() const {
  * \brief Gives the territories that need to be defended
  * \return the territories to defend
  */
-std::vector<const Territory*> NeutralPlayerStrategy::toDefend() const {
+std::vector<Territory*> NeutralPlayerStrategy::toDefend() const {
     return {};
 }
 
@@ -260,49 +272,40 @@ BenevolentPlayerStrategy &BenevolentPlayerStrategy::operator=(const BenevolentPl
  */
 void BenevolentPlayerStrategy::issueOrder()
 {
-    std::vector<const Territory *> targets = toDefend();
+    if (gameEngine_->state() == GameState::assignReinforcements) {
+        // Deploy troops
+        const auto toDeploy = player_->availableReinforcements() / player_->toDefend().size();
+        auto remainder = player_->availableReinforcements() % player_->toDefend().size();
 
-    for (auto territory : targets)
-    {
-        unsigned int deployable = player_->availableReinforcements();
-
-            Territory terry = *territory;
-            if (deployable > 10)
-            {
-                unsigned deploy = 10;
-
-                player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, terry, deploy));
-            }
-            else
-            {
-                if (deployable > 0)
-                {
-                    player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, terry, player_->availableReinforcements()));
-                }
-            }
-    }
-
-    // Card Orders
-    const std::vector<Card *> myHand = player_->hand().cards();
-
-    bool playNegotiate = false;
-
-    for (auto card : myHand)
-    {
-        if (card->type() == CardType::diplomacy)
-        {
-            playNegotiate = true;
+        for (const auto territory: player_->toDefend()) {
+            player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, toDeploy + remainder));
+            if (remainder > 0) remainder--;
+            if (toDeploy == 0 && remainder == 0) break;
         }
-    }
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    } else {
+        // Card Orders
+        const std::vector<Card *> myHand = player_->hand().cards();
 
-    auto attacker = toAttack();
+        bool playNegotiate = false;
 
-    if (playNegotiate)
-    {
-        player_->orderList().addOrder(NegotiateOrder(*gameEngine_, *player_, attacker[0]->owner()));
+        for (const auto card : myHand)
+        {
+            if (card->type() == CardType::diplomacy)
+            {
+                playNegotiate = true;
+            }
+        }
+
+        const auto attacker = toAttack();
+
+        if (playNegotiate)
+        {
+            player_->orderList().addOrder(NegotiateOrder(*gameEngine_, *player_, attacker[0]->owner()));
+        }
+        // Add an end order, to signify the end of orders
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
     }
-    // Add an end order, to signify the end of orders
-    player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
 }
 
 /**
@@ -350,8 +353,8 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toAttack() const
             }
         }
     }
-    std::sort(territoriesToAttack.begin(), territoriesToAttack.end(), [](const Territory *a, const Territory *b)
-              { return a->armyCount() > b->armyCount(); });
+    std::ranges::sort(territoriesToAttack, [](const Territory *a, const Territory *b)
+                      { return a->armyCount() > b->armyCount(); });
     return territoriesToAttack;
 }
 
@@ -359,9 +362,9 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toAttack() const
  * \brief Gives the territories that need to be defended
  * \return the territories to defend
  */
-std::vector<const Territory *> BenevolentPlayerStrategy::toDefend() const
+std::vector<Territory *> BenevolentPlayerStrategy::toDefend() const
 {
-    std::vector<const Territory *> territoriesToDefend;
+    std::vector<Territory *> territoriesToDefend;
 
     // Iterate through the player's territories
     for (const auto territory : player_->territories())

@@ -116,7 +116,7 @@ void testPlayer() {
         std::cout << *territory << std::endl;
     }
 
-    const std::vector<const Territory *> defendTerritories = player2.toDefend();
+    auto defendTerritories = player2.toDefend();
 
     // Display the territories to defend
     std::cout << "Player " << player2.name() << " (defending) territories:" << std::endl;
