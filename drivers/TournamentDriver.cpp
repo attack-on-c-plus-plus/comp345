@@ -42,8 +42,8 @@ void testTournament() {
 
     strategies.insert(Strategy::Neutral);
     //strategies.insert(Strategy::Cheater);
-    //strategies.insert(Strategy::Benevolent);
-    strategies.insert(Strategy::Cheater);
+    strategies.insert(Strategy::Benevolent);
+    //strategies.insert(Strategy::Cheater);
 
     std::cout << seperator << std::endl;
     std::cout << "Test no games" << std::endl;

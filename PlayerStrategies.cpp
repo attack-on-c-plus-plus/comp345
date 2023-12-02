@@ -279,7 +279,7 @@ void BenevolentPlayerStrategy::issueOrder()
         auto remainder = player_->availableReinforcements() % player_->toDefend().size();
 
         for (const auto territory: player_->toDefend()) {
-            player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, toDeploy + (remainder > 0) ? 1 : 0));
+            player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, toDeploy + (remainder > 0 ? 1 : 0)));
             if (remainder > 0) remainder--;
             if (toDeploy == 0 && remainder == 0) break;
         }
