@@ -382,7 +382,7 @@ AddPlayerCommand::AddPlayerCommand(GameEngine&gameEngine, const std::string&play
     "AddPlayer"), playerName_{new std::string(playerName)}, strategy_{new Strategy(strategy)} {
 }
 
-AddPlayerCommand::AddPlayerCommand(plconst AddPlayerCommand&addPlayer) = default;
+AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand&addPlayer) = default;
 
 AddPlayerCommand::~AddPlayerCommand() {
     delete playerName_;
@@ -570,7 +570,7 @@ void TournamentCommand::execute() {
             LoadMapCommand loadMap{*gameEngine_, mapFiles_->at(i)};
             if (!loadMap.validate()) {
                 saveEffect("Tournament failed! Bad map file \"" + mapFiles_->at(i) + "\"");
-                return;pl
+                return;
             }
             loadMap.execute();
             ValidateMapCommand validateMap{*gameEngine_};
