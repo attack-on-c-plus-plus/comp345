@@ -17,8 +17,8 @@
 #include "Map.h"
 #include "Orders.h"
 #include "Player.h"
-
-
+#include <utility>
+#include <algorithm>
 
 /**
  * \brief Constructor
@@ -149,8 +149,8 @@ std::vector<const Territory*> HumanPlayerStrategy::toAttack() const {
  * \brief Gives the territories that need to be defended
  * \return the territories to defend
  */
-std::vector<const Territory*> HumanPlayerStrategy::toDefend() const {
-    std::vector<const Territory *> territoriesToDefend;
+std::vector<Territory*> HumanPlayerStrategy::toDefend() const {
+    std::vector<Territory *> territoriesToDefend;
 
     // Iterate through the player's territories
     for (const auto territory: player_->territories()) {
@@ -200,8 +200,21 @@ NeutralPlayerStrategy& NeutralPlayerStrategy::operator=(const NeutralPlayerStrat
  * \brief Issues an order
  */
 void NeutralPlayerStrategy::issueOrder() {
-    // Add an end order, Neutral player does not issue orders
-    player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    if (gameEngine_->state() == GameState::assignReinforcements) {
+        // Deploy troops
+        const auto toDeploy = player_->availableReinforcements() / player_->territories().size();
+        auto remainder = player_->availableReinforcements() % player_->territories().size();
+
+        for (const auto territory: player_->territories()) {
+            player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, toDeploy + (remainder > 0 ? 1 : 0)));
+            if (remainder > 0) remainder--;
+            if (toDeploy == 0 && remainder == 0) break;
+        }
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    } else {
+        // Add an end order, Neutral player does not issue orders
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    }
 }
 
 /**
@@ -216,7 +229,7 @@ std::vector<const Territory*> NeutralPlayerStrategy::toAttack() const {
  * \brief Gives the territories that need to be defended
  * \return the territories to defend
  */
-std::vector<const Territory*> NeutralPlayerStrategy::toDefend() const {
+std::vector<Territory*> NeutralPlayerStrategy::toDefend() const {
     return {};
 }
 
@@ -260,49 +273,40 @@ BenevolentPlayerStrategy &BenevolentPlayerStrategy::operator=(const BenevolentPl
  */
 void BenevolentPlayerStrategy::issueOrder()
 {
-    std::vector<const Territory *> targets = toDefend();
+    if (gameEngine_->state() == GameState::assignReinforcements) {
+        // Deploy troops
+        const auto toDeploy = player_->availableReinforcements() / player_->toDefend().size();
+        auto remainder = player_->availableReinforcements() % player_->toDefend().size();
 
-    for (auto territory : targets)
-    {
-        unsigned int deployable = player_->availableReinforcements();
-
-            Territory terry = *territory;
-            if (deployable > 10)
-            {
-                unsigned deploy = 10;
-
-                player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, terry, deploy));
-            }
-            else
-            {
-                if (deployable > 0)
-                {
-                    player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, terry, player_->availableReinforcements()));
-                }
-            }
-    }
-
-    // Card Orders
-    const std::vector<Card *> myHand = player_->hand().cards();
-
-    bool playNegotiate = false;
-
-    for (auto card : myHand)
-    {
-        if (card->type() == CardType::diplomacy)
-        {
-            playNegotiate = true;
+        for (const auto territory: player_->toDefend()) {
+            player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, toDeploy + (remainder > 0) ? 1 : 0));
+            if (remainder > 0) remainder--;
+            if (toDeploy == 0 && remainder == 0) break;
         }
-    }
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    } else {
+        // Card Orders
+        const std::vector<Card *> myHand = player_->hand().cards();
 
-    auto attacker = toAttack();
+        bool playNegotiate = false;
 
-    if (playNegotiate)
-    {
-        player_->orderList().addOrder(NegotiateOrder(*gameEngine_, *player_, attacker[0]->owner()));
+        for (const auto card : myHand)
+        {
+            if (card->type() == CardType::diplomacy)
+            {
+                playNegotiate = true;
+            }
+        }
+
+        const auto attacker = toAttack();
+
+        if (playNegotiate)
+        {
+            player_->orderList().addOrder(NegotiateOrder(*gameEngine_, *player_, attacker[0]->owner()));
+        }
+        // Add an end order, to signify the end of orders
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
     }
-    // Add an end order, to signify the end of orders
-    player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
 }
 
 /**
@@ -350,8 +354,8 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toAttack() const
             }
         }
     }
-    std::sort(territoriesToAttack.begin(), territoriesToAttack.end(), [](const Territory *a, const Territory *b)
-              { return a->armyCount() > b->armyCount(); });
+    std::ranges::sort(territoriesToAttack, [](const Territory *a, const Territory *b)
+    { return a->armyCount() > b->armyCount(); });
     return territoriesToAttack;
 }
 
@@ -359,9 +363,9 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toAttack() const
  * \brief Gives the territories that need to be defended
  * \return the territories to defend
  */
-std::vector<const Territory *> BenevolentPlayerStrategy::toDefend() const
+std::vector<Territory *> BenevolentPlayerStrategy::toDefend() const
 {
-    std::vector<const Territory *> territoriesToDefend;
+    std::vector<Territory *> territoriesToDefend;
 
     // Iterate through the player's territories
     for (const auto territory : player_->territories())
@@ -387,8 +391,138 @@ std::vector<const Territory *> BenevolentPlayerStrategy::toDefend() const
         }
     }
     std::sort(territoriesToDefend.begin(), territoriesToDefend.end(), [](const Territory *a, const Territory *b)
-              { return a->armyCount() < b->armyCount(); });
+    { return a->armyCount() < b->armyCount(); });
     return territoriesToDefend;
+}
+
+CheaterPlayerStrategy::CheaterPlayerStrategy(Player &player, GameEngine &gameEngine) : PlayerStrategy(player,gameEngine) {}
+
+CheaterPlayerStrategy &CheaterPlayerStrategy::operator=(const CheaterPlayerStrategy &cheaterPlayerStrategy) {
+    if (this == &cheaterPlayerStrategy) {
+        PlayerStrategy::operator=(cheaterPlayerStrategy);
+    }
+    return *this;
+}
+
+/**
+ * Returns the territories to defend for the Cheater player
+ * @return A vector of pointers to territories
+ */
+std::vector<Territory *> CheaterPlayerStrategy::toDefend() const {
+    std::vector<Territory *> territoriesToDefend;
+    for (const auto territory : player_->territories()) {
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+        bool toDefend = false;
+        for (const auto adjacentTerritory : adjacentTerritories) {
+            if (adjacentTerritory->owner().name() != player_->name()) {
+                toDefend = true;
+                break;
+            }
+        }
+        if (toDefend) {
+            territoriesToDefend.push_back(territory);
+        }
+    }
+    return territoriesToDefend;
+}
+
+/**
+ * Returns the territories to attack for the Cheater player
+ * @return A vector of pointers to territories
+ */
+std::vector<const Territory *> CheaterPlayerStrategy::toAttack() const {
+    std::vector<const Territory *> territoriesToAttack;
+    for (auto territory : player_->territories()) {
+        auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+        for (auto adjacentTerritory : adjacentTerritories) {
+            if (adjacentTerritory->owner() != *player_) {
+                bool toAttack = true;
+                for (auto player : player_->cantAttack()) {
+                    if (adjacentTerritory->owner() == *player) {
+                        toAttack = false;
+                        break;
+                    }
+                }
+                bool isUnique = true;
+                for (auto attackTerritory : adjacentTerritories) {
+                    if (attackTerritory->name() == territory->name()) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                if (isUnique && toAttack) {
+                    territoriesToAttack.push_back(adjacentTerritory);
+                }
+            }
+        }
+    }
+    return territoriesToAttack;
+}
+
+/**
+ * The Cheater player automatically conquers all territories adjacent to him, 1 per turn
+ */
+void CheaterPlayerStrategy::issueOrder() {
+    if (gameEngine_->state() == GameState::assignReinforcements) {
+        // Deploy troops
+        const auto toDeploy = player_->availableReinforcements() / player_->toDefend().size();
+        auto remainder = player_->availableReinforcements() % player_->toDefend().size();
+
+        for (const auto territory: player_->toDefend()) {
+            player_->orderList().addOrder(DeployOrder(*gameEngine_, *player_, *territory, toDeploy + (remainder > 0 ? 1 : 0)));
+            if (remainder > 0) remainder--;
+            if (toDeploy == 0 && remainder == 0) break;
+        }
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    } else {
+        // The cheater would, logically, try to select the territory with the
+        // most adjacent territories not belonging to him.
+        const std::vector<const Territory *> territoriesToAttack = toAttack();
+
+        // If there are no territories left to attack, then return
+        if (territoriesToAttack.empty()) {
+            return;
+        }
+
+        std::vector<std::pair<int, const Territory *>> adjacentCounter;
+        for (const Territory * territory : territoriesToAttack) {
+            // The game checks for adjacent territories of adjacent territories
+            auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
+            int nbOfAdjacentTerr = 0;
+            for (const Territory * adjacentTerritory : adjacentTerritories) {
+                // if the territory does not belong to the player, then add +1 to the counter
+                if (adjacentTerritory->name() != player_->name()) {
+                    nbOfAdjacentTerr++;
+                }
+            }
+            adjacentCounter.emplace_back(nbOfAdjacentTerr, territory);
+        }
+        // Here, we check what is the territory that must be attacked in priority
+        // The one with the highest number of adjacent territories is prioritized
+        const auto maxElement = std::ranges::max_element(adjacentCounter, comparePairs);
+
+        for (const auto terryToAttack = maxElement->second; const auto terry : gameEngine_->map().adjacencies(*terryToAttack)) {
+            if (terry->owner() != *player_) {
+                terry->removeArmies(terry->armyCount());
+                terry->owner().remove(*terry);
+                player_->add(*terry);
+            }
+        }
+
+        player_->orderList().addOrder(EndOrder(*gameEngine_, *player_));
+    }
+}
+
+CheaterPlayerStrategy::CheaterPlayerStrategy(const CheaterPlayerStrategy &cheaterPlayerStrategy) = default;
+
+/**
+ * Function to compare pairs of <int, const Territory*> based on the first
+ * @param lhs : Integer
+ * @param rhs : A pointer to a constant territory
+ * @return If the lhs.first is less than rhs.first
+ */
+bool comparePairs(const std::pair<int, const Territory*>& lhs, const std::pair<int, const Territory*>& rhs) {
+    return lhs.first < rhs.first;
 }
 
 
@@ -434,7 +568,7 @@ void AggressivePlayerStrategy::issueOrder() {
     std::vector<const Territory *> territoriesToAttack = toAttack();
     Territory weakestTerritoryToAttack = *territoriesToAttack[0];
 
-    std::vector<const Territory *> territoriesToDefend = toDefend();
+    std::vector< Territory *> territoriesToDefend = toDefend();
     Territory strongestTerritory = *territoriesToDefend[0];
 
     std::vector<const Territory *> territoriesToAdvance;
@@ -569,11 +703,11 @@ std::vector<const Territory *> AggressivePlayerStrategy::toAttack() const {
 
 
 
-std::vector<const Territory *> AggressivePlayerStrategy::toDefend() const{
+std::vector< Territory *> AggressivePlayerStrategy::toDefend() const{
    //toDefend holds all user owned territories for an aggressive player in descending order of army count
 
     //territories owned by player
-    std::vector< const Territory *> territoriesToDefend_StrongestFirst;
+    std::vector< Territory *> territoriesToDefend_StrongestFirst;
     std::vector<Territory *> territoriesToDefend = player_->territories();
 
    if(territoriesToDefend.empty())
