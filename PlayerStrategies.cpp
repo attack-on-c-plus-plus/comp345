@@ -504,6 +504,7 @@ void CheaterPlayerStrategy::issueOrder() {
         for (const auto terryToAttack = maxElement->second; const auto terry : gameEngine_->map().adjacencies(*terryToAttack)) {
             if (terry->owner() != *player_) {
                 terry->removeArmies(terry->armyCount());
+                terry->owner().remove(*terry);
                 player_->add(*terry);
             }
         }
