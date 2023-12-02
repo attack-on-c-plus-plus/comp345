@@ -441,10 +441,6 @@ void AggressivePlayerStrategy::issueOrder() {
     std::vector<const Territory *> territoriesToBomb;
 
     unsigned int deployableArmies = player_->availableReinforcements();
-    unsigned int armiesAvailable;
-    unsigned int armiesSent;
-    unsigned int armiesDefending;
-
     //Deploy all armies to the strongest territory
     //checks if player owns a territory first
     if (!territoriesToDefend.empty()) {
@@ -516,7 +512,7 @@ void AggressivePlayerStrategy::issueOrder() {
 
     }
 
-    //Now lets play the bomb card on remaining territories if possible 
+    //Now lets play the bomb card on remaining territories if possible
     for (auto &i: territoriesToBomb) {
         if (player_->hand().has(CardType::bomb)) {
             player_->orderList().addOrder(BombOrder(*gameEngine_, *player_, *i));
