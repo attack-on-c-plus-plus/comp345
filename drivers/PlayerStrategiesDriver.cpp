@@ -33,8 +33,14 @@ void testPlayerStrategies() {
     std::cout << "Testing Human Player Strategy" << std::endl;
     std::cout << separator << std::endl;
 
-    std::cout << gameEngine.players() << std::endl;
-//    std::cout << toString(gameEngine.players().player(0).strategy()) << std::endl;
+    std::cout << "Players: "<<gameEngine.players() <<std::endl;
+    std::cout << "Strategies Employed: "<<std::endl;
+    std::cout << gameEngine.players().player(0)<<": "<<toString(gameEngine.players().player(0).strategy()) << std::endl;
+    std::cout << gameEngine.players().player(1)<<": "<<toString(gameEngine.players().player(1).strategy()) << std::endl;
+    std::cout << gameEngine.players().player(2)<<": "<<toString(gameEngine.players().player(2).strategy()) << std::endl;
+    std::cout << gameEngine.players().player(3)<<": "<<toString(gameEngine.players().player(3).strategy()) << std::endl;
+    std::cout << separator << std::endl;
+
     gameEngine.players().issueOrders();
     gameEngine.map().print();
     // Demonstrate Human player behavior
