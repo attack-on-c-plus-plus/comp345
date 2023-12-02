@@ -95,6 +95,10 @@ public:
     Territory &operator=(const Territory&);
     void addArmies(unsigned armies) const;
     void removeArmies(unsigned armies) const;
+    static bool compWeakestArmies(const Territory* territory1, const Territory* territory2);
+    static bool compStrongestArmies(const Territory* territory1, const Territory* territory2);
+   // [[nodiscard]] std::vector<const Territory*> adjacencies(const Territory &territory) const;
+
 private:
     std::optional<size_t> *id_;
     std::string *name_;

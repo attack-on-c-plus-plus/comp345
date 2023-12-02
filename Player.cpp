@@ -265,8 +265,7 @@ PlayerStrategy* Player::createStrategy(const Strategy strategy) {
             playerStrategy = new HumanPlayerStrategy(*this, *gameEngine_);
             break;
         case Strategy::Aggressive:
-            // TODO: Add aggressive
-            playerStrategy = new NeutralPlayerStrategy(*this, *gameEngine_);
+            playerStrategy = new AggressivePlayerStrategy(*this, *gameEngine_);
             break;
         case Strategy::Benevolent:
             playerStrategy = new BenevolentPlayerStrategy(*this, *gameEngine_);
