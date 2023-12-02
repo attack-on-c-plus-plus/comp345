@@ -30,7 +30,7 @@
 Player::Player(GameEngine&gameEngine, const std::string&name, const Strategy strategy) : name_{new std::string(name)},
     territories_{new std::vector<Territory *>}, ordersList_{new OrdersList()},
     cantTarget_{new std::vector<const Player *>}, reinforcementPool_{new unsigned(50)}, deployComplete_{new bool(false)},
-    ordersComplete_{new bool(false)}, hand_{new Hand(*this)}, strategy_{new Strategy(strategy)} {
+    ordersComplete_{new bool(false)}, hand_{new Hand(*this)}, strategy_{new Strategy(strategy)}, receivedCard_{new bool(false)} {
     gameEngine_ = &gameEngine;
     playerStrategy_ = createStrategy(strategy);
 }
@@ -43,7 +43,7 @@ Player::Player(const Player& player) : name_{new std::string(*player.name_)}, te
                                       reinforcementPool_{new unsigned(*player.reinforcementPool_)},
                                       deployComplete_{new bool(*player.deployComplete_)},
                                       ordersComplete_{new bool(*player.ordersComplete_)},
-                                      strategy_{new Strategy(*player.strategy_)} {
+                                      strategy_{new Strategy(*player.strategy_)}, receivedCard_{new bool(*player.receivedCard_)} {
     hand_ = new Hand(*player.hand_);
     gameEngine_ = player.gameEngine_;
     playerStrategy_ = createStrategy(*player.strategy_);
@@ -63,6 +63,7 @@ Player::~Player() {
     delete ordersComplete_;
     delete playerStrategy_;
     delete strategy_;
+    delete receivedCard_;
 }
 
 Player& Player::operator=(const Player& player) {
@@ -79,6 +80,7 @@ Player& Player::operator=(const Player& player) {
         delete ordersComplete_;
         delete playerStrategy_;
         delete strategy_;
+        delete receivedCard_;
         name_ = new std::string(*player.name_);
         ordersList_ = new OrdersList(*player.ordersList_);
         territories_ = new std::vector(*player.territories_);
@@ -90,6 +92,7 @@ Player& Player::operator=(const Player& player) {
         gameEngine_ = player.gameEngine_;
         strategy_ = new Strategy(*player.strategy_);
         playerStrategy_ = createStrategy(*player.strategy_);
+        receivedCard_ = player.receivedCard_;
     }
     return *this;
 }
@@ -185,6 +188,7 @@ void Player::removeNegotiators() const {
 }
 
 void Player::draw() const {
+    if (*receivedCard_) return;
     gameEngine_->deck().draw(*hand_);
 }
 
@@ -222,6 +226,14 @@ void Player::attacked() {
         delete playerStrategy_;
         playerStrategy_ = createStrategy(Strategy::Aggressive);
     }
+}
+
+bool Player::receivedCard() const {
+    return *receivedCard_;
+}
+
+void Player::receivedCard(const bool received) const {
+    *receivedCard_ = received;
 }
 
 unsigned int Player::continentBonusArmies() const {
@@ -335,6 +347,7 @@ void Players::executeOrders() const {
     for (auto player_iterator = players_->begin(); player_iterator != players_->end(); ++player_iterator) {
         (*player_iterator)->orderList().executeOrders();
         (*player_iterator)->removeNegotiators();
+        (*player_iterator)->receivedCard(false);
         if ((*player_iterator)->territories().empty()) {
             // player has no more territories remove them from the game
             delete *player_iterator;

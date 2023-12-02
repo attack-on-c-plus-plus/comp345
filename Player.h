@@ -64,6 +64,8 @@ public:
     void deploy(unsigned armies) const;
     [[nodiscard]] unsigned availableReinforcements() const;
     void attacked();
+    [[nodiscard]] bool receivedCard() const;
+    void receivedCard(bool received) const;
 private:
     std::string *name_;
     std::vector<Territory *> *territories_;
@@ -76,6 +78,7 @@ private:
     GameEngine *gameEngine_;
     Strategy* strategy_;
     PlayerStrategy* playerStrategy_;
+    bool *receivedCard_;
     [[nodiscard]] unsigned int continentBonusArmies() const;
     [[nodiscard]] unsigned int territoryBonusArmies() const;
     PlayerStrategy* createStrategy(Strategy strategy);
