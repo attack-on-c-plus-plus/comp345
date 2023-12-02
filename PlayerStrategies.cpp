@@ -407,8 +407,8 @@ CheaterPlayerStrategy &CheaterPlayerStrategy::operator=(const CheaterPlayerStrat
  * Returns the territories to defend for the Cheater player
  * @return A vector of pointers to territories
  */
-std::vector<const Territory *> CheaterPlayerStrategy::toDefend() const {
-    std::vector<const Territory *> territoriesToDefend;
+std::vector<Territory *> CheaterPlayerStrategy::toDefend() const {
+    std::vector<Territory *> territoriesToDefend;
     for (const auto territory : player_->territories()) {
         auto adjacentTerritories = gameEngine_->map().adjacencies(*territory);
         bool toDefend = false;

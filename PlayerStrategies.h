@@ -92,7 +92,7 @@ public:
     CheaterPlayerStrategy &operator=(const CheaterPlayerStrategy& cheaterPlayerStrategy);
     void issueOrder() override;
     [[nodiscard]] std::vector<const Territory*> toAttack() const override;
-    [[nodiscard]] std::vector<const Territory*> toDefend() const override;
+    [[nodiscard]] std::vector<Territory*> toDefend() const override;
 };
 
 bool comparePairs(const std::pair<int, const Territory*>& lhs, const std::pair<int, const Territory*> &rhs);
