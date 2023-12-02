@@ -386,6 +386,7 @@ AddPlayerCommand::AddPlayerCommand(const AddPlayerCommand&addPlayer) = default;
 
 AddPlayerCommand::~AddPlayerCommand() {
     delete playerName_;
+    delete strategy_;
 }
 
 AddPlayerCommand& AddPlayerCommand::operator=(const AddPlayerCommand&command) {
