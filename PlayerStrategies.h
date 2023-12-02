@@ -12,10 +12,11 @@
 
 #ifndef PLAYERSTRATEGIES_H
 #define PLAYERSTRATEGIES_H
+#include <string>
 #include <vector>
 
-#include "GameEngine.h"
 
+class GameEngine;
 class CommandProcessor;
 class Territory;
 class Player;
