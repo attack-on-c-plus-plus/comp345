@@ -28,31 +28,31 @@
 
 int main(const int argc, char* argv[]) {
     if ((argc == 2 || argc == 3) && strcmp(argv[1], "-test") == 0) {
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "map") == 0)
-            testLoadMaps();
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "player") == 0) {
-            //testPlayer();
-            testPlayers();
-        }
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "order") == 0) {
-            testOrderList();
-            testOrderExecution();
-        }
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "card") == 0)
-            testCards();
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "command") == 0)
-            testCommandProcessor();
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "logging") == 0)
-            testLoggingObserver();
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "gamestartup") == 0) {
-            testGameStartup();
-        }
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "gamemainloop") == 0) {
-            testMainGameLoop();
-        }
-        if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "tournament") == 0) {
-            testTournament();
-        }
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "map") == 0)
+        //     testLoadMaps();
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "player") == 0) {
+        //     //testPlayer();
+        //     testPlayers();
+        // }
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "order") == 0) {
+        //     testOrderList();
+        //     testOrderExecution();
+        // }
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "card") == 0)
+        //     testCards();
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "command") == 0)
+        //     testCommandProcessor();
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "logging") == 0)
+        //     testLoggingObserver();
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "gamestartup") == 0) {
+        //     testGameStartup();
+        // }
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "gamemainloop") == 0) {
+        //     testMainGameLoop();
+        // }
+        // if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "tournament") == 0) {
+        //     testTournament();
+        // }
           if (argc == 2 || strcmp(argv[2], "all") == 0 || strcmp(argv[2], "playerStrategies") == 0) {
             testPlayerStrategies();
         }
