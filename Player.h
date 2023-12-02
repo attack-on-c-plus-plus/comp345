@@ -50,7 +50,7 @@ public:
     [[nodiscard]] const GameEngine &gameEngine() const;
     [[nodiscard]] const std::vector<Territory *> &territories() const;
     [[nodiscard]] std::vector<const Territory *> toAttack() const;
-    [[nodiscard]] std::vector<const Territory *> toDefend() const;
+    [[nodiscard]] std::vector<Territory *> toDefend() const;
     [[nodiscard]] const std::vector<const Player *> &cantAttack() const;
     void issueOrders() const;
     void issueOrder() const;

@@ -39,7 +39,7 @@ public:
     PlayerStrategy &operator=(const PlayerStrategy &playerStrategy);
     virtual void issueOrder() = 0;
     [[nodiscard]] virtual std::vector<const Territory *> toAttack() const = 0;
-    [[nodiscard]] virtual std::vector<const Territory *> toDefend() const = 0;
+    [[nodiscard]] virtual std::vector<Territory *> toDefend() const = 0;
 protected:
     Player *player_;            // weak pointer
     GameEngine* gameEngine_;    // weak pointer
@@ -54,7 +54,7 @@ public:
     HumanPlayerStrategy &operator=(const HumanPlayerStrategy& humanPlayerStrategy);
     void issueOrder() override;
     [[nodiscard]] std::vector<const Territory*> toAttack() const override;
-    [[nodiscard]] std::vector<const Territory*> toDefend() const override;
+    [[nodiscard]] std::vector<Territory*> toDefend() const override;
 private:
     CommandProcessor *commandProcessor_;
 };
@@ -67,7 +67,7 @@ public:
     NeutralPlayerStrategy &operator=(const NeutralPlayerStrategy& neutralPlayerStrategy);
     void issueOrder() override;
     [[nodiscard]] std::vector<const Territory*> toAttack() const override;
-    [[nodiscard]] std::vector<const Territory*> toDefend() const override;
+    [[nodiscard]] std::vector<Territory*> toDefend() const override;
 };
 
 std::string toString(Strategy strategy);
@@ -81,7 +81,7 @@ public:
     BenevolentPlayerStrategy &operator=(const BenevolentPlayerStrategy &benevolentPlayerStrategy);
     void issueOrder() override;
     [[nodiscard]] std::vector<const Territory *> toAttack() const override;
-    [[nodiscard]] std::vector<const Territory *> toDefend() const override;
+    [[nodiscard]] std::vector<Territory *> toDefend() const override;
 };
 
 #endif //PLAYERSTRATEGIES_H
