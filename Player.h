@@ -63,6 +63,7 @@ public:
     void fillReinforcementPool() const;
     void deploy(unsigned armies) const;
     [[nodiscard]] unsigned availableReinforcements() const;
+    void attacked();
 private:
     std::string *name_;
     std::vector<Territory *> *territories_;
