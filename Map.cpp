@@ -20,6 +20,7 @@
 #include <string>
 
 #include "Player.h"
+#include "PlayerStrategies.h"
 
 /**
  * Constructor
@@ -221,7 +222,7 @@ void Map::print() const {
     for (const auto c : *continents_) {
         std::cout << *c << std::endl;
         for (const auto t : adjacencies(*c)) {
-            std::cout << "\t" << *t << " { owner: " << t->owner() << ", armies: " << t->armyCount() << " }" << std::endl;
+            std::cout << "\t" << *t << " { owner: " << t->owner() <<", Strategy: " <<toString(t->owner().strategy())<< ", armies: " << t->armyCount() << " }" << std::endl;
         }
     }
 }
