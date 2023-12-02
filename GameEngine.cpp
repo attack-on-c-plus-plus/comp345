@@ -122,10 +122,12 @@ void GameEngine::startup() {
 }
 
 void GameEngine::resetGameElements() {
+    delete deck_;
     delete map_;
     delete players_;
     map_ = new Map();
     players_ = new Players(*this);
+    deck_ = new Deck(*random_, 24);
 }
 
 void GameEngine::mainGameLoop() {
