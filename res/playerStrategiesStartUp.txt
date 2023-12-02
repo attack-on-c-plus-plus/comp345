@@ -1,0 +1,7 @@
+loadmap maps/valid/3D.map
+validatemap
+addplayer neutral Bob
+addplayer benevolent Rick
+addplayer cheater Olive
+addplayer aggressive Mark
+gamestart
