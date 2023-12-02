@@ -359,6 +359,8 @@ void AdvanceOrder::execute() {
         //if player issuing order owns source territory but doesn't own target territory
         // ATTACK
         if (sourceTerritory_->owner() != targetTerritory_->owner()) {
+            targetTerritory_->owner().attacked();
+
             while (targetTerritory_->armyCount() > 0 && *armies_ > 0) {
                 const unsigned targetArmies = targetTerritory_->armyCount();
                 // Each attacking army unit involved has 60% chances of killing one defending army
@@ -496,6 +498,7 @@ bool BombOrder::validate() {
  */
 void BombOrder::execute() {
     if (validate()) {
+        targetTerritory_->owner().attacked();
         // Removes half of the army count
         targetTerritory_->removeArmies(targetTerritory_->armyCount()/2);
         // Update the effect string to describe the action

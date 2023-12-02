@@ -217,6 +217,13 @@ unsigned Player::availableReinforcements() const {
     return used <= reinforcementPool() ? reinforcementPool() - used : 0;
 }
 
+void Player::attacked() {
+    if (strategy() == Strategy::Neutral) {
+        delete playerStrategy_;
+        playerStrategy_ = createStrategy(Strategy::Aggressive);
+    }
+}
+
 unsigned int Player::continentBonusArmies() const {
     unsigned armies = 0;
     const Map&map = gameEngine_->map();
